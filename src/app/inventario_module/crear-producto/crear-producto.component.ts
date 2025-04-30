@@ -49,18 +49,27 @@ export class CrearProductoComponent implements OnInit {
   formularioDeMotocicletas: FormGroup;
 
   listaDeMarcas: string[] = [
-    'Honda',
-    'Yamaha',
-    'Kawasaki',
-    'Suzuki',
-    'bajaj',
+    'JHC',
+    'DUCONDA',
+    'LIFAN',
+    'BERA',
+    'SSENDA',
+    'POLUX',
+    'HERO',
     'KTM',
+    'YAMAHA',
+    'HONDA',
+    'SUZUKI',
+    'KAWASAKI',
+    'BAJAJ',
     'TVS',
-    'Hero',
+    'CFMOTO',
+    'ZONGSHEN',
+    'RTM',
+    'HERO',
     'LIFAN',
     'ZONGSHEN',
-    'rtm',
-    'CFMoto',
+    'CFMOTO',
   ];
 
   listaDeCategorias: string[] = [
