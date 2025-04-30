@@ -8,8 +8,12 @@
 
 # Node
 /node_modules
-npm-debug.log
-yarn-error.log
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
 
 # IDEs and editors
 .idea/
@@ -36,12 +40,47 @@ yarn-error.log
 /libpeerconnection.log
 testem.log
 /typings
+/logs
+*.log
+logs/*.log
+*.tmp
+*.bak
+*.swp
+*.lock
 
 # System files
 .DS_Store
 Thumbs.db
+desktop.ini
 
 # Firebase
 .firebase
 *-debug.log
 .runtimeconfig.json
+
+# Electron
+/dist_electron
+/electron-builder-cache
+/electron-packager-cache
+*.asar
+*.exe
+*.dmg
+*.app
+*.deb
+*.rpm
+
+# Tailwind
+tailwind.config.js
+postcss.config.js
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Temporary files
+*.~undo
+*.~redo
+*.~backup
+*.~restore
+*.orig
