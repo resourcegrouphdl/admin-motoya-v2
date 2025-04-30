@@ -1,0 +1,128 @@
+<div class="flex flex-col items-center min-h-screen">
+  <div class="flex flex-col items-center mb-5 uppercase text-center">
+    <h3 class="text-3xl m-5 font-semibold">
+        Crear Ficha Técnica de Motocicleta
+    </h3>
+  </div>
+
+  <form [formGroup]="fichaTecnicaForm"
+  (submit)="onSubmit()" 
+  class="flex flex-wrap gap-8 justify-center items-center w-full max-w-4xl p-5 bg-white rounded-lg shadow-md">
+
+        <mat-form-field>
+            <mat-label>cilindrada</mat-label>
+            <input matInput formControlName="cilindrada" >
+        </mat-form-field>
+
+        <mat-form-field>
+            <mat-label>potencia</mat-label>
+            <input matInput formControlName="potencia" >
+        </mat-form-field>
+
+        <mat-form-field>
+            <mat-label>torque</mat-label>
+            <input matInput formControlName="torque" >
+        </mat-form-field>
+
+        <mat-form-field>
+            <mat-label>conbustible</mat-label>
+            <input matInput formControlName="combustible" >
+        </mat-form-field>
+
+        <mat-form-field>
+            <mat-label>tanque</mat-label>
+            <input matInput formControlName="tanque" >
+        </mat-form-field>
+
+        <mat-form-field>
+            <mat-label>rendimiento</mat-label>
+            <input matInput formControlName="rendimiento" >
+        </mat-form-field>
+
+        <mat-form-field>
+            <mat-label>autonomia</mat-label>
+            <input matInput formControlName="autonomia" >   
+        </mat-form-field>
+
+        <mat-form-field>
+            <mat-label>suspencion delantera</mat-label>
+            <input matInput formControlName="suspencionDelantera" >
+        </mat-form-field>
+
+        <mat-form-field>
+            <mat-label>suspencion trasera</mat-label>
+            <input matInput formControlName="suspencionTrasera" >
+        </mat-form-field>
+
+        <mat-form-field>
+            <mat-label>freno delantero</mat-label>
+            <input matInput formControlName="frenoDelantero" >
+        </mat-form-field>
+
+        <mat-form-field>
+            <mat-label>freno trasero</mat-label>
+            <input matInput formControlName="frenoTrasero" >
+        </mat-form-field>
+
+        <mat-form-field>
+            <mat-label>transmision</mat-label>
+            <input matInput formControlName="transmision" >
+        </mat-form-field>
+
+        <mat-form-field>
+            <mat-label>peso</mat-label>
+            <input matInput formControlName="peso" >
+
+        </mat-form-field>
+
+        <mat-form-field>
+            <mat-label>velocidad maxima</mat-label>
+            <input matInput formControlName="velocidadMaxima" >
+        </mat-form-field>
+
+        <mat-form-field>
+            <mat-label>dimenciones</mat-label>
+            <input matInput formControlName="dimenciones" >
+        </mat-form-field>
+
+        <div class="flex items-center justify-center gap-5 flex-wrap">
+            <button
+              type="submit"
+              class="mb-4 mt-20 inline-block w-auto text-center min-w-[200px] px-6 py-4 text-white transition-all rounded-md shadow-xl sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b dark:shadow-blue-900 shadow-blue-200 hover:shadow-2xl hover:shadow-blue-400 hover:-tranneutral-y-px"
+            >
+              AGREGAR PRODUCTO
+            </button>
+          </div>
+          @if (isloading) {
+            <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+          }
+
+
+
+  </form>
+  
+
+
+
+
+
+</div>
+
+
+    id?: string;
+    cilindrada: string;
+    potencia: string;
+    torque: string;
+    conbustible: string;
+    tanque: string;
+    rendimiento: string;
+    autonomia: string;
+    suspencionDelantera: string;
+    suspencionTrasera: string;
+    frenoDelantero: string;
+    frenoTrasero: string;
+    transmision: string;
+    peso: string;
+    velocidadMaxima: string;
+    dimenciones: string;
+  

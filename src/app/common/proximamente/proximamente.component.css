@@ -1,0 +1,57 @@
+body {
+    background-color: black;
+  }
+  
+  .dark-mode body {
+    background-color: white;
+  }
+  
+  .container {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .heading {
+    position: relative;
+    width: 100%;
+    font-size: 3rem;
+  }
+  
+  @media (min-width: 768px) {
+    .heading {
+      font-size: 4rem;
+    }
+  }
+  
+  @media (min-width: 1280px) {
+    .heading {
+      font-size: 6rem;
+    }
+  }
+  
+  .heading {
+    text-transform: uppercase;
+    text-align: center;
+    letter-spacing: 10px;
+    line-height: 0.7em;
+    outline: none;
+    animation: dimlight 1s infinite;
+  }
+  
+  @media (min-width: 640px) {
+    .heading {
+      letter-spacing: 17px;
+    }
+  }
+  
+  @keyframes dimlight {
+    0% {
+      opacity: 0.8;
+    }
+    100% {
+      opacity: 1;
+    }
+  }

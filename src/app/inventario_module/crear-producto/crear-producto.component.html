@@ -1,0 +1,200 @@
+<div class="flex flex-col items-center min-h-screen">
+  <div class="flex flex-col items-center mb-5 uppercase text-center">
+    <h3 class="text-3xl m-5 font-semibold">
+      Agregar un producto a la base de datos
+    </h3>
+  </div>
+
+  <form
+    class="w-full"
+    [formGroup]="formularioDeMotocicletas"
+    (submit)="onSubmit()"
+  >
+    <div class="w-full flex items-center justify-center gap-5 flex-wrap">
+      <mat-form-field>
+        <mat-label>MARCA </mat-label>
+        <mat-select formControlName="marca">
+          @for (item of listaDeMarcas; track $index) {
+          <mat-option value="{{ item }}">{{ item }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>MODELO</mat-label>
+        <input matInput formControlName="modelo" />
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>CATEGORIA </mat-label>
+        <mat-select formControlName="categoria">
+          @for (item of listaDeCategorias; track $index) {
+          <mat-option value="{{ item }}">{{ item }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>PRECIO-WEB</mat-label>
+        <input matInput formControlName="precioWeb" />
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label> DESTACADO </mat-label>
+        <mat-select formControlName="destacado">
+          <mat-option value="true">SI</mat-option>
+          <mat-option value="false">NO</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>DESCRIPCION</mat-label>
+        <textarea matInput formControlName="descripcion"></textarea>
+      </mat-form-field>
+
+      <!--a
+        class="mb-4 inline-block w-auto text-center min-w-[200px] px-6 py-4 text-white transition-all rounded-md shadow-xl sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b dark:shadow-blue-900 shadow-blue-200 hover:shadow-2xl hover:shadow-blue-400 hover:-tranneutral-y-px"
+        href=""
+        >AGREGAR FICHA TECNICA
+      </!--a>
+      <a
+        class="mb-4 inline-block w-auto text-center min-w-[200px] px-6 py-4 text-white transition-all rounded-md shadow-xl sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b dark:shadow-blue-900 shadow-blue-200 hover:shadow-2xl hover:shadow-blue-400 hover:-tranneutral-y-px"
+        href=""
+        >AGREGAR PRECIOS DE VENTA
+      </a>
+      <a--
+        class="mb-4 inline-block w-auto text-center min-w-[200px] px-6 py-4 text-white transition-all rounded-md shadow-xl sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b dark:shadow-blue-900 shadow-blue-200 hover:shadow-2xl hover:shadow-blue-400 hover:-tranneutral-y-px"
+        href=""
+        >PROMOCIONES ASOCIADAS
+      </a-->
+    </div>
+
+    <div class="flex items-center justify-center gap-5 flex-wrap">
+      <div
+        class="rounded-md border border-indigo-500 bg-gray-50 p-4 shadow-md flex gap-5"
+      >
+        <div
+          class="rounded-md border border-indigo-500 bg-gray-50 p-4 shadow-md w-36"
+        >
+          <label
+            for="upload"
+            class="flex flex-col items-center gap-2 cursor-pointer"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-10 w-10 fill-white stroke-indigo-500"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+            <span class="text-gray-600 font-medium">Img principal</span>
+            <span class="text-gray-600 font-medium"
+              >sin fondo de 12px X 30px
+            </span>
+          </label>
+          <input
+            id="upload"
+            type="file"
+            class="hidden"
+            (change)="onImageSelected($event)"
+          />
+        </div>
+
+        @if (imagenPrincipal != null && imagenPrincipal != null && imagenPrincipal != '') {
+        <div
+          (click)="removeImageprincipal()"
+          class="rounded-md border border-indigo-500 bg-gray-50 h-36 shadow-md w-36"
+        >
+          <img
+            [src]="imagenPrincipal"
+            alt=" "
+            class="object-cover w-full h-full overflow-hidden rounded-md"
+          />
+        </div>
+        }
+      </div>
+      <div
+        class="rounded-md border border-indigo-500 bg-gray-50 p-4 shadow-md flex gap-5"
+      >
+        <div
+          class="rounded-md border border-indigo-500 bg-gray-50 p-4 shadow-md w-36"
+        >
+          <label
+            for="uploadSecundarias"
+            class="flex flex-col items-center gap-2 cursor-pointer"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-10 w-10 fill-white stroke-indigo-500"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+            <span class="text-gray-600 font-medium">Imagenes sec</span>
+            <span class="text-gray-600 font-medium"
+              >sin fondo de 12px X 30px
+            </span>
+          </label>
+          <input
+            id="uploadSecundarias"
+            type="file"
+            class="hidden"
+            formArrayName="imagenes"
+            (change)="onSecondaryImagesSelected($event)"
+            multiple
+          />
+        </div>
+
+        @for (item of imagenesSecundarias; track $index) {
+
+        <div
+          (click)="removeImage(item)"
+          class="rounded-md border border-indigo-500 bg-gray-50 h-36 shadow-md w-36"
+        >
+          <img
+            [src]="item"
+            alt=" "
+            class="object-cover w-full h-full overflow-hidden rounded-md"
+          />
+        </div>
+
+        }
+      </div>
+    </div>
+
+    <div class="flex items-center justify-center gap-5 flex-wrap">
+      <button
+        type="submit"
+        class="mb-4 mt-20 inline-block w-auto text-center min-w-[200px] px-6 py-4 text-white transition-all rounded-md shadow-xl sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b dark:shadow-blue-900 shadow-blue-200 hover:shadow-2xl hover:shadow-blue-400 hover:-tranneutral-y-px"
+      >
+        AGREGAR PRODUCTO
+      </button>
+    </div>
+
+    <div class="flex items-center justify-center gap-5 flex-wrap">
+      <button
+        type="button"
+        (click)="onUpdate()"
+        class="mb-4 mt-20 inline-block w-auto text-center min-w-[200px] px-6 py-4 text-white transition-all rounded-md shadow-xl sm:w-auto bg-gradient-to-r from-red-600 to-red-500 hover:bg-gradient-to-b dark:shadow-blue-900 shadow-blue-200 hover:shadow-2xl hover:shadow-red-400 hover:-tranneutral-y-px"
+      >
+        EDITAR
+      </button>
+    </div>
+    @if (isUploading) {
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    }
+    
+  </form>
+</div>
