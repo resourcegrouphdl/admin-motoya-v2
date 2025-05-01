@@ -69,9 +69,6 @@ desktop.ini
 *.deb
 *.rpm
 
-# Tailwind
-tailwind.config.js
-postcss.config.js
 
 # Environment files
 .env
