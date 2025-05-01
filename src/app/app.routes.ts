@@ -5,6 +5,9 @@ import { CrearProductoComponent } from './inventario_module/crear-producto/crear
 import { ModuloProductoComponent } from './inventario_module/modulo-producto/modulo-producto.component';
 import { ProximamenteComponent } from './common/proximamente/proximamente.component';
 import { CrearFichaTecnicaComponent } from './inventario_module/crear-ficha-tecnica/crear-ficha-tecnica.component';
+import { ReportesHomeComponent } from "./reportes/reportes-home/reportes-home.component";
+import { ReportesClientesComponent } from "./reportes/reportes-clientes/reportes-clientes.component";
+
 
 
 export const routes: Routes = [
@@ -84,10 +87,10 @@ export const routes: Routes = [
           title: 'List Clientes',
         },
       },
-      
+
     ]
-    
-    
+
+
   },
   {
     path: 'promocion',
@@ -95,7 +98,7 @@ export const routes: Routes = [
     data: {
       title: 'Promoción de Créditos',
     },
-    
+
   },
   {
     path: 'web',
@@ -103,5 +106,24 @@ export const routes: Routes = [
     data: {
       title: 'Web',
     },
+  },
+  {
+    path:'reportes',
+    component: ReportesHomeComponent,
+    children: [
+      {
+        path: '',
+        redirectTo: 'report-client',
+        pathMatch: 'full',
+      },
+      {
+        path: 'report-client',
+        component: ReportesClientesComponent,
+        data: {
+          title: 'Report Client',
+        }
+      }
+
+    ]
   }
 ];
