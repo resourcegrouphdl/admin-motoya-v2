@@ -7,6 +7,8 @@
     <!-- Profile -->
     <div
       (click)="navegar(item.route)"
+      matTooltip="{{ item.name }}"
+      matTooltipPosition="right"
       class="h-10 w-10 flex items-center justify-center rounded-lg cursor-pointer hover:text-gray-800 hover:bg-white hover:duration-300 hover:ease-linear focus:bg-white"
     >
       <mat-icon>{{ item.icon }}</mat-icon>
@@ -42,7 +44,7 @@
       <div class="w-full m-4 rounded-tl bg-gray-100 overflow-y-scroll">
         <!-- Container -->
 
-        <div [ngClass]="fadeState" class="w-full h-full">
+        <div [ngClass]="fadeState" class="w-full h-full  bg-gray-800">
           <router-outlet (activate)="onActivate()"></router-outlet>
         </div>
       </div>

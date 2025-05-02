@@ -1,5 +1,5 @@
 <body>
-  <div class="flex flex-wrap gap-5 bg-gray-800 p-6 h-full">
+  <div class="flex flex-wrap gap-5 bg-gray-800 p-6">
     @for (item of list_modules; track $index) {
       <div class=" card bg-gray-700 rounded-lg shadow-md p-6 w-[300px] h-[350px]" (click)="navigateWithTransition(item.route)" >
         <div class="icon-container flex justify-center mb-3">

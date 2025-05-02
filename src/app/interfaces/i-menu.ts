@@ -11,6 +11,17 @@ export interface IMenu {
 
     export const menu: IMenu[] = [
         {
+            name : 'Inicio',
+            icon : 'home',
+            route : '/home'
+        },
+        {
+            name : 'Colaboradores',
+            icon : 'dashboard',
+            route : '/colaboradores'
+        },
+       
+        {
             name : 'Inventario',
             icon : 'inventory_2',
             route : '/inventario',

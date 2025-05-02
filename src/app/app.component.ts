@@ -5,11 +5,12 @@ import { menu } from './interfaces/i-menu';
 import {MatIconModule} from '@angular/material/icon';
 import { TransitionService } from './shared/transition.service';
 import { NgClass } from '@angular/common';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, MatIconModule,NgClass],
+  imports: [RouterOutlet, MatIconModule,NgClass, MatTooltipModule ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
@@ -17,7 +18,7 @@ export class AppComponent {
   title = 'motoyaapp';
   fadeState: 'none' | 'fade-in' | 'fade-out' = 'none';
   menu_principal: IMenu[] = menu;
-
+  
 constructor(private router: Router ,private transitionService: TransitionService) {
   this.transitionService.fadeState$.subscribe(state => {
     this.fadeState = state;

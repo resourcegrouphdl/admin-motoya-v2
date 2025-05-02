@@ -7,6 +7,8 @@ import { ProximamenteComponent } from './common/proximamente/proximamente.compon
 import { CrearFichaTecnicaComponent } from './inventario_module/crear-ficha-tecnica/crear-ficha-tecnica.component';
 import { ReportesHomeComponent } from "./reportes/reportes-home/reportes-home.component";
 import { ReportesClientesComponent } from "./reportes/reportes-clientes/reportes-clientes.component";
+import { ColaboradoresHomeComponent } from './colaboradores/colaboradores-home/colaboradores-home.component';
+import { TiendasComponent } from './colaboradores/tiendas/tiendas.component';
 
 
 
@@ -22,6 +24,33 @@ export const routes: Routes = [
     data: {
       title: 'Home',
     },
+  },
+  {
+    path: 'colaboradores',
+    component: ColaboradoresHomeComponent,
+    data: {
+      title: 'Colaboradores',
+    },
+    children: [
+      {
+        path: '',
+        redirectTo: 'list-colaboradores',
+        pathMatch: 'full',
+
+      },
+      {
+        path: 'list-colaboradores',
+        component: TiendasComponent,
+      },
+      {
+        path: 'crear-colaborador',
+        component: ProximamenteComponent,
+      },
+      {
+        path: 'modificar-colaborador',
+        component: ProximamenteComponent,
+      }
+    ]
   },
   {
     path: 'inventario',
