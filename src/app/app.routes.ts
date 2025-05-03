@@ -9,6 +9,8 @@ import { ReportesHomeComponent } from "./reportes/reportes-home/reportes-home.co
 import { ReportesClientesComponent } from "./reportes/reportes-clientes/reportes-clientes.component";
 import { ColaboradoresHomeComponent } from './colaboradores/colaboradores-home/colaboradores-home.component';
 import { TiendasComponent } from './colaboradores/tiendas/tiendas.component';
+import { CrearColaboradoresComponent } from './colaboradores/crear-colaboradores/crear-colaboradores.component';
+import { ListaVendedoresComponent } from './colaboradores/lista-vendedores/lista-vendedores.component';
 
 
 
@@ -44,12 +46,17 @@ export const routes: Routes = [
       },
       {
         path: 'crear-colaborador',
-        component: ProximamenteComponent,
+        component: CrearColaboradoresComponent,
       },
       {
         path: 'modificar-colaborador',
         component: ProximamenteComponent,
+      },
+      {
+        path: 'list-aliados',
+        component: ListaVendedoresComponent,
       }
+
     ]
   },
   {
