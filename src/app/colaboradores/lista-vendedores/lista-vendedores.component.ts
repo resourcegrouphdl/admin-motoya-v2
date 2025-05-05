@@ -1,22 +1,71 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { Router } from '@angular/router';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { FormBuilder, FormGroup, FormsModule } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
+import { MatSelectModule } from '@angular/material/select';
+import { CommonModule } from '@angular/common';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { ColaboradoresService } from '../../services/colaboradores/colaboradores.service';
+import { Vendedor } from '../../common_module/models/vendedor';
+import { lastValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-lista-vendedores',
   standalone: true,
-  imports: [MatIconModule],
+  imports: [
+    MatIconModule,
+    MatFormFieldModule,
+    ReactiveFormsModule,
+    MatIconModule,
+    FormsModule,
+    ReactiveFormsModule,
+    CommonModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatButtonModule,
+    MatProgressBarModule,
+  ],
   templateUrl: './lista-vendedores.component.html',
-  styleUrl: './lista-vendedores.component.css'
+  styleUrl: './lista-vendedores.component.css',
 })
-export class ListaVendedoresComponent {
+export class ListaVendedoresComponent  implements OnInit{
+  
+  lisTofAliados:Vendedor[] = [];
 
-  constructor(private router: Router) { }
+  constructor(private router: Router,private firebaseService:ColaboradoresService) {
+    
+  }
+  ngOnInit(): void {
+    this.obtenerAliados();
+  }
 
-  navegarPuntodeVenta(){
+  navegarPuntodeVenta() {
     this.router.navigate(['colaboradores/list-colaboradores']);
   }
 
-  agregarVendedor(){}
+  agregarVendedor() {
+    this.router.navigate(['colaboradores/crear-aliado']);
+  }
+
+  async obtenerAliados(): Promise<void> {
+    try {
+      this.lisTofAliados = await lastValueFrom(this.firebaseService.getAllColaboradores('aliadosComerciales'));
+    } catch (error) {
+      console.error('Error al obtener aliados comerciales:', error);
+    }
+  }
+  
+
+
+  eliminarProducto(id:string){}
+
+  navigateToFichaTecnica(id:string){}
+
+  editarProducto(id:string){}
 
 }

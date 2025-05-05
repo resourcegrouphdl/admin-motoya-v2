@@ -1,40 +1,134 @@
-<div class="shadow-md sm:rounded-lg w-full border-2 border-gray-700 dark:border-gray-700">
-    <div class="flex justify-between items-center p-6 bg-gray-800 dark:bg-gray-800 border-b dark:border-gray-700">
-      <div class="flex  ">
-        <button
+<div
+  class="shadow-md sm:rounded-lg w-full border-2 border-gray-700 dark:border-gray-700"
+>
+  <div
+    class="flex justify-between items-center p-6 bg-gray-800 dark:bg-gray-800 border-b dark:border-gray-700"
+  >
+    <div class="flex">
+      <button
         type="button"
         (click)="navegarPuntodeVenta()"
-        class="border-2 border-gray-700 flex h-14  items-center justify-between px-6 py-2 text-sm font-semibold text-white bg-green-500  shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800"
+        class="border-2 border-gray-700 flex h-14 items-center justify-between px-6 py-2 text-sm font-semibold text-white bg-green-500 shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800"
       >
         <mat-icon>add</mat-icon>
-        <span class="ml-4" > PUNTO DE VENTA  </span>
+        <span class="ml-4"> PUNTO DE VENTA </span>
       </button>
-        <button
+      <button
         type="button"
-        
-        class="border-2 border-gray-700 flex h-14  items-center justify-between px-6 py-2 text-sm font-semibold text-white bg-green-500  shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800"
+        class="border-2 border-gray-700 flex h-14 items-center justify-between px-6 py-2 text-sm font-semibold text-white bg-green-500 shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800"
       >
         <mat-icon>add</mat-icon>
         <span class="ml-4"> COLABORADORES </span>
       </button>
-      </div>
-      
-      
-  
-      <input
-        type="text"
-        class="w-1/3 px-3 py-2 text-sm text-gray-300 placeholder-gray-500 border-2 border-gray-700 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800"
-        placeholder="Buscar..."
-      />
-  
-      <button
-        type="button"
-        (click)="agregarVendedor()"
-        class="flex min-h-14  items-center justify-between px-4 py-2 text-sm font-semibold text-white bg-blue-500 rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800"
-      >
-        <mat-icon>add</mat-icon>
-        <span class="ml-2">AGREGAR NUEVO COLABORADOR</span>
-      </button>
     </div>
 
-    <div class="flex flex-wrap gap-6 p-6">
+    <input
+      type="text"
+      class="w-1/3 px-3 py-2 text-sm text-gray-300 placeholder-gray-500 border-2 border-gray-700 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800"
+      placeholder="Buscar..."
+    />
+
+    <button
+      type="button"
+      (click)="agregarVendedor()"
+      class="flex min-h-14 items-center justify-between px-4 py-2 text-sm font-semibold text-white bg-blue-500 rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800"
+    >
+      <mat-icon>add</mat-icon>
+      <span class="ml-2">AGREGAR NUEVO COLABORADOR</span>
+    </button>
+  </div>
+
+  <!--    incio de la tabla -->
+
+  <table
+    class="w-full m-auto text-sm text-left rtl:text-right text-gray-300 dark:text-gray-400"
+  >
+    <thead
+      class="text-xs text-gray-300 uppercase bg-gray-700 dark:bg-gray-700 dark:text-gray-400"
+    >
+      <tr>
+        <th scope="col" class="px-11 py-3">
+          <span class="sr-only">Image</span>
+        </th>
+        <th scope="col" class="px-6 py-3">NOMBRE</th>
+        <th scope="col" class="px-6 py-3">APELLIDO</th>
+        <th scope="col" class="px-6 py-3">TELEFONO 1</th>
+        <th scope="col" class="px-6 py-3">TELEFONO 2</th>
+        <th scope="col" class="px-6 py-3">CORREO </th>
+        <th scope="col" class="px-3 py-3">DIRECCION </th>
+        <th scope="col" class="px-3 py-3">LISTA DE PRECIOS</th>
+        <th scope="col" class="px-6 py-3">ACCIONES</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (item of lisTofAliados ; track $index) {
+
+      <tr
+        class="bg-gray-800 border-b dark:border-gray-700 hover:bg-gray-700 dark:hover:bg-gray-600"
+      >
+        <td class="p-1 shadow-md">
+          <img
+            class="object-cover w-20 h-20 rounded-lg"
+            src="{{ item.imgenPerfil }}"
+            alt="Imagen del producto"
+            onerror="this.onerror=null; this.src='assets/img/placeholder.png'"
+          />
+        </td>
+        <td class="px-6 py-4 font-semibold text-white shadow-md">
+          {{ item.nombre }}
+        </td>
+        <td class="px-6 py-4 shadow-md">
+          <span class="text-sm font-semibold text-white">{{
+            item.apellido
+          }}</span>
+        </td>
+        <td class="px-6 py-4 font-semibold text-white shadow-md">
+          {{ item.telefono1 }}
+        </td>
+        <td class="px-6 py-4 font-semibold text-white shadow-md">
+          {{ item.telefono2 }}
+        </td>
+        <td class="px-3 py-4 font-semibold text-white shadow-md">
+          {{ item.correo }}
+        </td>
+        
+
+        <td class="px-3 py-4 font-semibold text-white shadow-md">
+          {{ item.correo}}
+        </td>
+
+        <td class="px-3 py-4 shadow-md">
+          <span
+            class="cursor-pointer text-sm font-semibold text-white text-center"
+            ><mat-icon>campaign</mat-icon>
+            @if (item.listaPreciosAsociada) {
+            <mat-icon>check</mat-icon>
+            }
+          </span>
+        </td>
+        <td class="justify-center shadow-md">
+          <div class="flex items-center justify-around">
+            <mat-icon
+              (click)="eliminarProducto(item.id)"
+              class="cursor-pointer text-red-500 hover:text-red-700"
+              matTooltip="Eliminar este producto"
+              matTooltipPosition="above"
+            >
+              delete
+            </mat-icon>
+            <mat-icon
+              (click)="editarProducto(item.id)"
+              class="cursor-pointer"
+              class="cursor-pointer text-green-700 hover:text-green-300"
+              matTooltip="Editar este producto"
+              matTooltipPosition="above"
+              >edit</mat-icon
+            >
+          </div>
+        </td>
+      </tr>
+
+      }
+    </tbody>
+  </table>
+</div>

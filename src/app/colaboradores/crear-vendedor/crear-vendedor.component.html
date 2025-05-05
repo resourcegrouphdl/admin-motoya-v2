@@ -1,0 +1,94 @@
+<div class="shadow-md sm:rounded-lg w-full border-2 border-gray-700 dark:border-gray-700">
+    <div class="flex justify-between items-center p-6 bg-gray-800 dark:bg-gray-800 border-b dark:border-gray-700">
+      <h2 class="text-lg font-semibold text-white dark:text-white">FORMULARIO DE CREACION ALIADOS</h2>
+  
+      <input
+        type="text"
+        class="w-1/3 px-3 py-2 text-sm text-gray-300 placeholder-gray-500 border-2 border-gray-700 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800"
+        placeholder="Buscar..."
+      />
+  
+      <button
+        type="button"
+        (click)="volverALista()"
+        routerLinkActive="router-link-active"
+        class="flex items-center justify-between px-4 py-2 text-sm font-semibold text-white bg-blue-500 rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800"
+      >
+        <mat-icon>add</mat-icon>
+        <span class="ml-2">VOLVER A LISTA DE ALIADOS</span>
+      </button>
+    </div>
+  
+  </div>
+  
+  
+
+
+
+<div class="flex flex-wrap gap-6 p-6">
+
+    <form [formGroup] = "formularioDeColaboradores" (submit)="onSubmit()">
+
+      <div class="flex flex-wrap gap-6 my-5">
+
+        <mat-form-field>
+          <mat-label>NOMBRE</mat-label>
+          <input matInput formControlName="nombre" />
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>APELLIDO</mat-label>
+          <input matInput formControlName="apellido" />
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>TELEFONO 1</mat-label>
+          <input matInput formControlName="telefono1" />
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>TELEFONO 2</mat-label>
+          <input matInput formControlName="telefono2" />
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>CORREO</mat-label>
+          <input matInput formControlName="correo" />
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>DIRECCION</mat-label>
+          <input matInput formControlName="direccion" />
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>PUNTO DE VENTA </mat-label>
+          <input matInput formControlName="puntoDeVentaAsociado" />
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>IMAGEN DE PERFIL </mat-label>
+          <input matInput formControlName="imgenPerfil" />
+        </mat-form-field>
+
+        
+
+      </div>
+
+      <div class="flex items-center justify-center gap-5 flex-wrap">
+        <button
+          type="submit"
+          class="mb-4 mt-20 inline-block w-auto text-center min-w-[200px] px-6 py-4 text-white transition-all rounded-md shadow-xl sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 hover:bg-gradient-to-b dark:shadow-blue-900 shadow-blue-200 hover:shadow-2xl hover:shadow-blue-400 hover:-tranneutral-y-px"
+        >
+          AGREGAR PRODUCTO
+        </button>
+      </div>
+
+    </form>
+
+    @if (isSAveForm) {
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    }
+
+    
+  </div>

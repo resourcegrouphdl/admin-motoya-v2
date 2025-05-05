@@ -11,6 +11,7 @@ import { ColaboradoresHomeComponent } from './colaboradores/colaboradores-home/c
 import { TiendasComponent } from './colaboradores/tiendas/tiendas.component';
 import { CrearColaboradoresComponent } from './colaboradores/crear-colaboradores/crear-colaboradores.component';
 import { ListaVendedoresComponent } from './colaboradores/lista-vendedores/lista-vendedores.component';
+import { CrearVendedorComponent } from './colaboradores/crear-vendedor/crear-vendedor.component';
 
 
 
@@ -55,7 +56,12 @@ export const routes: Routes = [
       {
         path: 'list-aliados',
         component: ListaVendedoresComponent,
-      }
+      },
+      {
+        path: 'crear-aliado',
+        component: CrearVendedorComponent,
+      },
+      
 
     ]
   },
