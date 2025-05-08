@@ -12,6 +12,7 @@ import { TiendasComponent } from './colaboradores/tiendas/tiendas.component';
 import { CrearColaboradoresComponent } from './colaboradores/crear-colaboradores/crear-colaboradores.component';
 import { ListaVendedoresComponent } from './colaboradores/lista-vendedores/lista-vendedores.component';
 import { CrearVendedorComponent } from './colaboradores/crear-vendedor/crear-vendedor.component';
+import { ListaDePreciosWebComponent } from './web_config_module/lista-de-precios-web/lista-de-precios-web.component';
 
 
 
@@ -144,7 +145,7 @@ export const routes: Routes = [
   },
   {
     path: 'web',
-    component: ProximamenteComponent,
+    component: ListaDePreciosWebComponent,
     data: {
       title: 'Web',
     },

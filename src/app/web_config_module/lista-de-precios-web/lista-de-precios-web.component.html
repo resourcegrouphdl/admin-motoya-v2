@@ -1,0 +1,146 @@
+<div
+  class="shadow-md sm:rounded-lg w-full border-2 border-gray-700 dark:border-gray-700"
+>
+  <div
+    class="flex justify-between items-center p-6 bg-gray-800 dark:bg-gray-800 border-b dark:border-gray-700"
+  >
+    <div class="flex"></div>
+
+    <input
+      type="text"
+      class="w-1/3 px-3 py-2 text-sm text-gray-300 placeholder-gray-500 border-2 border-gray-700 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800"
+      placeholder="Buscar..."
+    />
+  </div>
+
+  <!--    incio de la tabla -->
+
+  <table
+    mat-table
+    [dataSource]="dataSource"
+    multiTemplateDataRows
+    class="mat-elevation-z8"
+  >
+    @for (column of columnsToDisplay; track column) {
+    <ng-container matColumnDef="{{ column }}">
+      <th mat-header-cell *matHeaderCellDef>{{ column }}</th>
+      <td mat-cell *matCellDef="let element">{{ element[column] }}</td>
+    </ng-container>
+    }
+    <ng-container matColumnDef="expand">
+      <th mat-header-cell *matHeaderCellDef aria-label="row actions">&nbsp;</th>
+      <td mat-cell *matCellDef="let element">
+        <button
+          mat-icon-button
+          aria-label="expand row"
+          (click)="toggle(element); $event.stopPropagation()"
+          class="example-toggle-button"
+          [class.example-toggle-button-expanded]="isExpanded(element)"
+        >
+          <mat-icon>keyboard_arrow_down</mat-icon>
+        </button>
+      </td>
+    </ng-container>
+
+    <!-- Expanded Content Column - The detail row is made up of this one column that spans across all columns -->
+    <ng-container matColumnDef="expandedDetail">
+      <td
+        mat-cell
+        *matCellDef="let element"
+        [attr.colspan]="columnsToDisplayWithExpand.length"
+      >
+        <div
+          class="example-element-detail-wrapper"
+          [class.example-element-detail-wrapper-expanded]="isExpanded(element)"
+        >
+          <div class="example-element-detail">
+            <div class="example-element-diagram">
+              <div class="example-element-position">{{ element.marca }}</div>
+              <div class="example-element-symbol">{{ element.modelo }}</div>
+            </div>
+            <div
+              class="example-element-description flex flex-wrap justify-around mx-6"
+            >
+              <!--sdede aqui-->
+
+              <div class="overflow-x-auto">
+                <div class="w-full flex justify-between items-center " >
+                  <table class=" bg-white shadow-md rounded-xl">
+                    <thead>
+                      <tr class="bg-blue-gray-100 text-gray-700">
+                        <th class="py-3 px-4 text-left">Cuota Inicial</th>
+                        <th class="py-3 px-4 text-left">16 cuotas</th>
+                        <th class="py-3 px-4 text-left">20 cuotas</th>
+                        <th class="py-3 px-4 text-left">24 cuotas</th>
+                        <th class="py-3 px-4 text-left">Fecha De Creacion</th>
+                        <th class="py-3 px-4 text-left"> Accioness</th>
+                        <th class="py-3 px-4 text-left"> Aliado asignado</th>
+                        
+                      </tr>
+                    </thead>
+                    <tbody class="text-blue-gray-900">
+                      @for (item of element.tablaDeCuotas; track $index) {
+
+                      <tr class="border-b border-blue-gray-200">
+                        <td class="py-3 px-4">{{ item.inicial }}</td>
+                        <td class="py-3 px-4">
+                          {{ item.montoPorCuotasTipoA }}
+                        </td>
+                        <td class="py-3 px-4">
+                          {{ item.montoPorCuotasTipoB }}
+                        </td>
+                        <td class="py-3 px-4">
+                          {{ item.montoPorCuotasTipoC }}
+                        </td>
+                        <td class="py-3 px-4">
+                          {{ item.fechaDeCreacion }}
+                        </td>
+                        <td class="py-3 px-4">
+                          <button mat-stroked-button>asignar aliado</button>
+                          <button mat-stroked-button class="my-3">Editar Inicial</button>
+                        </td>
+                        <td class="py-3 px-4 flex flex-col justify-between">
+                          @for (item of item.aliadoAsignado; track $index) {
+
+                            <span>{{item.apellido}}</span>
+                          }
+                          
+                        </td>
+                      </tr>
+                      }
+                      <!-- Add more rows as needed -->
+                    </tbody>
+                  </table>
+
+                  <div  class="flex flex-col justify-between ml-7">
+                    <button mat-stroked-button class="my-3">Editar Precio</button>
+               
+                    <button mat-stroked-button class="my-3">agregar inicial personalizada</button>
+                  </div>
+
+                  
+                </div>
+              </div>
+
+              <!--sdede aqui-->
+            </div>
+          </div>
+        </div>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="columnsToDisplayWithExpand"></tr>
+    <tr
+      mat-row
+      *matRowDef="let element; columns: columnsToDisplayWithExpand"
+      class="example-element-row"
+      [class.example-expanded-row]="isExpanded(element)"
+      (click)="toggle(element)"
+    ></tr>
+    <tr
+      mat-row
+      *matRowDef="let row; columns: ['expandedDetail']"
+      class="example-detail-row"
+    ></tr>
+  </table>
+</div>
