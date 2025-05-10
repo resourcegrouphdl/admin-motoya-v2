@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -15,6 +15,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { ColaboradoresService } from '../../services/colaboradores/colaboradores.service';
 import { Router } from '@angular/router';
 import { TransitionService } from '../../shared/transition.service';
+import { AutenticacionService } from '../../services/auth/autenticacion.service';
 
 @Component({
   selector: 'app-crear-colaboradores',
@@ -35,16 +36,19 @@ import { TransitionService } from '../../shared/transition.service';
 })
 export class CrearColaboradoresComponent implements OnInit {
 
+  
+
   direccionMaps: string = '';
   formularioDeColaboradores: FormGroup;
   isUploading: boolean = false; // Controla el estado del loader
 
-  constructor(private fb: FormBuilder, private colaboradoresServices: ColaboradoresService ,private router: Router , private transitionService: TransitionService) {
+  constructor(private fb: FormBuilder, private colaboradoresServices: ColaboradoresService ,private router: Router , private transitionService: TransitionService, private auth:AutenticacionService) {
     this.formularioDeColaboradores = this.fb.group({
       razonSocial: [''],
       direccion: [''],
       telefono: [''],
       correo: [''],
+      contrasena: [''],
       horarioApertura: [''],
       horarioCierre: [''],
       imagen: [''],
@@ -80,5 +84,9 @@ export class CrearColaboradoresComponent implements OnInit {
 
   navegarPuntodeVenta(){
     this.router.navigate(['colaboradores/list-colaboradores']);
+  }
+
+  async crearCuenta(email:string){
+    const uuidUsuario = await this.auth.crearUsuarioConEmail(this.formularioDeColaboradores.value.email,this.formularioDeColaboradores.value.contrasena);   
   }
 }

@@ -6,6 +6,7 @@ export interface Vendedor {
     telefono1:string;
     telefono2:string;
     correo:string;
+    contrasena:string
     direccion:string;
     puntoDeVentaAsociado:string;
     imgenPerfil:string;

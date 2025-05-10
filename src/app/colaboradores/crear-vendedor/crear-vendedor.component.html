@@ -57,6 +57,11 @@
         </mat-form-field>
 
         <mat-form-field>
+            <mat-label>CONTRASEÑA</mat-label>
+            <input matInput formControlName="contrasena" />
+        </mat-form-field>
+
+        <mat-form-field>
           <mat-label>DIRECCION</mat-label>
           <input matInput formControlName="direccion" />
         </mat-form-field>
@@ -86,9 +91,25 @@
 
     </form>
 
-    @if (isSAveForm) {
-      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    
+
+    
+    @if(showSuccessMessage){
+        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-lg">
+        <p class="text-lg font-semibold">cuenta Status: Creado con exito</p>
+        <p>su cuenta ha sido creada con exito, se enviara un aaviso al correo electrnico</p>
+        </div>
+    }
+    @if(showErrorMessage){
+      <div class="bg-green-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg">
+    <p class="text-lg font-semibold"> Status: Eror al crear cuenta</p>
+    <p>error al crrar la cuenta  , consulte con soporte para crearla manualmente si es nesesario</p>
+    </div>
     }
 
+    @if (isSavingForm) {
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    }
+      
     
   </div>
