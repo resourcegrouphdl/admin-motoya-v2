@@ -13,7 +13,7 @@ import { CrearColaboradoresComponent } from './colaboradores/crear-colaboradores
 import { ListaVendedoresComponent } from './colaboradores/lista-vendedores/lista-vendedores.component';
 import { CrearVendedorComponent } from './colaboradores/crear-vendedor/crear-vendedor.component';
 import { ListaDePreciosWebComponent } from './web_config_module/lista-de-precios-web/lista-de-precios-web.component';
-
+import { FrontConfigComponent } from './web_config_module/front-config/front-config.component';
 
 
 export const routes: Routes = [
@@ -145,7 +145,7 @@ export const routes: Routes = [
   },
   {
     path: 'web',
-    component: ListaDePreciosWebComponent,
+    component: FrontConfigComponent,
     data: {
       title: 'Web',
     },
