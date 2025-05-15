@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { BehaviorSubject, catchError, map, Observable, of, tap } from 'rxjs';
-import { ImagenesDelSlide } from '../../web_config_module/front-config/front-config.component';
+import { ImagenesDelBaner, ImagenesDelSlide } from '../../web_config_module/front-config/front-config.component';
 import { addDoc, collection, collectionData, deleteDoc, doc, Firestore } from '@angular/fire/firestore';
 
 @Injectable({
@@ -10,6 +10,7 @@ export class SlidesService {
 
     private _firestore = inject(Firestore);
     private slidesCache$ = new BehaviorSubject<ImagenesDelSlide[] | null>(null);
+    private banersCache$ = new BehaviorSubject<ImagenesDelBaner[] | null>(null);
 
   constructor() { }
 
@@ -50,6 +51,47 @@ export class SlidesService {
     const slidesCollection = collection(this._firestore, tableName);
     addDoc(slidesCollection, slide).then(() => {});
     this.refreshSlides();
+  }
+
+
+
+  getAllBaners(): Observable<ImagenesDelBaner[]> {
+    if (this.banersCache$.value) {
+      return of(this.banersCache$.value);
+    }
+    return collectionData(collection(this._firestore, 'baners'), { idField: 'id' }).pipe(
+      map((data) => data.map((doc) => doc as ImagenesDelBaner)),
+      tap((baners) => {
+        this.banersCache$.next(baners);
+      }),
+      catchError((error) => {
+        console.error('Error al cargar las baners', error);
+        return of([]);
+      })
+    );
+  }
+
+  async borraBaner(id:string):Promise<void>{
+    try{
+      const docRef = doc(this._firestore, `baners/${id}`);
+      await deleteDoc(docRef);
+      console.log(`Documento con ID ${id} eliminado correctamente.`);
+      this.refreshSlides();
+
+    }catch(error){
+      console.error('Error al eliminar el documento:', error);
+      throw error;
+    }
+  }
+
+  async guardarBanerEnBaseDeDatos(slide:any,tableName:string):Promise<void>{
+    const slidesCollection = collection(this._firestore, tableName);
+    addDoc(slidesCollection, slide).then(() => {});
+    this.refreshSlides();
+  }
+
+   refreshBaner(): void {
+    this.banersCache$.next(null);
   }
 
 }
