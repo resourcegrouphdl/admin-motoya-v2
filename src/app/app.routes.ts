@@ -109,7 +109,7 @@ export const routes: Routes = [
   },
   {
     path: 'creditos',
-    component: ProximamenteComponent,
+    component: ListaDePreciosWebComponent,
     data: {
       title: 'Créditos',
     },
