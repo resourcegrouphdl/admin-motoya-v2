@@ -36,19 +36,53 @@ function createWindow () {
 }
   
 app.whenReady().then(() => {
-    createWindow()
-  
-    app.on('activate', () => {
-      if (BrowserWindow.getAllWindows().length === 0) {
-        createWindow()
-      }
-    })
-})
-  
-app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') {
-      app.quit()
-    }
-})
+  createWindow();
 
+  // === ACTUALIZACIONES AUTOMÁTICAS DESDE GITHUB ===
+  if (process.platform === 'win32') {
+    const server = 'https://update.electronjs.org';
+    const feed = `${server}/resourcegrouphdl/admin-motoya-v2`;
+
+    autoUpdater.setFeedURL({ url: feed });
+
+    autoUpdater.checkForUpdates();
+
+    autoUpdater.on('update-available', () => {
+      dialog.showMessageBox({
+        type: 'info',
+        title: 'Actualización disponible',
+        message: 'Se encontró una nueva versión. Se descargará en segundo plano.',
+      });
+    });
+
+    autoUpdater.on('update-downloaded', () => {
+      dialog.showMessageBox(
+        {
+          type: 'info',
+          title: 'Actualización lista',
+          message: 'La nueva versión ha sido descargada. ¿Deseas reiniciar ahora para aplicar la actualización?',
+          buttons: ['Reiniciar', 'Después'],
+        }
+      ).then((result) => {
+        if (result.response === 0) autoUpdater.quitAndInstall();
+      });
+    });
+
+    autoUpdater.on('error', (err) => {
+      console.error('Error al actualizar:', err);
+    });
+  }
+
+  app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
+  });
+});
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
+});
 
