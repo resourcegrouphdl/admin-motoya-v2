@@ -1,0 +1,33 @@
+<div class="w-full h-full flex flex-col items-center justify-center">
+  <div>
+    <h2
+      class="text-center uppercase font-semibold text-4xl mt-5 mb-5 text-gray-400"
+    >
+      Resumen del sistema
+    </h2>
+  </div>
+  <div class="flex flex-wrap gap-10 p-10 justify-center items-center">
+    <!--  cards de resumen  -->
+
+    @for (item of menuItems; track $index) {
+
+    <mat-card class="example-card" appearance="outlined">
+      <mat-card-header>
+        <mat-card-title-group>
+          <mat-card-title>{{item.title}}</mat-card-title>
+          <mat-card-subtitle>{{item.name}}</mat-card-subtitle>
+
+          
+            <mat-icon class="text-2xl">{{item.icon}}</mat-icon>
+        
+         
+        </mat-card-title-group>
+      </mat-card-header>
+      <mat-card-content>
+        {{ item.resumen }}
+      </mat-card-content>
+    </mat-card>
+
+}
+  </div>
+</div>
