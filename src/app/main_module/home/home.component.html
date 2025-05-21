@@ -1,34 +1,97 @@
-<body>
-  <div class="flex flex-wrap gap-5 bg-gray-800 p-6">
-    @for (item of list_modules; track $index) {
-      <div class=" card bg-gray-700 rounded-lg shadow-md p-6 w-[300px] h-[350px]" (click)="navigateWithTransition(item.route)" >
-        <div class="icon-container flex justify-center mb-3">
-          <mat-icon>{{item.icon}}</mat-icon>
-        </div>
+<div class="h-screen w-full bg-white relative flex overflow-hidden">
+  <!-- Sidebar -->
+  
 
-        <div class="title text-center text-lg font-bold text-white ">
-          <h3>{{ item.name }}</h3>
-        </div>
+  <aside class="w-64 bg-gray-900 text-white">
+            <div class="p-4 border-b border-gray-800">
+                <div class="flex items-center justify-between">
+                    <img [src]="logo"  alt="Logo" class="bg-cover overflow-hidden w-full">
+                   
+                </div>
+            </div>
 
-        <div class="content mt-3 text-gray-300">
-          <ul class="list-disc pl-5">
-            @for (child of item.children; track $index) {
-              <li>{{ child.name }}</li>
-            }
-          </ul>
-        </div>
+            <!-- Search Bar -->
+            <div class="p-4">
+                <div class="relative">
+                    <input type="text" class="w-full bg-gray-800 text-white rounded-md pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Search...">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
 
-        <div class="link mt-4 text-center">
-          <p>
-            <a 
-              (click)="navigateWithTransition(item.route)" 
-              class="text-blue-400 font-semibold cursor-pointer"
-            >
-              IR AL MÓDULO &rarr;
+            <nav class="mt-5 px-2 border-t-2 border-gray-600 border-b-2 ">
+                <!-- Main Navigation -->
+                <div class="space-y-4">
+                    <!-- Dashboard -->
+                 
+                    @for (item of itemsDelMenu; track $index) {
+
+                    <!-- Projects -->
+                    <a [routerLink]="['{{item.route}}']" routerLinkActive="router-link-active"  class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white group transition-all duration-200">
+                        <mat-icon>{{item.icon}}</mat-icon>
+                        {{item.title}}
+                    </a>
+                }
+                   
+                </div>
+            </nav>
+
+            <!-- User Profile -->
+            <div class="mt-auto p-4 border-t border-gray-800">
+                <div class="flex items-center">
+                    <img class="h-8 w-8 rounded-full" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="">
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-white">{{userActive?.email}}</p>
+                        <p class="text-xs text-gray-400">cargo</p>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="w-full mt-32 flex justify-center items-center">
+                <a mat-fab extended routerLink="/login" class="w-full mt-32">
+                <mat-icon>exit_to_app</mat-icon>
+                Log Out
             </a>
-          </p>
+            </div>
+            
+        </aside>
+
+  <div class="w-full h-full flex flex-col justify-between">
+    <!-- Header -->
+    <header
+      class="h-16 w-full flex items-center relative justify-end px-5 space-x-10 bg-gray-900"
+    >
+      <!-- Informação -->
+      <div class="flex flex-shrink-0 items-center space-x-4 text-white">
+        <!-- Texto -->
+        <div class="flex flex-col items-end">
+          <!-- Nome -->
+          <div class="text-md font-medium">{{userActive?.email}}</div>
+          <!-- Título -->
+          <div class="text-sm font-regular">Administrador</div>
+        </div>
+
+        <!-- Foto -->
+        <div
+          class="h-10 w-10 rounded-full cursor-pointer bg-gray-200 border-2 border-blue-400"
+        ></div>
+      </div>
+    </header>
+
+    <!-- cuerpo principal  -->
+    <main class="max-w-full h-full flex relative overflow-y-hidden">
+      <!-- Container -->
+      <div class="w-full  rounded-tl bg-gray-600 overflow-y-scroll">
+        <!-- Container -->
+
+        <div [ngClass]="fadeState" class="w-full h-full  bg-gray-800">
+          <router-outlet (activate)="onActivate()"></router-outlet>
         </div>
       </div>
-    }
+    </main>
   </div>
-</body>
+</div>

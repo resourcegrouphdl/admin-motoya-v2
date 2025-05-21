@@ -1,40 +1,39 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, dialog } = require('electron');
+const { autoUpdater } = require('electron-updater');
 const path = require('path');
 const url = require('url');
 
 let mainWindow;
 
 function createWindow () {
-    const win = new BrowserWindow({
-      width: 1920,
-      height: 1080,
-      webPreferences: {
-        webSecurity: false, 
-        nodeIntegration: true,
-        preload: path.join(__dirname, 'preload.js')
-      }
+  mainWindow = new BrowserWindow({
+    width: 1920,
+    height: 1080,
+    webPreferences: {
+      webSecurity: false, 
+      nodeIntegration: true,
+      preload: path.join(__dirname, 'preload.js')
+    }
+  });
+
+  mainWindow.loadURL(
+    url.format({
+      pathname: path.join(__dirname, '/dist/motoyaapp/browser/index.html'),
+      protocol: 'file:',
+      slashes: true
     })
+  );
 
-    win.loadURL(
-        url.format({
-            pathname: path.join(__dirname, '/dist/motoyaapp/browser/index.html'),
-            protocol: 'file:',
-            slashes: true
-        })
-    )
+  mainWindow.on('closed', function () {
+    mainWindow = null;
+  });
 
-    win.on('closed', function () {
-        mainWindow = null;
-    })
-
-     // Deshabilitar el menú contextual
-     win.webContents.on('context-menu', (e) => {
-      e.preventDefault();
-      });
-
-    mainWindow = win;
+  // Deshabilitar menú contextual (clic derecho)
+  mainWindow.webContents.on('context-menu', (e) => {
+    e.preventDefault();
+  });
 }
-  
+
 app.whenReady().then(() => {
   createWindow();
 
@@ -56,28 +55,40 @@ app.whenReady().then(() => {
     });
 
     autoUpdater.on('update-downloaded', () => {
-      dialog.showMessageBox(
-        {
-          type: 'info',
-          title: 'Actualización lista',
-          message: 'La nueva versión ha sido descargada. ¿Deseas reiniciar ahora para aplicar la actualización?',
-          buttons: ['Reiniciar', 'Después'],
-        }
-      ).then((result) => {
+      dialog.showMessageBox({
+        type: 'info',
+        title: 'Actualización lista',
+        message: 'La nueva versión ha sido descargada. ¿Deseas reiniciar ahora para aplicar la actualización?',
+        buttons: ['Reiniciar', 'Después'],
+      }).then((result) => {
         if (result.response === 0) autoUpdater.quitAndInstall();
       });
+
+      // ✅ Notificar a Angular que terminó la actualización
+      if (mainWindow) {
+        mainWindow.webContents.send('update-finished');
+      }
     });
 
     autoUpdater.on('error', (err) => {
       console.error('Error al actualizar:', err);
+      if (mainWindow) {
+        mainWindow.webContents.send('update-finished');
+      }
+    });
+
+    autoUpdater.on('update-not-available', () => {
+      if (mainWindow) {
+        mainWindow.webContents.send('update-finished');
+      }
     });
   }
+});
 
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
-    }
-  });
+app.on('activate', () => {
+  if (BrowserWindow.getAllWindows().length === 0) {
+    createWindow();
+  }
 });
 
 app.on('window-all-closed', () => {
@@ -85,4 +96,3 @@ app.on('window-all-closed', () => {
     app.quit();
   }
 });
-

@@ -14,6 +14,10 @@ import { ListaVendedoresComponent } from './colaboradores/lista-vendedores/lista
 import { CrearVendedorComponent } from './colaboradores/crear-vendedor/crear-vendedor.component';
 import { ListaDePreciosWebComponent } from './web_config_module/lista-de-precios-web/lista-de-precios-web.component';
 import { FrontConfigComponent } from './web_config_module/front-config/front-config.component';
+import { LoadingComponent } from './common/loading/loading.component';
+import { LoginComponent } from './auth_module/login/login.component';
+import { authGuard } from './guardas/auth.guard';
+import { DashboardComponent } from './main_module/dashboard/dashboard.component';
 
 
 export const routes: Routes = [
@@ -24,10 +28,41 @@ export const routes: Routes = [
   },
   {
     path: 'home',
-    component: HomeComponent,
+    component: LoadingComponent,
     data: {
       title: 'Home',
     },
+
+  },
+  {
+    path: 'login',
+    
+    component: LoginComponent,
+    data: {
+      title: 'Login',
+    },
+  },
+  {
+    path: 'dashboard',
+    //canActivate: [authGuard],
+    component: HomeComponent,
+    data: {
+      title: 'Dashboard',
+    },
+    children: [
+      {
+        path: '',
+        redirectTo: 'panelmain',
+        pathMatch: 'full',
+      },
+      {
+        path: 'panelmain',
+        component: DashboardComponent,
+        data: {
+          title: 'panel inicial',
+        },
+      },
+    ]
   },
   {
     path: 'colaboradores',
