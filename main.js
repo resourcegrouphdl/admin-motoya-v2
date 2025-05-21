@@ -39,12 +39,8 @@ app.whenReady().then(() => {
 
   // === ACTUALIZACIONES AUTOMÁTICAS DESDE GITHUB ===
   if (process.platform === 'win32') {
-    const server = 'https://update.electronjs.org';
-    const feed = `${server}/resourcegrouphdl/admin-motoya-v2`;
+   autoUpdater.checkForUpdates();
 
-    autoUpdater.setFeedURL({ url: feed });
-
-    autoUpdater.checkForUpdates();
 
     autoUpdater.on('update-available', () => {
       dialog.showMessageBox({

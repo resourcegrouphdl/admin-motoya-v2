@@ -1,27 +1,28 @@
 import { Component } from '@angular/core';
 import { RouterOutlet, Router } from '@angular/router';
-import { MatIconModule } from '@angular/material/icon';
 import { NgClass } from '@angular/common';
-import { MatTooltipModule } from '@angular/material/tooltip';
+
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, MatIconModule, NgClass, MatTooltipModule],
+  imports: [RouterOutlet, NgClass],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
 })
 export class AppComponent {
   title = 'motoyaapp';
   fadeState: 'none' | 'fade-in' | 'fade-out' = 'none';
+  appVersion: string = '';
 
-  constructor(private router: Router) {}
-
-  navegar(string: string) {
-    console.log(string);
-
-    this.router.navigate([string]);
+  constructor() {
+    if (window && window['appVersion']) {
+      this.appVersion = window['appVersion'].get();
+    }
   }
+
+ 
+  
 
   
 }

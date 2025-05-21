@@ -66,8 +66,14 @@
     },
     "publish": [
       {
-        "provider": "github"
+        "provider": "github",
+        "owner": "resourcegrouphdl",
+        "repo": "admin-motoya-v2"
       }
     ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/resourcegrouphdl/admin-motoya-v2"
   }
 }
