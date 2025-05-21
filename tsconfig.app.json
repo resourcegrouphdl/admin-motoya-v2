@@ -8,11 +8,14 @@
   },
   "files": [
     "src/main.ts",
-    "src/**/*.d.ts",
-    "src/**/*.ts"
+    
   ],
   "include": [
-    "src/**/*.d.ts"
+    "src/**/*.d.ts",
+    
 
+  ],
+  "exclude": [
+    "**/*.spec.ts"
   ]
 }

@@ -54,7 +54,7 @@ export class RegistroComponent implements OnInit {
   }
   
   editarProducto(id: string) {
-    this.router.navigate(['/inventario/crear'], { queryParams: { id } });
+    this.router.navigate(['/dashboard/motocicletas/crear'], { queryParams: { id } });
     
   }
 
@@ -65,7 +65,7 @@ export class RegistroComponent implements OnInit {
   
 
   agregarProducto() {
-    this.router.navigate(['/inventario/crear']);
+    this.router.navigate(['/dashboard/motocicletas/crear']);
   }
 
   sanitizeImage(url: string): SafeResourceUrl {
@@ -73,7 +73,7 @@ export class RegistroComponent implements OnInit {
   }
   
   navigateToFichaTecnica(id: string) {
-    this.router.navigate(['/inventario/crear-ficha-tecnica'], { queryParams: { id } });
+    this.router.navigate(['/dashboard/motocicletas/crear-ficha-tecnica'], { queryParams: { id } });
   }
 
   

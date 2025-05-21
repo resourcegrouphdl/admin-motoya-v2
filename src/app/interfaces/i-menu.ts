@@ -15,7 +15,7 @@ export interface IMenu {
             title : 'inicio',
             name : 'dashboard',
             icon : 'dashboard',
-            route : '/',
+            route : '/dashboard/panelmain',
             resumen :' pagina principal del sistema'
         },
 
@@ -23,7 +23,7 @@ export interface IMenu {
             title : 'aliados',
             name : 'aliado comercial',
             icon : 'group',
-            route : '/vendedores',
+            route : '/dashboard/vendedores',
             resumen: 'gestion de aliados comerciales'
         },
 
@@ -31,14 +31,14 @@ export interface IMenu {
             title : 'tiendas',
             name : 'gestion',
             icon : 'house',
-            route : '/clientes',
+            route : '/dashboard/tiendas',
             resumen: 'gestion de tiendas asociadas'
         },
         {
             title : 'Motocicletas',
             name : 'gestion de productos',
             icon : 'directions_bike',
-            route : '/productos',
+            route : '/dashboard/motocicletas',
             resumen: 'gestion de productos en  inventario'
         },
 

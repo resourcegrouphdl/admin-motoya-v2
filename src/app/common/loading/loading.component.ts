@@ -33,7 +33,8 @@ export class LoadingComponent implements OnInit{
    constructor(private router: Router) {}
 
    ngOnInit(): void {
-    this.listenForUpdateFinished()
+    //this.listenForUpdateFinished()
+    this.transitionToLogin() 
   }
 
   listenForUpdateFinished() {

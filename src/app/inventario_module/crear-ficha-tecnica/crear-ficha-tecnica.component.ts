@@ -31,7 +31,6 @@ export class CrearFichaTecnicaComponent implements OnInit {
       cilindrada: [''],
       potencia: [''],
       torque: [''],
-      combustible: [''],
       tanque: [''],
       rendimiento: [''],
       autonomia: [''],
@@ -43,6 +42,11 @@ export class CrearFichaTecnicaComponent implements OnInit {
       peso: [''],
       velocidadMaxima: [''],
       dimenciones: [''],
+      ruedaDelantera: [''],
+      ruedaTrasera: [''],
+      motor: [''],
+      arranque: ['']
+
        });
 
        
@@ -64,7 +68,7 @@ export class CrearFichaTecnicaComponent implements OnInit {
 
     await this.actualizarIdProducto(); // Actualizar el ID del producto después de guardar la ficha técnica
     this.isloading = false; // Cambiar el estado de carga a falso después de guardar la ficha técnica
-    this.router.navigate(['/inventario']);
+    this.router.navigate(['/dashboard/motocicletas/nuevo']);
 
 
    }

@@ -67,4 +67,7 @@ export class HomeComponent implements OnInit {
     
     
   }
+  navigate(ruta:string){
+    this._router.navigate([ruta])
+  }
 }

@@ -10,8 +10,18 @@
   class="flex flex-wrap gap-8 justify-center items-center w-full max-w-4xl p-5 bg-white rounded-lg shadow-md">
 
         <mat-form-field>
+            <mat-label>Motor</mat-label>
+            <input matInput formControlName="motor" >
+        </mat-form-field>
+
+        <mat-form-field>
             <mat-label>cilindrada</mat-label>
             <input matInput formControlName="cilindrada" >
+        </mat-form-field>
+
+        <mat-form-field>
+            <mat-label>Arranque</mat-label>
+            <input matInput formControlName="arranque" >
         </mat-form-field>
 
         <mat-form-field>
@@ -22,11 +32,6 @@
         <mat-form-field>
             <mat-label>torque</mat-label>
             <input matInput formControlName="torque" >
-        </mat-form-field>
-
-        <mat-form-field>
-            <mat-label>conbustible</mat-label>
-            <input matInput formControlName="combustible" >
         </mat-form-field>
 
         <mat-form-field>
@@ -52,6 +57,16 @@
         <mat-form-field>
             <mat-label>suspencion trasera</mat-label>
             <input matInput formControlName="suspencionTrasera" >
+        </mat-form-field>
+
+        <mat-form-field>
+            <mat-label>Rueda Delantera</mat-label>
+            <input matInput formControlName="ruedaDelantera" >
+        </mat-form-field>
+
+        <mat-form-field>
+            <mat-label>Rueda Posterior</mat-label>
+            <input matInput formControlName="ruedaTrasera" >
         </mat-form-field>
 
         <mat-form-field>
@@ -109,20 +124,5 @@
 </div>
 
 
-    id?: string;
-    cilindrada: string;
-    potencia: string;
-    torque: string;
-    conbustible: string;
-    tanque: string;
-    rendimiento: string;
-    autonomia: string;
-    suspencionDelantera: string;
-    suspencionTrasera: string;
-    frenoDelantero: string;
-    frenoTrasero: string;
-    transmision: string;
-    peso: string;
-    velocidadMaxima: string;
-    dimenciones: string;
+    
   

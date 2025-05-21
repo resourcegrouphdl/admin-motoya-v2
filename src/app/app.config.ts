@@ -23,7 +23,6 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    provideClientHydration(),
     provideHttpClient(),
     // Inicialización de Firebase
     provideFirebaseApp(() =>

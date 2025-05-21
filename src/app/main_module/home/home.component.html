@@ -30,7 +30,7 @@
                     @for (item of itemsDelMenu; track $index) {
 
                     <!-- Projects -->
-                    <a [routerLink]="['{{item.route}}']" routerLinkActive="router-link-active"  class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white group transition-all duration-200">
+                    <a (click)="navigate(item.route)"  class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white group transition-all duration-200">
                         <mat-icon>{{item.icon}}</mat-icon>
                         {{item.title}}
                     </a>
