@@ -69,10 +69,32 @@ export const routes: Routes = [
       },
       {
         path: 'tiendas',
-        component: TiendasComponent,
+        component: ColaboradoresHomeComponent,
         data: {
           title: 'Tiendas',
         },
+        children: [
+          {
+            path: '',
+            redirectTo: 'list-tiendas',
+            pathMatch: 'full',
+
+          },
+          {
+            path: 'list-tiendas',
+            component: TiendasComponent,
+          },
+
+          {
+            path: 'crear-tienda',
+            component: CrearColaboradoresComponent,
+          },
+          {
+            path: 'info-tieneda',
+            component: ProximamenteComponent,
+          },
+          
+        ],
       },
       {
         path: 'motocicletas',
@@ -106,6 +128,14 @@ export const routes: Routes = [
           },
         ],
       },
+
+      {
+        path: 'config-web',
+        component: FrontConfigComponent,
+        data: {
+          title: 'Config Web',
+        },
+      },
     ],
   },
   {
@@ -124,10 +154,7 @@ export const routes: Routes = [
         path: 'list-colaboradores',
         component: TiendasComponent,
       },
-      {
-        path: 'crear-colaborador',
-        component: CrearColaboradoresComponent,
-      },
+
       {
         path: 'modificar-colaborador',
         component: ProximamenteComponent,
@@ -143,7 +170,6 @@ export const routes: Routes = [
     ],
   },
 
-  
   {
     path: 'web',
     component: FrontConfigComponent,

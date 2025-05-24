@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, inject, Inject, OnInit } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -35,14 +35,21 @@ import { AutenticacionService } from '../../services/auth/autenticacion.service'
   styleUrl: './crear-colaboradores.component.css',
 })
 export class CrearColaboradoresComponent implements OnInit {
+  private _authService = inject(AutenticacionService);
 
-  
+  isSavingForm: boolean = false;
 
   direccionMaps: string = '';
   formularioDeColaboradores: FormGroup;
   isUploading: boolean = false; // Controla el estado del loader
 
-  constructor(private fb: FormBuilder, private colaboradoresServices: ColaboradoresService ,private router: Router , private transitionService: TransitionService, private auth:AutenticacionService) {
+  constructor(
+    private fb: FormBuilder,
+    private colaboradoresServices: ColaboradoresService,
+    private router: Router,
+    private transitionService: TransitionService,
+    private auth: AutenticacionService
+  ) {
     this.formularioDeColaboradores = this.fb.group({
       razonSocial: [''],
       direccion: [''],
@@ -54,39 +61,53 @@ export class CrearColaboradoresComponent implements OnInit {
       imagen: [''],
     });
   }
-  ngOnInit(): void {
-   
-  }
+  ngOnInit(): void {}
 
   async onSubmit() {
- 
-      try {
-        // Intent
-       this.isUploading = true;
-       // amos guardar los datos de colaboradores
-       await this.colaboradoresServices.seveFormularios(this.formularioDeColaboradores.value, 'tienda');
-        console.log('Datos enviados correctamente:', this.formularioDeColaboradores.value);
-        this.router.navigate(['/colaboradores'])
+    if (this.isSavingForm) return; // Previene múltiples envíos simultáneos
+    this.isSavingForm = true;
 
-      } catch (error) {
-        // Capturamos y mostramos el error en caso de fallo
-        console.error('Error al enviar los datos:', error);
-      }finally{
-        this.transitionService.startFadeOut();
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        await this.router.navigate(['/list-colaboradores']);
-        this.formularioDeColaboradores.reset();
-        this.isUploading = false;
+    try {
+      if (this.formularioDeColaboradores.invalid) {
+        console.warn('Formulario inválido');
+        return;
       }
+
+      const uuidUsuario = await this.crearCuenta();
+      // Intent
+      this.isUploading = true;
+      // amos guardar los datos de colaboradores
+      await this.colaboradoresServices.seveFormularios(
+        this.formularioDeColaboradores.value,
+        'tienda'
+      );
+      console.log(
+        'Datos enviados correctamente:',
+        this.formularioDeColaboradores.value
+      );
+      //this.router.navigate(['ashboard/tiendas/list-tiendas'])
+    } catch (error) {
+      // Capturamos y mostramos el error en caso de fallo
+      console.error('Error al enviar los datos:', error);
+    } finally {
+      this.transitionService.startFadeOut();
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      await this.router.navigate(['dashboard/tiendas/list-tiendas']);
+      this.formularioDeColaboradores.reset();
+      this.isUploading = false;
+    }
   }
 
-  buscarUbicacion(){}
+  buscarUbicacion() {}
 
-  navegarPuntodeVenta(){
-    this.router.navigate(['colaboradores/list-colaboradores']);
+  navegarPuntodeVenta() {
+    this.router.navigate(['dashboard/tiendas/list-tiendas']);
   }
 
-  async crearCuenta(email:string){
-    const uuidUsuario = await this.auth.crearUsuarioConEmail(this.formularioDeColaboradores.value.email,this.formularioDeColaboradores.value.contrasena);   
+  async crearCuenta() {
+    return await this.auth.crearUsuarioConEmail(
+      this.formularioDeColaboradores.value.email,
+      this.formularioDeColaboradores.value.contrasena
+    );
   }
 }

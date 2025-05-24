@@ -49,7 +49,7 @@ export class CrearProductoComponent implements OnInit {
   formularioDeMotocicletas: FormGroup;
 
   listaDeMarcas: string[] = [
-    'JHC',
+    'JCH',
     'DUCONDA',
     'LIFAN',
     'BERA',
@@ -107,6 +107,7 @@ export class CrearProductoComponent implements OnInit {
       imagen_principal: [''],
       imagenes: this.fb.array([]),
       precioWeb: [''],
+      precioInicial: [''],
       precio: [''], //id del precio en la tabla de precios
       stock: [''], //id del stock en la tabla de stock
       destacado: [''],
@@ -254,8 +255,7 @@ export class CrearProductoComponent implements OnInit {
     this.isFading = true; // Iniciar la transición de salida
     // Crear un objeto con los valores del formulario, excluyendo los campos `imagenes` e `imagen_principal`
     const updatedData = { ...this.formularioDeMotocicletas.value };
-    delete updatedData.imagenes; // Excluir el campo `imagenes`
-    delete updatedData.imagen_principal; // Excluir el campo `imagen_principal`
+    
 
     // Guardar los cambios en la base de datos
     this.savefirestore
@@ -263,12 +263,13 @@ export class CrearProductoComponent implements OnInit {
       .then(() => {
         console.log('Producto actualizado correctamente.');
         this.isFading = true; // Iniciar la transición de salida
-        this.router.navigate(['/inventario']); // Redirigir a la tabla
+        this.router.navigate(['dashboard/motocicletas']); // Redirigir a la tabla
       })
       .catch((error) => {
         console.error('Error al actualizar el producto:', error);
       });
 
-    this.router.navigate(['/inventario']);
+    this.router.navigate(['dashboard/motocicletas']);
   }
+  
 }

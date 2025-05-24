@@ -41,6 +41,15 @@ export interface IMenu {
             route : '/dashboard/motocicletas',
             resumen: 'gestion de productos en  inventario'
         },
+        {
+            title : 'configuracion',
+            name : 'web front-end',
+            icon : 'settings',
+            route : '/dashboard/config-web',
+            resumen: 'configuracion de la pagina web'
+        },
+
+        
 
         
 

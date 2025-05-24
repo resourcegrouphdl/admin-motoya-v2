@@ -26,6 +26,7 @@
         <th scope="col" class="px-6 py-3">MARCA</th>
         <th scope="col" class="px-6 py-3">MODELO</th>
         <th scope="col" class="px-6 py-3">PRECIO</th>
+        <th scope="col" class="px-6 py-3">INICIAL</th>
         <th scope="col" class="px-6 py-3">DESTACADO</th>
         <th scope="col" class="px-6 py-3">PREC INT</th>
         <th scope="col" class="px-6 py-3">FICHA TÉC</th>
@@ -52,6 +53,7 @@
         <td class="px-6 py-4 font-semibold text-white shadow-md">{{item.marca}}</td>
         <td class="px-6 py-4 shadow-md"><span class="text-sm font-semibold text-white">{{item.modelo}}</span></td>
         <td class="px-6 py-4 font-semibold text-white shadow-md">{{item.precioWeb}}</td>
+        <td class="px-6 py-4 font-semibold text-white shadow-md">{{item.precioInicial}}</td>
         <td class="px-6 py-4 font-semibold text-white shadow-md">{{item.destacado}}</td>
         <td class="px-6 py-4 shadow-md"><span class="text-sm font-semibold text-white text-center cursor-pointer"><mat-icon>payments</mat-icon>
             @if (item.precio != '') {

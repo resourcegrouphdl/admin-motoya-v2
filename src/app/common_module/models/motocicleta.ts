@@ -8,6 +8,7 @@ export interface MotocicletaProduct {
   imagen_principal?: string;
   imagenes?: string[];
   precioWeb?: string; //id del precio en la tabla de precios
+  precioInicial: string;
   precio?: string; //id del precio en la tabla de precios
   stock?: string; //id del stock en la tabla de stock
   destacado?: string;

@@ -1,22 +1,6 @@
 <div class="shadow-md sm:rounded-lg w-full border-2 border-gray-700 dark:border-gray-700">
     <div class="flex justify-between items-center p-6 bg-gray-800 dark:bg-gray-800 border-b dark:border-gray-700">
-      <div class="flex  ">
-        <button
-        type="button"
-        class="border-2 border-gray-700 flex h-14  items-center justify-between px-6 py-2 text-sm font-semibold text-white bg-green-500  shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800"
-      >
-        <mat-icon>add</mat-icon>
-        <span class="ml-4" > PUNTO DE VENTA  </span>
-      </button>
-        <button
-        type="button"
-        (click)="navegarVendedores()"
-        class="border-2 border-gray-700 flex h-14  items-center justify-between px-6 py-2 text-sm font-semibold text-white bg-green-500  shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800"
-      >
-        <mat-icon>add</mat-icon>
-        <span class="ml-4"> COLABORADORES </span>
-      </button>
-      </div>
+      
       
       
   
@@ -36,17 +20,22 @@
       </button>
     </div>
 
+    @if (isLoading) {
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    }
+    
     <div class="flex flex-wrap gap-6 p-6">
 
         
         @for (item of puntosDeVenta; track $index) {
 
-            <mat-card class="w-[300px]" appearance="outlined">
+            <mat-card class="w-[250px]" appearance="outlined">
                 <mat-card-header>
                   <mat-card-title>{{item.razonSocial}}</mat-card-title>
                   <mat-card-subtitle>{{item.correo}}</mat-card-subtitle>
                 </mat-card-header>
-                <img mat-card-image [src]='item.imagen || mock' alt="Photo of a Shiba Inu">
+
+                <img mat-card-image [src]='item.imagen || mock' alt="photo de tineda" class="h-[300px]">
                 
                 <mat-card-actions class="flex justify-between">
                   <button (click)="verDetalles(item.id)" mat-button>MAS iNFORMACION</button>
