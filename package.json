@@ -1,7 +1,7 @@
 {
   "name": "motoyaapp",
   "main": "main.js",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "author": "lizana_dev",
   "description": "This project was generated with Angular CLI version 18.2.6.",
   "scripts": {
@@ -10,7 +10,7 @@
     "build": "ng build --configuration production",
     "electron": "npm run build && electron .",
     "electron:dev": "ng build --configuration development && electron .",
-    "dist": "npm run build && electron-builder"
+    "dist": "electron-builder --win --x64 --publish always"
   },
   "private": true,
   "dependencies": {

@@ -5,6 +5,10 @@ const url = require('url');
 
 let mainWindow;
 
+autoUpdater.logger = log;
+autoUpdater.logger.transports.file.level = 'info';
+log.info('MotoyaApp - Iniciando aplicación');
+
 function createWindow () {
   mainWindow = new BrowserWindow({
     width: 1920,
@@ -39,7 +43,7 @@ app.whenReady().then(() => {
 
   // === ACTUALIZACIONES AUTOMÁTICAS DESDE GITHUB ===
   if (process.platform === 'win32') {
-   autoUpdater.checkForUpdates();
+   autoUpdater.checkForUpdatesAndNotify();
 
 
     autoUpdater.on('update-available', () => {
@@ -92,3 +96,4 @@ app.on('window-all-closed', () => {
     app.quit();
   }
 });
+
