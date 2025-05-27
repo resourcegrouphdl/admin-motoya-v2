@@ -5,9 +5,7 @@ const url = require('url');
 
 let mainWindow;
 
-autoUpdater.logger = log;
-autoUpdater.logger.transports.file.level = 'info';
-log.info('MotoyaApp - Iniciando aplicación');
+
 
 function createWindow () {
   mainWindow = new BrowserWindow({

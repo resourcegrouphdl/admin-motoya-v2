@@ -56,8 +56,6 @@ export class CrearColaboradoresComponent implements OnInit {
       telefono: [''],
       correo: [''],
       contrasena: [''],
-      horarioApertura: [''],
-      horarioCierre: [''],
       imagen: [''],
     });
   }

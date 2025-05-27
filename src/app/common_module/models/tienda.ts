@@ -7,9 +7,8 @@ export interface Tienda {
     direccion: string[];
     telefono: string;
     correo: string;
-    horarioApertura: string;
-    horarioCierre: string;
     imagen: string;
+    contrasena: string;
     colaboradorId: string[];
 
 }
