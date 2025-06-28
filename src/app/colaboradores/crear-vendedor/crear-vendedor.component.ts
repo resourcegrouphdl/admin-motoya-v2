@@ -69,9 +69,8 @@ export class CrearVendedorComponent {
       correo: [''],
       contrasena: [''],
       direccion: [''],
-      puntoDeVentaAsociado: [''],
       imgenPerfil: [''],
-      listaPreciosAsociada: [''],
+      
  
     });
   }

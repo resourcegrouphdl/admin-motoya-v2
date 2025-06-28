@@ -35,10 +35,7 @@ export class TiendasComponent implements OnInit {
     this.router.navigate(['dashboard/tiendas/crear-tienda']);
     console.log('Editing product with ID:');
   }
-  navegarVendedores() {
-    this.router.navigate(['colaboradores/list-aliados']);
-    console.log('Editing product with ID:');
-  }
+ 
 
   async getAlltiendas() {
     await this.colaboradoresServices.getAllProducts('tienda').subscribe(
@@ -55,5 +52,11 @@ export class TiendasComponent implements OnInit {
   verDetalles(id: string): void {
     // Implement the logic to view details of a specific store
     console.log('Viewing details for store with ID:', id);
+  }
+
+  detallesComponentNavegar(id:string){
+    this.colaboradoresServices.setIdTienda(id);
+    this.router.navigate(['dashboard/tiendas/info-tienda']);
+
   }
 }

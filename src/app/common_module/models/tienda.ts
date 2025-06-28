@@ -1,3 +1,4 @@
+import { preciosPorTientda } from "../../colaboradores/detalles-asociados-atienda/detalles-asociados-atienda.component";
 import { Direccion } from "./direccion";
 
 export interface Tienda {
@@ -10,5 +11,8 @@ export interface Tienda {
     imagen: string;
     contrasena: string;
     colaboradorId: string[];
+    listaDeProductosPorFinanciar: preciosPorTientda[]
+
+    
 
 }

@@ -48,6 +48,22 @@ export interface IMenu {
             route : '/dashboard/config-web',
             resumen: 'configuracion de la pagina web'
         },
+        {
+            title : 'reportes',
+            name : 'reportes',
+            icon : 'bar_chart',
+            route : '/dashboard/reportes',
+            resumen: 'gestion de reportes'
+        },
+        {
+            title : 'chat-aliados',
+            name : 'chat aliados',
+            icon : 'bar_chart',
+            route : '/dashboard/chat-aliados',
+            resumen: 'gestion de reportes'
+        }
+
+        
 
         
 

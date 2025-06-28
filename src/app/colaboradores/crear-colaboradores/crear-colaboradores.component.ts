@@ -57,6 +57,8 @@ export class CrearColaboradoresComponent implements OnInit {
       correo: [''],
       contrasena: [''],
       imagen: [''],
+      uidFirebase: [''],
+      rolesId: ['tienda'],
     });
   }
   ngOnInit(): void {}
@@ -71,13 +73,19 @@ export class CrearColaboradoresComponent implements OnInit {
         return;
       }
 
+      
+
       const uuidUsuario = await this.crearCuenta();
+      this.formularioDeColaboradores.patchValue({
+        uidFirebase: uuidUsuario,
+      });
+
       // Intent
       this.isUploading = true;
       // amos guardar los datos de colaboradores
-      await this.colaboradoresServices.seveFormularios(
+      await this.colaboradoresServices.saveFormulariosconuid(
         this.formularioDeColaboradores.value,
-        'tienda'
+        'tienda',uuidUsuario
       );
       console.log(
         'Datos enviados correctamente:',
@@ -104,7 +112,7 @@ export class CrearColaboradoresComponent implements OnInit {
 
   async crearCuenta() {
     return await this.auth.crearUsuarioConEmail(
-      this.formularioDeColaboradores.value.email,
+      this.formularioDeColaboradores.value.correo,
       this.formularioDeColaboradores.value.contrasena
     );
   }

@@ -26,8 +26,8 @@
 
   <div class="flex flex-wrap gap-1 p-1">
     @for (item of puntosDeVenta; track $index) {
-    <div
-      class="w-5/12 mx-auto bg-white rounded-xl shadow-md overflow-hidden"
+    <div (click)="detallesComponentNavegar(item.id)"
+      class="w-5/12 mx-auto bg-white rounded-xl shadow-md overflow-hidden cursor-pointer"
     >
       <div class="md:flex">
         <div class="md:shrink-0">
@@ -43,11 +43,11 @@
           >
             {{ item.razonSocial }}
           </div>
-          <a
-            href="#"
+          <p
+           
             class="block mt-1 text-lg leading-tight font-medium text-black hover:underline"
             >{{ item.correo }}
-          </a>
+          </p>
           <ul>
             @for (item of item.colaboradorId; track $index) {
             <li>vendedor</li>

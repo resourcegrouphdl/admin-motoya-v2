@@ -8,8 +8,6 @@ export interface Vendedor {
     correo:string;
     contrasena:string
     direccion:string;
-    puntoDeVentaAsociado:string;
     imgenPerfil:string;
-    listaPreciosAsociada:string;
-
+   
 }

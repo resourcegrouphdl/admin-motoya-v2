@@ -18,6 +18,8 @@ import { LoadingComponent } from './common/loading/loading.component';
 import { LoginComponent } from './auth_module/login/login.component';
 import { authGuard } from './guardas/auth.guard';
 import { DashboardComponent } from './main_module/dashboard/dashboard.component';
+import { DetallesAsociadosATiendaComponent } from './colaboradores/detalles-asociados-atienda/detalles-asociados-atienda.component';
+import { ChatComponent } from './common/chat/chat.component';
 
 export const routes: Routes = [
   {
@@ -78,7 +80,6 @@ export const routes: Routes = [
             path: '',
             redirectTo: 'list-tiendas',
             pathMatch: 'full',
-
           },
           {
             path: 'list-tiendas',
@@ -90,10 +91,9 @@ export const routes: Routes = [
             component: CrearColaboradoresComponent,
           },
           {
-            path: 'info-tieneda',
-            component: ProximamenteComponent,
+            path: 'info-tienda',
+            component: DetallesAsociadosATiendaComponent,
           },
-          
         ],
       },
       {
@@ -136,6 +136,28 @@ export const routes: Routes = [
           title: 'Config Web',
         },
       },
+      {
+        path: 'reportes',
+        component: ReportesHomeComponent,
+        children: [
+          {
+            path: '',
+            redirectTo: 'report-client',
+            pathMatch: 'full',
+          },
+          {
+            path: 'report-client',
+            component: ReportesClientesComponent,
+            data: {
+              title: 'Report Client',
+            },
+          },
+        ],
+      },
+      {
+        path: 'chat-aliados',
+        component: ChatComponent,
+      }
     ],
   },
   {
@@ -176,23 +198,5 @@ export const routes: Routes = [
     data: {
       title: 'Web',
     },
-  },
-  {
-    path: 'reportes',
-    component: ReportesHomeComponent,
-    children: [
-      {
-        path: '',
-        redirectTo: 'report-client',
-        pathMatch: 'full',
-      },
-      {
-        path: 'report-client',
-        component: ReportesClientesComponent,
-        data: {
-          title: 'Report Client',
-        },
-      },
-    ],
   },
 ];

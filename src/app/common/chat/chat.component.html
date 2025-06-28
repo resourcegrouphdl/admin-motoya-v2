@@ -1,0 +1,117 @@
+<div class="flex w-full h-full">
+  <!-- Sidebar -->
+  <div
+    class="w-[400px] h-full bg-gray-800 border-r border-gray-700 flex flex-col perspective-card"
+  >
+    <div class="card-3d h-full">
+      <!-- Header -->
+      <div class="p-4 border-b border-gray-700 glass-effect">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center space-x-3">
+            <div class="relative">
+              <img
+                [src]="imagenAvatar"
+                alt="Profile"
+                class="w-10 h-10 rounded-full ring-2 ring-green-400 floating"
+              />
+              <div
+                class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-gray-800 online-indicator"
+              ></div>
+            </div>
+            <div>
+              <p class="font-semibold text-white">Moto-ya</p>
+              <p class="text-xs text-gray-400">Administrador</p>
+            </div>
+          </div>
+          <div class="flex space-x-2">
+            <button
+              class="p-2 hover:bg-gray-700 rounded-full transition-colors"
+            >
+              <i class="fas fa-ellipsis-v text-gray-400"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Search -->
+        <div class="relative">
+          <input
+            type="text"
+            placeholder="Search or start new chat"
+            class="w-full bg-gray-700 text-white placeholder-gray-400 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-400 transition-all"
+          />
+          <i
+            class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+          ></i>
+        </div>
+      </div>
+
+      <!-- Chat List -->
+      <div class="flex-1 overflow-y-auto custom-scrollbar">
+        <!-- Chat Item 1 -->
+        <div
+          *ngFor="let chat of chats"
+          class="chat-hover p-4 border-b border-gray-700 cursor-pointer relative"
+          (click)="abrirChat(chat.uid)"
+        >
+          <div class="flex items-center space-x-3">
+            <div class="relative">
+              <img
+                [src]="chat.fotoUrl"
+                alt="{{ chat.nombre }}"
+                class="w-12 h-12 rounded-full"
+              />
+              <div
+                class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-gray-800"
+              ></div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex justify-between items-start">
+                <p class="font-semibold text-white truncate">
+                  {{ chat.nombre }}
+                </p>
+                <span class="text-xs text-gray-400">
+                  {{ chat.horaUltimoMensaje }}
+                </span>
+              </div>
+              <div class="flex justify-between items-center">
+                <p class="text-sm text-gray-400 truncate">
+                  {{ chat.ultimoMensaje }}
+                </p>
+                <div
+                  *ngIf="chat.noLeidos > 0"
+                  class="flex items-center space-x-1"
+                >
+                  <div
+                    class="w-5 h-5 bg-green-400 rounded-full flex items-center justify-center"
+                  >
+                    <span class="text-xs text-black font-bold">{{
+                      chat.noLeidos
+                    }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="w-full h-full flex flex-col">
+   <app-chat-area  *ngIf="selectedChatUid" [uidUsuario]="selectedChatUid"></app-chat-area>
+  </div>
+
+  <div class="fixed bottom-20 right-9 glass-effect rounded-lg p-3 floating">
+    <div class="flex items-center space-x-2">
+      <div
+        class="w-8 h-8 chat-gradient rounded-full flex items-center justify-center"
+      >
+        <i class="fas fa-code text-white text-xs"></i>
+      </div>
+      <div>
+        <p class="text-xs text-white font-semibold">Desarrollado por</p>
+        <p class="text-xs text-green-400">Lizana_group</p>
+      </div>
+    </div>
+  </div>
+</div>

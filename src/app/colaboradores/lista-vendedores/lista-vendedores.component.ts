@@ -52,12 +52,15 @@ export class ListaVendedoresComponent  implements OnInit{
     this.router.navigate(['colaboradores/crear-aliado']);
   }
 
-  async obtenerAliados(): Promise<void> {
-    try {
-      this.lisTofAliados = await lastValueFrom(this.firebaseService.getAllColaboradores('aliadosComerciales'));
-    } catch (error) {
-      console.error('Error al obtener aliados comerciales:', error);
-    }
+  async obtenerAliados() {
+    this.firebaseService.getAllColaboradores('aliadosComerciales').subscribe(
+      (data) => {
+        this.lisTofAliados = data;
+      },
+      (error) => {
+        console.error('Error fetching stores:', error);
+      }
+    );
   }
   
 
