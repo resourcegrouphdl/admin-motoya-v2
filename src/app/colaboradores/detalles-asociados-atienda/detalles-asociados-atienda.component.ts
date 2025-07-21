@@ -9,7 +9,7 @@ import { MatTableModule } from '@angular/material/table';
 import { PreciosPorTiendaService } from '../../services/precios-por-tienda.service';
 import { ColaboradoresService } from '../../services/colaboradores/colaboradores.service';
 import { Router } from '@angular/router';
-import { Tienda } from '../../common_module/models/tienda';
+import { PreciosPorTientda, Tienda } from '../../common_module/models/tienda';
 
 @Component({
   selector: 'app-detalles-asociados-atienda',
@@ -27,12 +27,12 @@ export class DetallesAsociadosATiendaComponent implements OnInit {
   objetoTienda: Tienda | null = null;
   
   formDataPrecios:FormGroup
-  dataSource:preciosPorTientda[] = this.objetoTienda?.listaDeProductosPorFinanciar || [];
+  dataSource:PreciosPorTientda[] = this.objetoTienda?.listaDeProductosPorFinanciar || [];
   isLoading = true;
  
   columnsToDisplay = ['marca', 'modelo', 'precio', 'stock'];
    columnsToDisplayWithExpand = [...this.columnsToDisplay, 'expand'];
-  expandedElement: preciosPorTientda | null | undefined ;
+  expandedElement: PreciosPorTientda | null | undefined ;
 
   constructor(private fb:FormBuilder){
     this.formDataPrecios = this.fb.group({
@@ -65,11 +65,11 @@ export class DetallesAsociadosATiendaComponent implements OnInit {
 
   }
 
-   isExpanded(element: preciosPorTientda) {
+   isExpanded(element: PreciosPorTientda) {
     return this.expandedElement === element;
   }
 
-  toggle(element: preciosPorTientda) {
+  toggle(element: PreciosPorTientda) {
     this.expandedElement = this.isExpanded(element) ? null : element;
   }
 
@@ -90,11 +90,5 @@ export class DetallesAsociadosATiendaComponent implements OnInit {
 }
 
 
-export interface preciosPorTientda {
-  marca: string;
-  modelo: string;
-  precio: number;
-  stock: number;
-  
-}
+
 

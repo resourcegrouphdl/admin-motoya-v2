@@ -49,6 +49,13 @@ export interface IMenu {
             resumen: 'configuracion de la pagina web'
         },
         {
+            title : 'usuarios',
+            name : 'gestion de usuarios',
+            icon : 'group',
+            route : '/dashboard/gestion-usuarios',
+            resumen: 'gestion de usuarios del sistema'
+        },
+        {
             title : 'reportes',
             name : 'reportes',
             icon : 'bar_chart',

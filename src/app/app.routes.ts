@@ -20,6 +20,9 @@ import { authGuard } from './guardas/auth.guard';
 import { DashboardComponent } from './main_module/dashboard/dashboard.component';
 import { DetallesAsociadosATiendaComponent } from './colaboradores/detalles-asociados-atienda/detalles-asociados-atienda.component';
 import { ChatComponent } from './common/chat/chat.component';
+import { MainadminComponent } from './modulos/adminusuarios/mainadmin/mainadmin.component';
+import { ListarComponent } from './modulos/adminusuarios/listar/listar.component';
+import { CrearComponent } from './modulos/adminusuarios/crear/crear.component';
 
 export const routes: Routes = [
   {
@@ -135,6 +138,29 @@ export const routes: Routes = [
         data: {
           title: 'Config Web',
         },
+      },
+      {
+        path: 'gestion-usuarios',
+        component: MainadminComponent,
+        children: [
+          {
+            path: '',
+            redirectTo: 'list-usuarios',
+            pathMatch: 'full',
+          },
+          {
+            path: 'list-usuarios',
+            component: ListarComponent,
+          },
+          {
+            path: 'crear-usuario',
+            component: CrearComponent,
+          },
+          {
+            path: 'modificar-usuario/:id',
+            component: CrearComponent,
+          }
+        ]
       },
       {
         path: 'reportes',

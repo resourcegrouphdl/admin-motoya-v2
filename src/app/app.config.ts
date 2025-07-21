@@ -2,12 +2,12 @@ import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { getFirestore, provideFirestore } from '@angular/fire/firestore';
 import { provideRouter } from '@angular/router';
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
-import { provideClientHydration } from '@angular/platform-browser';
 import { getAuth, provideAuth } from '@angular/fire/auth';
 import { getStorage, provideStorage } from '@angular/fire/storage';
 import { routes } from './app.routes';
 import { provideHttpClient } from '@angular/common/http';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+
 
 const firebaseConfig = {
   apiKey: 'AIzaSyDSm_NM4QShVmIhd_5SpJT2WG9tz4h6LLQ',
@@ -39,5 +39,6 @@ export const appConfig: ApplicationConfig = {
     provideAuth(() => getAuth()),
     provideFirestore(() => getFirestore()),
     provideStorage(() => getStorage()), provideAnimationsAsync(),
+
   ],
 };

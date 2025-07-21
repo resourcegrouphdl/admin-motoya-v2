@@ -1,7 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { addDoc, collection, collectionData, Firestore } from '@angular/fire/firestore';
-import { BehaviorSubject, catchError, map, Observable, of, tap } from 'rxjs';
-import { preciosPorTientda } from '../colaboradores/detalles-asociados-atienda/detalles-asociados-atienda.component';
+import { BehaviorSubject } from 'rxjs';
 import { ColaboradoresService } from './colaboradores/colaboradores.service';
 
 @Injectable({

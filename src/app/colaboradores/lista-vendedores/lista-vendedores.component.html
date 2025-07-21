@@ -40,7 +40,7 @@
         <th scope="col" class="px-6 py-3">TELEFONO 2</th>
         <th scope="col" class="px-6 py-3">CORREO </th>
         <th scope="col" class="px-3 py-3">DIRECCION </th>
-        <th scope="col" class="px-3 py-3">LISTA DE PRECIOS</th>
+        <th scope="col" class="px-3 py-3">ASIGNAR TIENDA</th>
         <th scope="col" class="px-6 py-3">ACCIONES</th>
       </tr>
     </thead>
@@ -84,8 +84,8 @@
         <td class="px-3 py-4 shadow-md">
           <span
             class="cursor-pointer text-sm font-semibold text-white text-center"
-            ><mat-icon>campaign</mat-icon>
-            
+            ><div class="cursor-pointer" (click)="openTiendaDialog(item.id)" ><mat-icon>campaign</mat-icon></div>
+            {{ item.tienda ? item.tienda.nombre : 'Sin tienda asignada' }}
           </span>
         </td>
         <td class="justify-center shadow-md">
@@ -114,3 +114,37 @@
     </tbody>
   </table>
 </div>
+
+@if (opendialogoTienda === true) {
+
+
+<div class="w-full h-full z-10 absolute top-1/2 transform -translate-y-1/2" >
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>TIENDAS REGISTRADAS</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      @for (item of listaDeTiendas; track $index) {
+        <div class="flex items-center justify-between py-2 border-b border-gray-200"
+          (click)="asignarTienda(item.id)">
+          <span class="font-semibold text-gray-800">{{ item.razonSocial }}</span>
+          <span class="text-sm text-gray-600">{{ item.direccion }}</span>
+        </div>
+      }
+    </mat-card-content>
+    <mat-card-actions>
+      <button
+        mat-button
+        (click)="closeTiendaDialog()"
+        class="bg-blue-500 text-white hover:bg-blue-600 rounded px-4 py-2"
+      >
+        Cerrar
+      </button>
+    </mat-card-actions>
+  </mat-card>
+
+</div>
+
+
+
+}

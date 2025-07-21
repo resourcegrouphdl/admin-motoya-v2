@@ -65,14 +65,8 @@
     "win": {
       "target": "nsis",
       "icon": "assets/icon.ico"
-    },
-    "publish": [
-      {
-        "provider": "github",
-        "owner": "resourcegrouphdl",
-        "repo": "admin-motoya-v2"
-      }
-    ]
+    }
+    
   },
   "repository": {
     "type": "git",
