@@ -1,5 +1,5 @@
-<!-- user-management.component.html -->
-<div class="user-management-container">
+<!-- listar.component.html -->
+<div class="w-full h-full bg-cyan-950 p-5">
   
   <!-- Header Section -->
   <div class="header-section">
@@ -11,15 +11,27 @@
         </h1>
         <p class="page-subtitle">Gestiona usuarios, permisos y asignaciones del sistema</p>
       </div>
-      <button 
-        mat-raised-button 
-        color="primary" 
-        class="create-user-btn"
-        (click)="openCreateUserDialog()"
-      >
-        <mat-icon>add</mat-icon>
-        Crear Usuario
-      </button>
+      <div class="header-actions">
+        <button 
+          mat-stroked-button 
+          color="primary"
+          (click)="viewStoreStatistics()"
+          class="stats-btn"
+        >
+          <mat-icon>analytics</mat-icon>
+          Estadísticas
+        </button>
+        <button 
+          mat-raised-button 
+          color="primary" 
+          class="create-user-btn"
+          (click)="openCreateUserDialog()"
+          [disabled]="isLoading"
+        >
+          <mat-icon>add</mat-icon>
+          Crear Usuario
+        </button>
+      </div>
     </div>
   </div>
 
@@ -36,6 +48,20 @@
             <mat-icon>people</mat-icon>
           </div>
         </div>
+        <div class="stat-breakdown">
+          <small>Por tipo:</small>
+          <div class="type-chips">
+            <mat-chip 
+              *ngFor="let type of userTypes" 
+              class="type-chip"
+              [ngClass]="type.class"
+              matTooltip="{{ type.label }}: {{ userStats.usersByType[type.value] }}"
+            >
+              <mat-icon>{{ type.icon }}</mat-icon>
+              {{ userStats.usersByType[type.value] }}
+            </mat-chip>
+          </div>
+        </div>
       </mat-card-content>
     </mat-card>
 
@@ -49,6 +75,15 @@
           <div class="stat-icon active-users">
             <mat-icon>verified_user</mat-icon>
           </div>
+        </div>
+        <div class="stat-progress">
+          <div class="progress-bar">
+            <div 
+              class="progress-fill active"
+              [style.width.%]="(userStats.activeUsers / userStats.totalUsers) * 100"
+            ></div>
+          </div>
+          <small>{{ ((userStats.activeUsers / userStats.totalUsers) * 100).toFixed(1) }}% del total</small>
         </div>
       </mat-card-content>
     </mat-card>
@@ -64,6 +99,10 @@
             <mat-icon>person_add</mat-icon>
           </div>
         </div>
+        <div class="stat-trend">
+          <mat-icon class="trend-icon positive">trending_up</mat-icon>
+          <small>+{{ userStats.newUsersThisMonth }} nuevos registros</small>
+        </div>
       </mat-card-content>
     </mat-card>
 
@@ -71,12 +110,22 @@
       <mat-card-content>
         <div class="stat-content">
           <div class="stat-info">
-            <span class="stat-label">Pendientes</span>
+            <span class="stat-label">Inactivos</span>
             <span class="stat-value pending">{{ userStats.pendingUsers }}</span>
           </div>
           <div class="stat-icon pending-users">
-            <mat-icon>schedule</mat-icon>
+            <mat-icon>person_off</mat-icon>
           </div>
+        </div>
+        <div class="stat-action">
+          <button 
+            mat-button 
+            color="warn" 
+            size="small"
+            (click)="filterForm.patchValue({status: 'inactive'}); applyFilters()"
+          >
+            Ver inactivos
+          </button>
         </div>
       </mat-card-content>
     </mat-card>
@@ -85,7 +134,7 @@
   <!-- Filters Section -->
   <mat-card class="filters-card">
     <mat-card-content>
-      <form [formGroup]="filterForm!" class="filters-form">
+      <form [formGroup]="filterForm" class="filters-form">
         
         <!-- Search and Toggle Section -->
         <div class="search-section">
@@ -93,10 +142,19 @@
             <mat-label>Buscar usuarios</mat-label>
             <input 
               matInput 
-              placeholder=""
+              placeholder="Nombre, email, teléfono o ID"
               formControlName="search"
             >
             <mat-icon matPrefix>search</mat-icon>
+            <button 
+              matSuffix 
+              mat-icon-button 
+              type="button"
+              *ngIf="filterForm.get('search')?.value"
+              (click)="filterForm.patchValue({search: ''})"
+            >
+              <mat-icon>clear</mat-icon>
+            </button>
           </mat-form-field>
           
           <button 
@@ -120,9 +178,8 @@
                 <mat-option value="">Todos</mat-option>
                 <mat-option value="active">Activo</mat-option>
                 <mat-option value="inactive">Inactivo</mat-option>
-                <mat-option value="pending">Pendiente</mat-option>
-                <mat-option value="blocked">Bloqueado</mat-option>
               </mat-select>
+              <mat-icon matSuffix>toggle_on</mat-icon>
             </mat-form-field>
 
             <mat-form-field appearance="outline">
@@ -130,9 +187,22 @@
               <mat-select formControlName="userType">
                 <mat-option value="">Todos los tipos</mat-option>
                 <mat-option *ngFor="let type of userTypes" [value]="type.value">
+                  <mat-icon>{{ type.icon }}</mat-icon>
                   {{ type.label }}
                 </mat-option>
               </mat-select>
+              <mat-icon matSuffix>category</mat-icon>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Tienda</mat-label>
+              <mat-select formControlName="storeId">
+                <mat-option value="">Todas las tiendas</mat-option>
+                <mat-option *ngFor="let store of stores" [value]="store.storeInfo.storeId">
+                  {{ store.storeInfo.storeName }} ({{ store.storeInfo.storeCode }})
+                </mat-option>
+              </mat-select>
+              <mat-icon matSuffix>store</mat-icon>
             </mat-form-field>
 
             <mat-form-field appearance="outline">
@@ -152,9 +222,11 @@
           
           <div class="filter-actions" *ngIf="showFilters">
             <button mat-button type="button" (click)="clearFilters()">
+              <mat-icon>clear_all</mat-icon>
               Limpiar Filtros
             </button>
             <button mat-raised-button color="primary" type="button" (click)="applyFilters()">
+              <mat-icon>filter_alt</mat-icon>
               Aplicar Filtros
             </button>
           </div>
@@ -170,19 +242,35 @@
       
       <!-- Table Header -->
       <div class="table-header">
-        <h2>Lista de Usuarios</h2>
+        <h2>
+          Lista de Usuarios 
+          <span class="result-count">({{ dataSource.filteredData.length }} resultados)</span>
+        </h2>
         <div class="table-actions">
+          <button 
+            mat-icon-button 
+            matTooltip="Actualizar"
+            (click)="loadAllData()"
+            [disabled]="isLoading"
+          >
+            <mat-icon [class.spinning]="isLoading">refresh</mat-icon>
+          </button>
           <button mat-icon-button [matMenuTriggerFor]="tableMenu">
             <mat-icon>more_vert</mat-icon>
           </button>
           <mat-menu #tableMenu="matMenu">
-            <button mat-menu-item>
+            <button mat-menu-item (click)="exportToCSV()">
               <mat-icon>download</mat-icon>
               Exportar CSV
             </button>
-            <button mat-menu-item>
+            <button mat-menu-item (click)="printTable()">
               <mat-icon>print</mat-icon>
               Imprimir
+            </button>
+            <mat-divider></mat-divider>
+            <button mat-menu-item (click)="viewStoreStatistics()">
+              <mat-icon>analytics</mat-icon>
+              Estadísticas por Tienda
             </button>
           </mat-menu>
         </div>
@@ -194,13 +282,16 @@
           
           <!-- Avatar and Name Column -->
           <ng-container matColumnDef="user">
-            <th mat-header-cell *matHeaderCellDef>Usuario</th>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header="name">Usuario</th>
             <td mat-cell *matCellDef="let user">
               <div class="user-cell">
-                <div class="user-avatar">{{ user.avatar }}</div>
+                <div class="user-avatar" [ngClass]="getUserTypeClass(user.userType)">
+                  {{ user.avatar }}
+                </div>
                 <div class="user-info">
                   <span class="user-name">{{ user.name }}</span>
                   <span class="user-email">{{ user.email }}</span>
+                  <span class="user-phone">{{ user.phone }}</span>
                 </div>
               </div>
             </td>
@@ -208,37 +299,85 @@
 
           <!-- User Type Column -->
           <ng-container matColumnDef="type">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Tipo</th>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header="userType">Tipo</th>
             <td mat-cell *matCellDef="let user">
               <div class="user-type">
-                <div class="type-icon" [ngClass]="getUserTypeClass(user.type)">
-                  <mat-icon>{{ getUserTypeIcon(user.type) }}</mat-icon>
+                <div class="type-icon" [ngClass]="getUserTypeClass(user.userType)">
+                  <mat-icon>{{ getUserTypeIcon(user.userType) }}</mat-icon>
                 </div>
-                <span>{{ getUserTypeClass(user.type) }}</span>
+                <div class="type-info">
+                  <span class="type-label">{{ getUserTypeLabel(user.userType) }}</span>
+                  <small class="type-details">{{ getUserSpecificInfo(user) }}</small>
+                </div>
               </div>
             </td>
           </ng-container>
 
           <!-- Status Column -->
           <ng-container matColumnDef="status">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Estado</th>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header="isActive">Estado</th>
             <td mat-cell *matCellDef="let user">
-              <mat-chip 
-                [ngClass]="getStatusClass(user.status)"
-                class="status-chip"
-              >
-                {{ getStatusLabel(user.status) }}
-              </mat-chip>
+              <div class="status-container">
+                <mat-chip 
+                  [ngClass]="getStatusClass(user.isActive)"
+                  class="status-chip"
+                >
+                  <mat-icon class="status-icon">
+                    {{ user.isActive ? 'check_circle' : 'cancel' }}
+                  </mat-icon>
+                  {{ getStatusLabel(user.isActive) }}
+                </mat-chip>
+                <button 
+                  mat-icon-button 
+                  class="status-toggle"
+                  [matTooltip]="user.isActive ? 'Desactivar usuario' : 'Activar usuario'"
+                  (click)="toggleUserStatus(user)"
+                >
+                  <mat-icon>{{ user.isActive ? 'toggle_on' : 'toggle_off' }}</mat-icon>
+                </button>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Stores Column -->
+          <ng-container matColumnDef="stores">
+            <th mat-header-cell *matHeaderCellDef>Tiendas Asignadas</th>
+            <td mat-cell *matCellDef="let user">
+              <div class="stores-info">
+                <mat-chip-listbox class="store-chips">
+                  <mat-chip 
+                    *ngFor="let storeId of user.storeIds?.slice(0, 2); trackBy: trackByStoreId"
+                    class="store-chip"
+                    (click)="getUsersByStore(storeId)"
+                  >
+                    <mat-icon matChipAvatar>store</mat-icon>
+                    {{ getStoreName(storeId) }}
+                  </mat-chip>
+                  <mat-chip 
+                    *ngIf="(user.storeIds?.length || 0) > 2"
+                    class="more-stores-chip"
+                    [matTooltip]="getStoreNames(user.storeIds)"
+                  >
+                    +{{ (user.storeIds?.length || 0) - 2 }} más
+                  </mat-chip>
+                </mat-chip-listbox>
+                <span *ngIf="!user.storeIds?.length" class="no-stores">Sin asignar</span>
+              </div>
             </td>
           </ng-container>
 
           <!-- Last Login Column -->
           <ng-container matColumnDef="lastLogin">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Último acceso</th>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header="lastLogin">Último acceso</th>
             <td mat-cell *matCellDef="let user">
-              <span class="last-login">
-                {{ user.lastLogin ? (user.lastLogin | date:'dd/MM/yyyy') : 'Nunca' }}
-              </span>
+              <div class="last-login-info">
+                <span class="last-login-date">
+                  {{ user.lastLogin ? (user.lastLogin | date:'dd/MM/yyyy HH:mm') : 'Nunca' }}
+                </span>
+                <span class="last-login-relative" *ngIf="user.lastLogin">
+                  {{ getRelativeTime(user.lastLogin) }}
+                </span>
+              </div>
             </td>
           </ng-container>
 
@@ -265,27 +404,80 @@
                 </button>
                 <button 
                   mat-icon-button 
-                  matTooltip="Eliminar usuario"
-                  (click)="deleteUser(user)"
-                  class="action-btn delete"
+                  [matMenuTriggerFor]="actionMenu"
+                  matTooltip="Más opciones"
+                  class="action-btn more"
+                  #menuTrigger="matMenuTrigger"
+                  (click)="$event.stopPropagation()"
                 >
-                  <mat-icon>delete</mat-icon>
+                  <mat-icon>more_horiz</mat-icon>
                 </button>
+                <mat-menu #actionMenu="matMenu">
+                  <button mat-menu-item (click)="resetUserPassword(user)">
+                    <mat-icon>lock_reset</mat-icon>
+                    Resetear Contraseña
+                  </button>
+                  <button 
+                    mat-menu-item 
+                    (click)="toggleUserStatus(user)"
+                    [disabled]="!user.isActive && user.userType === 'admin'"
+                  >
+                    <mat-icon>{{ user.isActive ? 'person_off' : 'person' }}</mat-icon>
+                    {{ user.isActive ? 'Desactivar' : 'Activar' }}
+                  </button>
+                  <mat-divider></mat-divider>
+                  <button 
+                    mat-menu-item 
+                    (click)="deleteUser(user)"
+                    class="delete-action"
+                    [disabled]="user.userType === 'admin'"
+                  >
+                    <mat-icon>delete</mat-icon>
+                    Eliminar Usuario
+                  </button>
+                </mat-menu>
               </div>
             </td>
           </ng-container>
 
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="user-row"></tr>
+          <tr 
+            mat-row 
+            *matRowDef="let row; columns: displayedColumns;" 
+            class="user-row"
+            [class.inactive-user]="!row.isActive"
+          ></tr>
         </table>
+
+        <!-- Empty State -->
+        <div class="empty-state" *ngIf="!isLoading && dataSource.filteredData.length === 0">
+          <mat-icon>people_outline</mat-icon>
+          <h3>No se encontraron usuarios</h3>
+          <p>
+            <span *ngIf="dataSource.filter">
+              Intenta ajustar los filtros o buscar con otros términos.
+            </span>
+            <span *ngIf="!dataSource.filter">
+              Comienza creando tu primer usuario.
+            </span>
+          </p>
+          <button 
+            mat-raised-button 
+            color="primary"
+            (click)="dataSource.filter ? clearFilters() : openCreateUserDialog()"
+          >
+            {{ dataSource.filter ? 'Limpiar Filtros' : 'Crear Primer Usuario' }}
+          </button>
+        </div>
       </div>
 
       <!-- Paginator -->
       <mat-paginator 
         [pageSizeOptions]="[10, 25, 50, 100]"
-        [pageSize]="10"
+        [pageSize]="25"
         showFirstLastButtons
-        class="table-paginator">
+        class="table-paginator"
+        *ngIf="dataSource.filteredData.length > 0">
       </mat-paginator>
 
     </mat-card-content>
@@ -293,8 +485,23 @@
 
 </div>
 
-<!-- Loading Spinner -->
-<div class="loading-container" *ngIf="isLoading">
-  <mat-spinner diameter="50"></mat-spinner>
-  <p>Cargando usuarios...</p>
+<!-- Loading Overlay -->
+<div class="loading-overlay" *ngIf="isLoading">
+  <div class="loading-content">
+    <mat-spinner diameter="60"></mat-spinner>
+    <h3>Cargando usuarios...</h3>
+    <p>Por favor espera mientras obtenemos la información más reciente</p>
+  </div>
 </div>
+
+<!-- Floating Action Button para dispositivos móviles -->
+<button 
+  mat-fab 
+  color="primary" 
+  class="fab-create-user"
+  (click)="openCreateUserDialog()"
+  [disabled]="isLoading"
+  matTooltip="Crear Usuario"
+>
+  <mat-icon>add</mat-icon>
+</button>

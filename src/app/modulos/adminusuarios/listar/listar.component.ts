@@ -1,6 +1,7 @@
-import { Component, OnInit, inject, ViewChild } from '@angular/core';
+import { Component, OnInit, inject, ViewChild, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
 
 // Angular Material Imports
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -20,19 +21,30 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
+
+import {MatDividerModule} from '@angular/material/divider';
+
+// Componentes e interfaces
 import { CrearComponent } from '../crear/crear.component';
-import { UserStatus, UserType } from '../../modelos/enums';
+import { UserType } from '../modelos/enums';
+import { BaseUser, StoreUser } from '../modelos/clases-herencia';
+import { UserService } from '../services/user.service';
+import { StatisticService } from '../services/statistic.service';
 
-
+// Interfaces para el componente
 export interface UserTableData {
-  id: string;
+  uid: string;
   name: string;
   email: string;
-  type: UserType;
-  status: UserStatus;
+  phone: string;
+  userType: UserType;
+  isActive: boolean;
   lastLogin: Date | null;
   avatar: string;
   createdAt: Date;
+  storeIds?: string[];
+  specificData?: any;
+  originalUser: BaseUser;
 }
 
 export interface UserStats {
@@ -40,6 +52,7 @@ export interface UserStats {
   activeUsers: number;
   newUsersThisMonth: number;
   pendingUsers: number;
+  usersByType: Record<UserType, number>;
 }
 
 export interface UserTypeConfig {
@@ -50,10 +63,20 @@ export interface UserTypeConfig {
   description: string;
 }
 
+export interface FilterOptions {
+  search: string;
+  status: string;
+  userType: UserType | '';
+  storeId: string;
+  dateFrom: Date | null;
+  dateTo: Date | null;
+}
+
 @Component({
   selector: 'app-listar',
   standalone: true,
-  imports: [CommonModule,
+  imports: [
+    CommonModule,
     ReactiveFormsModule,
     MatDialogModule,
     MatButtonModule,
@@ -71,35 +94,51 @@ export interface UserTypeConfig {
     MatNativeDateModule,
     MatSnackBarModule,
     MatProgressSpinnerModule,
-    MatTooltipModule],
+    MatTooltipModule,
+    MatDividerModule
+  ],
   templateUrl: './listar.component.html',
   styleUrl: './listar.component.css'
 })
-export class ListarComponent implements OnInit {
-
- private dialog = inject(MatDialog);
+export class ListarComponent implements OnInit, OnDestroy {
+  private dialog = inject(MatDialog);
   private fb = inject(FormBuilder);
   private snackBar = inject(MatSnackBar);
+  private userService = inject(UserService);
+  private statisticsService = inject(StatisticService);
+  
+  private destroy$ = new Subject<void>();
 
   // ViewChild para tabla
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
   // Propiedades del componente
-  displayedColumns: string[] = ['user', 'type', 'status', 'lastLogin', 'actions'];
+  displayedColumns: string[] = ['user', 'type', 'status', 'stores', 'lastLogin', 'actions'];
   dataSource = new MatTableDataSource<UserTableData>([]);
   showFilters = false;
   isLoading = false;
   
+  // Datos
+  allUsers: BaseUser[] = [];
+  stores: StoreUser[] = [];
+  
   // Formularios
-  filterForm: FormGroup;
+  filterForm!: FormGroup ;
 
   // Estadísticas
   userStats: UserStats = {
-    totalUsers: 245,
-    activeUsers: 198,
-    newUsersThisMonth: 23,
-    pendingUsers: 12
+    totalUsers: 0,
+    activeUsers: 0,
+    newUsersThisMonth: 0,
+    pendingUsers: 0,
+    usersByType: {
+      [UserType.ADMIN]: 0,
+      [UserType.STORE]: 0,
+      [UserType.VENDOR]: 0,
+      [UserType.ACCOUNTANT]: 0,
+      [UserType.FINANCIAL]: 0
+    }
   };
 
   // Configuración de tipos de usuario
@@ -141,108 +180,165 @@ export class ListarComponent implements OnInit {
     }
   ];
 
-  // Datos mock para pruebas
-  private mockUsers: UserTableData[] = [
-    {
-      id: '1',
-      name: 'Carlos Administrador',
-      email: 'carlos@empresa.com',
-      type: UserType.ADMIN,
-      status: UserStatus.ACTIVE,
-      lastLogin: new Date('2024-01-15'),
-      avatar: 'CA',
-      createdAt: new Date('2024-01-01')
-    },
-    {
-      id: '2',
-      name: 'María Vendedora',
-      email: 'maria@empresa.com',
-      type: UserType.VENDOR,
-      status: UserStatus.ACTIVE,
-      lastLogin: new Date('2024-01-14'),
-      avatar: 'MV',
-      createdAt: new Date('2024-01-05')
-    },
-    {
-      id: '3',
-      name: 'Juan Financiero',
-      email: 'juan@empresa.com',
-      type: UserType.FINANCIAL,
-      status: UserStatus.INACTIVE,
-      lastLogin: new Date('2024-01-10'),
-      avatar: 'JF',
-      createdAt: new Date('2024-01-03')
-    },
-    {
-      id: '4',
-      name: 'Ana Contable',
-      email: 'ana@empresa.com',
-      type: UserType.ACCOUNTANT,
-      status: UserStatus.ACTIVE,
-      lastLogin: new Date('2024-01-16'),
-      avatar: 'AC',
-      createdAt: new Date('2024-01-07')
-    },
-    {
-      id: '5',
-      name: 'Luis Tienda Norte',
-      email: 'luis@empresa.com',
-      type: UserType.STORE,
-      status: UserStatus.PENDING,
-      lastLogin: null,
-      avatar: 'LT',
-      createdAt: new Date('2024-01-12')
-    }
-  ];
-
   constructor() {
-    // Inicializar formulario de filtros
-    this.filterForm = this.fb.group({
-      search: [''],
-      status: [''],
-      userType: [''],
-      dateFrom: [null],
-      dateTo: [null]
-    });
+    this.initializeFilterForm();
   }
 
   ngOnInit(): void {
-    this.loadUsers();
+    this.loadAllData();
     this.setupFilterSubscription();
   }
 
   ngAfterViewInit(): void {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
-    
-    // Configurar filtro personalizado
     this.dataSource.filterPredicate = this.createFilterPredicate();
   }
 
-  // ====================================================================
-  // MÉTODOS DE CARGA Y FILTRADO
-  // ====================================================================
-
-  loadUsers(): void {
-    this.isLoading = true;
-    
-    // Simular llamada a API
-    setTimeout(() => {
-      this.dataSource.data = [...this.mockUsers];
-      this.updateStats();
-      this.isLoading = false;
-    }, 1000);
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
-  setupFilterSubscription(): void {
-    this.filterForm.valueChanges.subscribe(() => {
+  // ====================================================================
+  // INICIALIZACIÓN
+  // ====================================================================
+
+  private initializeFilterForm(): void {
+    this.filterForm = this.fb.group({
+      search: [''],
+      status: [''],
+      userType: [''],
+      storeId: [''],
+      dateFrom: [null],
+      dateTo: [null]
+    });
+  }
+
+  private setupFilterSubscription(): void {
+    this.filterForm.valueChanges.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
       this.applyFilters();
     });
   }
 
-  createFilterPredicate() {
+  // ====================================================================
+  // CARGA DE DATOS
+  // ====================================================================
+
+  async loadAllData(): Promise<void> {
+    this.isLoading = true;
+    
+    try {
+      // Cargar todos los tipos de usuarios en paralelo
+      const [adminUsers, storeUsers, vendorUsers, accountantUsers, financialUsers] = 
+        await Promise.all([
+          this.userService.getUsersByType(UserType.ADMIN),
+          this.userService.getUsersByType(UserType.STORE),
+          this.userService.getUsersByType(UserType.VENDOR),
+          this.userService.getUsersByType(UserType.ACCOUNTANT),
+          this.userService.getUsersByType(UserType.FINANCIAL)
+        ]);
+
+      // Combinar todos los usuarios
+      this.allUsers = [
+        ...adminUsers,
+        ...storeUsers,
+        ...vendorUsers,
+        ...accountantUsers,
+        ...financialUsers
+      ];
+
+      // Guardar tiendas para los filtros
+      this.stores = storeUsers as StoreUser[];
+
+      // Convertir a formato de tabla
+      const tableData = this.convertUsersToTableData(this.allUsers);
+      this.dataSource.data = tableData;
+
+      // Actualizar estadísticas
+      this.updateStats();
+
+    } catch (error) {
+      console.error('Error loading users:', error);
+      this.snackBar.open('Error al cargar usuarios', 'Cerrar', {
+        duration: 5000
+      });
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  private convertUsersToTableData(users: BaseUser[]): UserTableData[] {
+    return users.map(user => ({
+      uid: user.uid,
+      name: user.getFullName(),
+      email: user.email,
+      phone: user.phone,
+      userType: user.userType,
+      isActive: user.isActive,
+      lastLogin: this.getLastLogin(user),
+      avatar: this.generateAvatar(user.firstName, user.lastName),
+      createdAt: user.createdAt,
+      storeIds: user.storeIds || [],
+      specificData: user.getSpecificData(),
+      originalUser: user
+    }));
+  }
+
+  private getLastLogin(user: BaseUser): Date | null {
+    // TODO: Implementar sistema de tracking de último login
+    // Por ahora retornamos una fecha aleatoria para demo
+    const randomDays = Math.floor(Math.random() * 30);
+    const randomDate = new Date();
+    randomDate.setDate(randomDate.getDate() - randomDays);
+    return user.isActive ? randomDate : null;
+  }
+
+  private generateAvatar(firstName: string, lastName: string): string {
+    return (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
+  }
+
+  // ====================================================================
+  // ESTADÍSTICAS
+  // ====================================================================
+
+  private updateStats(): void {
+    const users = this.dataSource.data;
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth();
+    const currentYear = currentDate.getFullYear();
+
+    this.userStats = {
+      totalUsers: users.length,
+      activeUsers: users.filter(u => u.isActive).length,
+      newUsersThisMonth: users.filter(u => 
+        u.createdAt.getMonth() === currentMonth && 
+        u.createdAt.getFullYear() === currentYear
+      ).length,
+      pendingUsers: users.filter(u => !u.isActive).length,
+      usersByType: {
+        [UserType.ADMIN]: users.filter(u => u.userType === UserType.ADMIN).length,
+        [UserType.STORE]: users.filter(u => u.userType === UserType.STORE).length,
+        [UserType.VENDOR]: users.filter(u => u.userType === UserType.VENDOR).length,
+        [UserType.ACCOUNTANT]: users.filter(u => u.userType === UserType.ACCOUNTANT).length,
+        [UserType.FINANCIAL]: users.filter(u => u.userType === UserType.FINANCIAL).length
+      }
+    };
+  }
+
+  // ====================================================================
+  // FILTROS
+  // ====================================================================
+
+  private createFilterPredicate() {
     return (data: UserTableData, filter: string): boolean => {
-      const filterObject = JSON.parse(filter);
+      if (!filter) return true;
+
+      const filterObject: FilterOptions = JSON.parse(filter);
       
       // Filtro de búsqueda
       if (filterObject.search) {
@@ -250,18 +346,27 @@ export class ListarComponent implements OnInit {
         const matchesSearch = 
           data.name.toLowerCase().includes(searchTerm) ||
           data.email.toLowerCase().includes(searchTerm) ||
-          data.id.toLowerCase().includes(searchTerm);
+          data.phone.includes(searchTerm) ||
+          data.uid.toLowerCase().includes(searchTerm);
         if (!matchesSearch) return false;
       }
 
       // Filtro de estado
-      if (filterObject.status && data.status !== filterObject.status) {
-        return false;
+      if (filterObject.status) {
+        const isActive = filterObject.status === 'active';
+        if (data.isActive !== isActive) return false;
       }
 
       // Filtro de tipo de usuario
-      if (filterObject.userType && data.type !== filterObject.userType) {
+      if (filterObject.userType && data.userType !== filterObject.userType) {
         return false;
+      }
+
+      // Filtro de tienda
+      if (filterObject.storeId) {
+        if (!data.storeIds?.includes(filterObject.storeId)) {
+          return false;
+        }
       }
 
       // Filtro de fecha desde
@@ -278,25 +383,6 @@ export class ListarComponent implements OnInit {
     };
   }
 
-  updateStats(): void {
-    const users = this.dataSource.data;
-    this.userStats = {
-      totalUsers: users.length,
-      activeUsers: users.filter(u => u.status === UserStatus.ACTIVE).length,
-      newUsersThisMonth: users.filter(u => this.isThisMonth(u.createdAt)).length,
-      pendingUsers: users.filter(u => u.status === UserStatus.PENDING).length
-    };
-  }
-
-  private isThisMonth(date: Date): boolean {
-    const now = new Date();
-    return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
-  }
-
-  // ====================================================================
-  // MÉTODOS DE FILTROS
-  // ====================================================================
-
   toggleFilters(): void {
     this.showFilters = !this.showFilters;
   }
@@ -312,10 +398,10 @@ export class ListarComponent implements OnInit {
   }
 
   // ====================================================================
-  // MÉTODOS DE ACCIONES
+  // ACCIONES DE USUARIO
   // ====================================================================
 
-   openCreateUserDialog(): void {
+  openCreateUserDialog(): void {
     const dialogRef = this.dialog.open(CrearComponent, {
       width: '900px',
       maxWidth: '95vw',
@@ -330,65 +416,137 @@ export class ListarComponent implements OnInit {
       }
     });
   }
-  private handleUserCreated(userData: any): void {
-    // Simular creación de usuario
-    const newUser: UserTableData = {
-      id: this.generateUserId(),
-      name: `${userData.profile.firstName} ${userData.profile.lastName}`,
-      email: userData.profile.email,
-      type: userData.userType,
-      status: UserStatus.PENDING,
-      lastLogin: null,
-      avatar: this.generateAvatar(userData.profile.firstName, userData.profile.lastName),
-      createdAt: new Date()
-    };
 
-    // Agregar a la lista
-    this.mockUsers.push(newUser);
-    this.dataSource.data = [...this.mockUsers];
-    this.updateStats();
+  private async handleUserCreated(newUser: BaseUser): Promise<void> {
+    try {
+      // Agregar el nuevo usuario a la lista
+      this.allUsers.push(newUser);
+      
+      // Si es una tienda, agregarla a la lista de tiendas
+      if (newUser.userType === UserType.STORE) {
+        this.stores.push(newUser as StoreUser);
+      }
 
-    this.snackBar.open(
-      `Usuario ${newUser.name} creado exitosamente`,
-      'Cerrar',
-      { duration: 5000 }
-    );
+      // Actualizar la tabla
+      const tableData = this.convertUsersToTableData(this.allUsers);
+      this.dataSource.data = tableData;
+      
+      // Actualizar estadísticas
+      this.updateStats();
+
+      this.snackBar.open(
+        `Usuario ${newUser.getFullName()} creado exitosamente`,
+        'Cerrar',
+        { duration: 5000 }
+      );
+
+    } catch (error) {
+      console.error('Error handling user creation:', error);
+      this.snackBar.open('Error al procesar el nuevo usuario', 'Cerrar', {
+        duration: 5000
+      });
+    }
   }
 
-
-
-  private generateUserId(): string {
-    return 'user_' + Date.now().toString(36) + Math.random().toString(36).substr(2);
+  async viewUser(user: UserTableData): Promise<void> {
+    try {
+      // Obtener datos completos del usuario desde Firebase
+      const fullUser = await this.userService.getUserByUid(user.uid);
+      
+      if (fullUser) {
+        // TODO: Abrir modal de detalles del usuario
+        console.log('Full user data:', fullUser);
+        this.snackBar.open(`Viendo detalles de ${user.name}`, 'Cerrar', {
+          duration: 3000
+        });
+      }
+    } catch (error) {
+      console.error('Error viewing user:', error);
+      this.snackBar.open('Error al cargar detalles del usuario', 'Cerrar', {
+        duration: 3000
+      });
+    }
   }
 
-  private generateAvatar(firstName: string, lastName: string): string {
-    return (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
-  }
-
-  viewUser(user: UserTableData): void {
-    this.snackBar.open(`Viendo detalles de ${user.name}`, 'Cerrar', {
-      duration: 3000
-    });
-  }
-
-  editUser(user: UserTableData): void {
+  async editUser(user: UserTableData): Promise<void> {
+    // TODO: Implementar modal de edición
     this.snackBar.open(`Editando usuario ${user.name}`, 'Cerrar', {
       duration: 3000
     });
   }
 
-  deleteUser(user: UserTableData): void {
-    // TODO: Implementar confirmación de eliminación
-    this.snackBar.open(`¿Eliminar usuario ${user.name}?`, 'Confirmar', {
-      duration: 5000
-    });
+  async toggleUserStatus(user: UserTableData): Promise<void> {
+    try {
+      if (user.isActive) {
+        await this.userService.deactivateUser(user.uid);
+        user.isActive = false;
+        this.snackBar.open(`Usuario ${user.name} desactivado`, 'Cerrar', {
+          duration: 3000
+        });
+      } else {
+        // TODO: Implementar reactivación de usuario
+        this.snackBar.open('Función de reactivación en desarrollo', 'Cerrar', {
+          duration: 3000
+        });
+      }
+      
+      this.updateStats();
+    } catch (error) {
+      console.error('Error toggling user status:', error);
+      this.snackBar.open('Error al cambiar estado del usuario', 'Cerrar', {
+        duration: 3000
+      });
+    }
+  }
+
+  async resetUserPassword(user: UserTableData): Promise<void> {
+    try {
+      await this.userService.resetUserPassword(user.email);
+      this.snackBar.open(
+        `Email de restablecimiento enviado a ${user.email}`,
+        'Cerrar',
+        { duration: 5000 }
+      );
+    } catch (error) {
+      console.error('Error resetting password:', error);
+      this.snackBar.open('Error al enviar email de restablecimiento', 'Cerrar', {
+        duration: 3000
+      });
+    }
+  }
+
+  async deleteUser(user: UserTableData): Promise<void> {
+    // TODO: Implementar modal de confirmación
+    const confirmed = confirm(`¿Está seguro de eliminar al usuario ${user.name}?`);
+    
+    if (confirmed) {
+      try {
+        await this.userService.deactivateUser(user.uid);
+        
+        // Remover de la lista local
+        this.allUsers = this.allUsers.filter(u => u.uid !== user.uid);
+        const tableData = this.convertUsersToTableData(this.allUsers);
+        this.dataSource.data = tableData;
+        
+        this.updateStats();
+        
+        this.snackBar.open(`Usuario ${user.name} eliminado`, 'Cerrar', {
+          duration: 3000
+        });
+      } catch (error) {
+        console.error('Error deleting user:', error);
+        this.snackBar.open('Error al eliminar usuario', 'Cerrar', {
+          duration: 3000
+        });
+      }
+    }
   }
 
   // ====================================================================
   // MÉTODOS HELPER
   // ====================================================================
 
- getUserTypeIcon(type: UserType): string {
+  getUserTypeIcon(type: UserType): string {
     const userType = this.userTypes.find(ut => ut.value === type);
     return userType?.icon || 'person';
   }
@@ -403,44 +561,158 @@ export class ListarComponent implements OnInit {
     return userType?.class || '';
   }
 
-  getStatusLabel(status: UserStatus): string {
-    const statusLabels: Record<UserStatus, string> = {
-      [UserStatus.ACTIVE]: 'Activo',
-      [UserStatus.INACTIVE]: 'Inactivo',
-      [UserStatus.PENDING]: 'Pendiente',
-      [UserStatus.BLOCKED]: 'Bloqueado',
-      [UserStatus.SUSPENDED]: 'Suspendido'
-    };
-    return statusLabels[status] || status;
+  getStatusLabel(isActive: boolean): string {
+    return isActive ? 'Activo' : 'Inactivo';
   }
 
-  getStatusClass(status: UserStatus): string {
-    const statusClasses: Record<UserStatus, string> = {
-      [UserStatus.ACTIVE]: 'status-active',
-      [UserStatus.INACTIVE]: 'status-inactive',
-      [UserStatus.PENDING]: 'status-pending',
-      [UserStatus.BLOCKED]: 'status-blocked',
-      [UserStatus.SUSPENDED]: 'status-suspended'
-    };
-    return statusClasses[status] || '';
+  getStatusClass(isActive: boolean): string {
+    return isActive ? 'status-active' : 'status-inactive';
+  }
+
+  getStoreNames(storeIds: string[] = []): string {
+    if (!storeIds.length) return 'Sin asignar';
+    
+    const storeNames = storeIds.map(storeId => {
+      const store = this.stores.find(s => s.storeInfo.storeId === storeId);
+      return store?.storeInfo.storeName || `Tienda ${storeId}`;
+    });
+    
+    return storeNames.join(', ');
+  }
+
+  getStoreName(storeId: string): string {
+    const store = this.stores.find(s => s.storeInfo.storeId === storeId);
+    return store?.storeInfo.storeName || `Tienda ${storeId}`;
+  }
+
+  getRelativeTime(date: Date): string {
+    const now = new Date();
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    
+    if (diffInHours < 1) return 'Hace menos de 1 hora';
+    if (diffInHours < 24) return `Hace ${diffInHours} hora${diffInHours > 1 ? 's' : ''}`;
+    
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 7) return `Hace ${diffInDays} día${diffInDays > 1 ? 's' : ''}`;
+    
+    const diffInWeeks = Math.floor(diffInDays / 7);
+    if (diffInWeeks < 4) return `Hace ${diffInWeeks} semana${diffInWeeks > 1 ? 's' : ''}`;
+    
+    const diffInMonths = Math.floor(diffInDays / 30);
+    return `Hace ${diffInMonths} mes${diffInMonths > 1 ? 'es' : ''}`;
+  }
+
+  trackByStoreId(index: number, storeId: string): string {
+    return storeId;
+  }
+
+  getUserSpecificInfo(user: UserTableData): string {
+    switch (user.userType) {
+      case UserType.VENDOR:
+        const vendorData = user.specificData?.vendorInfo;
+        return vendorData ? `ID: ${vendorData.employeeId} | Comisión: ${(vendorData.commissionRate * 100).toFixed(1)}%` : '';
+      
+      case UserType.FINANCIAL:
+        const financialData = user.specificData?.financialInfo;
+        return financialData ? `Límite: $${financialData.approvalLimit?.toLocaleString()} | Riesgo: ${financialData.riskLevel}` : '';
+      
+      case UserType.ACCOUNTANT:
+        const accountantData = user.specificData?.accountantInfo;
+        return accountantData ? `Nivel: ${accountantData.accessLevel} | Dpto: ${accountantData.department}` : '';
+      
+      case UserType.STORE:
+        const storeData = user.specificData?.storeInfo;
+        return storeData ? `Código: ${storeData.storeCode} | Max Inv: ${storeData.maxInventory}` : '';
+      
+      default:
+        return '';
+    }
   }
 
   // ====================================================================
-  // MÉTODOS DE EXPORTACIÓN
+  // EXPORTACIÓN
   // ====================================================================
 
   exportToCSV(): void {
-    // TODO: Implementar exportación a CSV
-    this.snackBar.open('Exportando a CSV...', 'Cerrar', {
-      duration: 3000
-    });
+    try {
+      const headers = ['UID', 'Nombre', 'Email', 'Teléfono', 'Tipo', 'Estado', 'Tiendas', 'Fecha Creación'];
+      const csvData = this.dataSource.filteredData.map(user => [
+        user.uid,
+        user.name,
+        user.email,
+        user.phone,
+        this.getUserTypeLabel(user.userType),
+        this.getStatusLabel(user.isActive),
+        this.getStoreNames(user.storeIds),
+        user.createdAt.toLocaleDateString()
+      ]);
+
+      const csvContent = [headers, ...csvData]
+        .map(row => row.map(field => `"${field}"`).join(','))
+        .join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `usuarios_${new Date().toISOString().split('T')[0]}.csv`;
+      link.click();
+
+      this.snackBar.open('CSV exportado exitosamente', 'Cerrar', {
+        duration: 3000
+      });
+    } catch (error) {
+      console.error('Error exporting CSV:', error);
+      this.snackBar.open('Error al exportar CSV', 'Cerrar', {
+        duration: 3000
+      });
+    }
   }
 
   printTable(): void {
-    // TODO: Implementar impresión
-    this.snackBar.open('Preparando impresión...', 'Cerrar', {
+    // TODO: Implementar función de impresión
+    this.snackBar.open('Función de impresión en desarrollo', 'Cerrar', {
       duration: 3000
     });
   }
 
+  // ====================================================================
+  // ESTADÍSTICAS AVANZADAS
+  // ====================================================================
+
+  async viewStoreStatistics(): Promise<void> {
+    try {
+      const stats = await this.statisticsService.getAllStoresStatistics();
+      console.log('Store statistics:', stats);
+      
+      // TODO: Abrir modal con estadísticas por tienda
+      this.snackBar.open('Cargando estadísticas por tienda...', 'Cerrar', {
+        duration: 3000
+      });
+    } catch (error) {
+      console.error('Error loading store statistics:', error);
+      this.snackBar.open('Error al cargar estadísticas', 'Cerrar', {
+        duration: 3000
+      });
+    }
+  }
+
+  async getUsersByStore(storeId: string): Promise<void> {
+    try {
+      const users = await this.userService.getUsersByStore(storeId);
+      const tableData = this.convertUsersToTableData(users);
+      
+      // Aplicar filtro temporal por tienda
+      this.filterForm.patchValue({ storeId });
+      this.applyFilters();
+      
+      this.snackBar.open(`Mostrando ${users.length} usuarios de la tienda`, 'Cerrar', {
+        duration: 3000
+      });
+    } catch (error) {
+      console.error('Error filtering by store:', error);
+      this.snackBar.open('Error al filtrar por tienda', 'Cerrar', {
+        duration: 3000
+      });
+    }
+  }
 }

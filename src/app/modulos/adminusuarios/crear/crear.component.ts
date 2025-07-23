@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Inject, inject } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -10,8 +10,8 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatCardModule } from '@angular/material/card';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatStepperModule } from '@angular/material/stepper';
-import { UserType } from '../../modelos/enums';
-import { AccessLevel, RiskLevel } from '../modelos/enums';
+
+import { AccessLevel, RiskLevel, UserType } from '../modelos/enums';
 import { UserService } from '../services/user.service';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 

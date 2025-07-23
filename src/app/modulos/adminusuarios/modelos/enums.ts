@@ -20,3 +20,17 @@ export enum RiskLevel {
   HIGH = 'high'
 }
 
+export enum UserStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  PENDING = 'pending',
+  BLOCKED = 'blocked',
+  SUSPENDED = 'suspended'
+}
+
+export enum DocumentType {
+  DNI = 'dni',
+  CE = 'ce', // Carné de Extranjería
+  PASSPORT = 'passport',
+  RUC = 'ruc'
+}
