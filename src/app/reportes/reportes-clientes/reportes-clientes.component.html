@@ -10,63 +10,104 @@
 
   </div>
 
-  <table class="w-full m-auto text-sm text-left rtl:text-right text-gray-300 dark:text-gray-400">
-    <thead class="text-xs text-gray-300 uppercase bg-gray-700 dark:bg-gray-700 dark:text-gray-400">
-    <tr>
-      <th scope="col" class="px-6 py-3">-</th>
-      <th scope="col" class="px-6 py-3">NOMBRE</th>
-      <th scope="col" class="px-6 py-3">APELLIDO</th>
-      <th scope="col" class="px-6 py-3">DISTRITO</th>
-      <th scope="col" class="px-6 py-3">DNI</th>
-      <th scope="col" class="px-6 py-3">MARCA</th>
-      <th scope="col" class="px-6 py-3">MODELO</th>
-      <th scope="col" class="px-6 py-3">VENDEDOR</th>
-      <th scope="col" class="px-6 py-3">PLAN</th>
-      <th scope="col" class="px-6 py-3">PUNTO DE VENTA</th>
 
-    </tr>
-    </thead>
-    <tbody>
-      @for (item of clientesAnalises; track $index) {
-        <tr class="bg-gray-800 border-b dark:border-gray-700 hover:bg-gray-700 dark:hover:bg-gray-600">
-          <td class="p-1 shadow-md">-</td>
-          <td class="px-6 py-4 font-semibold text-white shadow-md">{{item.formTitular?.nombre}}</td>
-          <td class="px-6 py-4 font-semibold text-white shadow-md">{{item.formTitular?.apellido}}</td>
-          <td class="px-6 py-4 font-semibold text-white shadow-md">{{item.formTitular?.distrito}}</td>
-          <td class="px-6 py-4 font-semibold text-white shadow-md">{{item.formTitular?.documentNumber}}</td>
-          <td class="px-6 py-4 shadow-md"><span class="text-sm font-semibold text-white">{{item.formularioVehiculo?.marcaVehiculo}}</span></td>
-          <td class="px-6 py-4 shadow-md"><span class="text-sm font-semibold text-white">{{item.formularioVehiculo?.modeloVehiculo}}</span></td>
-          <td class="px-6 py-4 shadow-md"><span class="text-sm font-semibold text-white">{{item.formularioVehiculo?.nombreDelVendedor}}</span></td>
-          <td class="px-6 py-4 shadow-md"><span class="text-sm font-semibold text-white">{{item.formularioVehiculo?.numeroQuincenas}}</span></td>
-          <td class="px-6 py-4 shadow-md"><span class="text-sm font-semibold text-white">{{item.formularioVehiculo?.puntoDeVenta}}</span></td>
-        </tr>
-      }
-    </tbody>
-  </table>
+<!--  <div class="overflow-x-auto rounded-lg shadow-lg">-->
+<!--    <table class="min-w-full text-sm text-left text-gray-300">-->
+<!--      <thead class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white uppercase text-xs font-bold">-->
+<!--      <tr>-->
+<!--        <th class="px-4 py-3">#</th>-->
+<!--&lt;!&ndash;        <th class="px-4 py-3">Nombre</th>&ndash;&gt;-->
+<!--&lt;!&ndash;        <th class="px-4 py-3">Apellido</th>&ndash;&gt;-->
+<!--        <th class="px-4 py-3">Distrito</th>-->
+<!--&lt;!&ndash;        <th class="px-4 py-3">DNI</th>&ndash;&gt;-->
+<!--        <th class="px-4 py-3">Marca</th>-->
+<!--        <th class="px-4 py-3">Modelo</th>-->
+<!--        <th class="px-4 py-3">Vendedor</th>-->
+<!--        <th class="px-4 py-3"># Quincenas</th>-->
+<!--        <th class="px-4 py-3">Punto de Venta</th>-->
+<!--      </tr>-->
+<!--      </thead>-->
+<!--      <tbody>-->
+<!--        @for (item of clientesAnalises; track $index) {-->
+<!--          <tr class="bg-gray-800 even:bg-gray-700 hover:bg-indigo-700 transition-colors duration-200">-->
+<!--            <td class="px-4 py-2 font-bold text-center">{{ $index + 1 }}</td>-->
+<!--&lt;!&ndash;            <td class="px-4 py-2">{{ item.formTitular?.nombre }}</td>&ndash;&gt;-->
+<!--&lt;!&ndash;            <td class="px-4 py-2">{{ item.formTitular?.apellido }}</td>&ndash;&gt;-->
+<!--            <td class="px-4 py-2">{{ item.formTitular?.distrito }}</td>-->
+<!--&lt;!&ndash;            <td class="px-4 py-2">{{ item.formTitular?.documentNumber }}</td>&ndash;&gt;-->
+<!--            <td class="px-4 py-2">{{ item.formularioVehiculo?.marcaVehiculo }}</td>-->
+<!--            <td class="px-4 py-2">{{ item.formularioVehiculo?.modeloVehiculo }}</td>-->
+<!--            <td class="px-4 py-2">{{ item.formularioVehiculo?.nombreDelVendedor }}</td>-->
+<!--            <td class="px-4 py-2 text-center">{{ item.formularioVehiculo?.numeroQuincenas }}</td>-->
+<!--            <td class="px-4 py-2">{{ item.formularioVehiculo?.puntoDeVenta }}</td>-->
+<!--          </tr>-->
+<!--        }-->
+<!--      </tbody>-->
+<!--    </table>-->
+<!--  </div>-->
 
 
 
-  <table class="w-full m-auto text-sm text-left rtl:text-right text-gray-300 dark:text-gray-400">
-      <thead class="text-xs text-gray-300 uppercase bg-gray-700 dark:bg-gray-700 dark:text-gray-400">
-      <tr class="bg-gray-700">
-        <th class="px-4 py-2">Punto de Venta</th>
-        <th class="px-4 py-2">Marca</th>
-        <th class="px-4 py-2">Modelo</th>
-        <th class="px-4 py-2">Ventas</th>
-      </tr>
-      </thead>
-      <tbody>
-        @for (item of modeloMasVendidoArray; track item.modelo) {
-          <tr class="bg-gray-800 border-b dark:border-gray-700 hover:bg-gray-700 dark:hover:bg-gray-600">
-            <td class="px-4 py-2">{{ item.puntoventa }}</td>
-            <td class="px-4 py-2">{{ item.marca }}</td>
-            <td class="px-4 py-2">{{ item.modelo }}</td>
-            <td class="px-4 py-2">{{ item.cantidad }}</td>
-          </tr>
-        }
-      </tbody>
-    </table>
+<!--  <table class="w-full m-auto text-sm text-left rtl:text-right text-gray-300 dark:text-gray-400">-->
+<!--      <thead class="text-xs text-gray-300 uppercase bg-gray-700 dark:bg-gray-700 dark:text-gray-400">-->
+<!--      <tr class="bg-gray-700">-->
+<!--        <th class="px-4 py-2">Distrito</th>-->
+<!--        <th class="px-4 py-2">Marca</th>-->
+<!--        <th class="px-4 py-2">Ventas</th>-->
+<!--      </tr>-->
+<!--      </thead>-->
+<!--      <tbody>-->
+<!--        @for (item of modeloMasVendidoArray; track item.marca) {-->
+<!--          <tr class="bg-gray-800 border-b dark:border-gray-700 hover:bg-gray-700 dark:hover:bg-gray-600">-->
+<!--            <td class="px-4 py-2">{{ item.distrito }}</td>-->
+<!--            <td class="px-4 py-2">{{ item.marca }}</td>-->
+<!--            <td class="px-4 py-2">{{ item.cantidad }}</td>-->
+<!--          </tr>-->
+<!--        }-->
+<!--      </tbody>-->
+<!--    </table>-->
+
+
+
+  <apx-chart
+    [series]="chartSeries"
+    [chart]="chartOptions.chart"
+    [xaxis]="chartOptions.xaxis"
+    [yaxis]="chartOptions.yaxis"
+    [plotOptions]="chartOptions.plotOptions"
+    [dataLabels]="chartOptions.dataLabels"
+    [tooltip]="chartOptions.tooltip"
+    [colors]="chartOptions.colors"
+    [grid]="chartOptions.grid"
+    class="bg-gray-900 rounded-xl p-4 shadow">
+  </apx-chart>
+
+  <apx-chart
+    [series]="chartSeriesMarcas"
+    [chart]="chartOptionsMarcas.chart"
+    [xaxis]="chartOptionsMarcas.xaxis"
+    [yaxis]="chartOptionsMarcas.yaxis"
+    [plotOptions]="chartOptionsMarcas.plotOptions"
+    [dataLabels]="chartOptionsMarcas.dataLabels"
+    [tooltip]="chartOptionsMarcas.tooltip"
+    [colors]="chartOptionsMarcas.colors"
+    [grid]="chartOptionsMarcas.grid"
+    class="bg-gray-900 rounded-xl p-4 shadow">
+  </apx-chart>
+
 
 </div>
+
+
+
+
+
+
+
+
+
+
+
+
 
 
