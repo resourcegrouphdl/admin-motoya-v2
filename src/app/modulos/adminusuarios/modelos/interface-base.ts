@@ -15,6 +15,9 @@ export interface BaseProfile {
   updatedAt: Date;
   createdBy?: string;
   storeIds?: string[]; // Para agrupar por tiendas
+
+  isFirstLogin?: boolean;
+  lastPasswordChange?: Date;
 }
 
 export interface Address {

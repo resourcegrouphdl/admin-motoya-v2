@@ -971,44 +971,8 @@
   box-shadow: inset 3px 0 0 #2196f3;
 }
 
-/* ====================================================================
-   TEMA OSCURO (OPCIONAL)
-   ==================================================================== */
 
-@media (prefers-color-scheme: dark) {
-  .user-management-container {
-    background-color: #121212;
-    color: #ffffff;
-  }
-  
-  .header-content {
-    background: linear-gradient(135deg, #1e3a8a 0%, #581c87 100%);
-  }
-  
-  .stat-card,
-  .filters-card,
-  .table-card {
-    background: #1e1e1e;
-    color: #ffffff;
-    
-    .mat-mdc-card {
-      background: #1e1e1e;
-    }
-  }
-  
-  .users-table {
-    background: #1e1e1e;
-    color: #ffffff;
-    
-    .mat-mdc-header-row {
-      background: #2a2a2a;
-    }
-    
-    .mat-mdc-row:hover {
-      background: #2a2a2a;
-    }
-  }
-}
+
 
 /* ====================================================================
    UTILIDADES

@@ -310,9 +310,9 @@
                     <mat-label>Tienda Asignada</mat-label>
                     <mat-select formControlName="storeId">
                       <mat-option value="">Sin asignar</mat-option>
-                      <mat-option value="store1">Tienda Lima Norte</mat-option>
-                      <mat-option value="store2">Tienda Lima Sur</mat-option>
-                      <mat-option value="store3">Tienda Callao</mat-option>
+                      <mat-option *ngFor="let store of stores" [value]="store.storeInfo.storeId">
+                        {{ store.storeInfo.storeName }} ({{ store.storeInfo.storeCode }})
+                      </mat-option>
                     </mat-select>
                     <mat-icon matSuffix>store</mat-icon>
                   </mat-form-field>

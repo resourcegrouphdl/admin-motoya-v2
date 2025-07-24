@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Inject } from '@angular/core';
+import { Component, inject, Inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -14,6 +14,8 @@ import { MatStepperModule } from '@angular/material/stepper';
 import { AccessLevel, RiskLevel, UserType } from '../modelos/enums';
 import { UserService } from '../services/user.service';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { BaseUser, StoreUser } from '../modelos/clases-herencia';
+import { query } from '@angular/fire/firestore';
 
 // Define or import the CreateUserDialogData interface
 
@@ -50,7 +52,11 @@ export interface UserCreationResult {
   templateUrl: './crear.component.html',
   styleUrl: './crear.component.css'
 })
-export class CrearComponent {
+export class CrearComponent implements OnInit{
+
+  stores: StoreUser[] = [];
+  
+    
   typeForm!: FormGroup;
   profileForm!: FormGroup;
   specificForm!: FormGroup;
@@ -74,6 +80,9 @@ export class CrearComponent {
   ) {
     this.initializeForms();
   }
+  ngOnInit(): void {
+    this.getStoresNames();
+  }
 
   private initializeForms(): void {
     this.typeForm = this.fb.group({
@@ -86,7 +95,8 @@ export class CrearComponent {
       email: ['', [Validators.required, Validators.email]],
       phone: ['', Validators.required],
       documentType: ['dni', Validators.required],
-      documentNumber: ['', Validators.required]
+      documentNumber: ['', Validators.required],
+      
     });
 
     this.specificForm = this.fb.group({
@@ -269,5 +279,20 @@ export class CrearComponent {
 
   closeDialog(): void {
     this.dialogRef.close();
+  }
+
+
+  private async getStoresNames():Promise<void>{
+    
+  try {
+    const storesList = await this.userService.getUsersByType(UserType.STORE);
+    this.stores = storesList as StoreUser[];
+    
+  }catch(error){
+    console.error('Error loading users:', error);
+      this.snackBar.open('Error al cargar usuarios', 'Cerrar', {
+        duration: 5000
+      });
+  }
   }
 }

@@ -16,6 +16,9 @@ export abstract class BaseUser implements BaseProfile {
   createdBy?: string;
   storeIds?: string[];
 
+  isFirstLogin?: boolean;
+  lastPasswordChange?: Date;
+
   constructor(profile: Omit<BaseProfile, 'uid' | 'createdAt' | 'updatedAt' | 'isActive'>) {
     this.uid = '';
     this.firstName = profile.firstName;
@@ -30,6 +33,8 @@ export abstract class BaseUser implements BaseProfile {
     this.updatedAt = new Date();
     this.createdBy = profile.createdBy;
     this.storeIds = profile.storeIds || [];
+    this.isFirstLogin = true
+    this.lastPasswordChange = new Date();
   }
 
   abstract getSpecificData(): any;
@@ -52,7 +57,9 @@ export abstract class BaseUser implements BaseProfile {
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       createdBy: this.createdBy,
-      storeIds: this.storeIds
+      storeIds: this.storeIds,
+      isFirstLogin: this.isFirstLogin,
+      lastPasswordChange: this.lastPasswordChange
     };
   }
 }

@@ -138,7 +138,7 @@
         
         <!-- Search and Toggle Section -->
         <div class="search-section">
-          <mat-form-field appearance="outline" class="search-field">
+          <mat-form-field appearance="fill" class="search-field">
             <mat-label>Buscar usuarios</mat-label>
             <input 
               matInput 
@@ -172,7 +172,7 @@
         <!-- Expandable Filters -->
         <div class="filters-expansion" [class.expanded]="showFilters">
           <div class="filters-grid" *ngIf="showFilters">
-            <mat-form-field appearance="outline">
+            <mat-form-field appearance="fill">
               <mat-label>Estado</mat-label>
               <mat-select formControlName="status">
                 <mat-option value="">Todos</mat-option>
@@ -182,7 +182,7 @@
               <mat-icon matSuffix>toggle_on</mat-icon>
             </mat-form-field>
 
-            <mat-form-field appearance="outline">
+            <mat-form-field appearance="fill">
               <mat-label>Tipo de Usuario</mat-label>
               <mat-select formControlName="userType">
                 <mat-option value="">Todos los tipos</mat-option>
@@ -194,7 +194,7 @@
               <mat-icon matSuffix>category</mat-icon>
             </mat-form-field>
 
-            <mat-form-field appearance="outline">
+            <mat-form-field appearance="fill">
               <mat-label>Tienda</mat-label>
               <mat-select formControlName="storeId">
                 <mat-option value="">Todas las tiendas</mat-option>
@@ -205,14 +205,14 @@
               <mat-icon matSuffix>store</mat-icon>
             </mat-form-field>
 
-            <mat-form-field appearance="outline">
+            <mat-form-field appearance="fill">
               <mat-label>Fecha desde</mat-label>
               <input matInput [matDatepicker]="picker1" formControlName="dateFrom">
               <mat-datepicker-toggle matSuffix [for]="picker1"></mat-datepicker-toggle>
               <mat-datepicker #picker1></mat-datepicker>
             </mat-form-field>
 
-            <mat-form-field appearance="outline">
+            <mat-form-field appearance="fill">
               <mat-label>Fecha hasta</mat-label>
               <input matInput [matDatepicker]="picker2" formControlName="dateTo">
               <mat-datepicker-toggle matSuffix [for]="picker2"></mat-datepicker-toggle>
