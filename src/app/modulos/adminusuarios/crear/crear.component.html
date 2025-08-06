@@ -1,4 +1,6 @@
-<div class="w-[100%] m-auto  overscroll-y-scroll h-[calc(100%-64px)] p-5 overscroll-x-scroll overflow-hidden scrollbar-hide ">
+<div
+  class="w-[100%] m-auto overscroll-y-scroll h-[calc(100%-64px)] p-5 overscroll-x-scroll overflow-hidden scrollbar-hide"
+>
   <div class="">
     <h2 mat-dialog-title>
       <mat-icon>person_add</mat-icon>
@@ -8,105 +10,14 @@
       <mat-dialog-content class="">
         <mat-stepper #stepper [linear]="true" orientation="vertical">
           <!-- Paso 1: Selección de tipo de usuario -->
-          <mat-step
-            [stepControl]="typeForm"
-            label="Tipo de Usuario"
-            
-          >
+          <mat-step [stepControl]="typeForm" label="Tipo de Usuario">
             <form [formGroup]="typeForm">
-              <div class="user-type-selection">
-                <h3>Selecciona el tipo de usuario</h3>
-                <div class="user-type-grid">
-                  <mat-card
-                    class="user-type-card"
-                    [class.selected]="selectedUserType === 'admin'"
-                    (click)="selectUserType(typeUserOptions[0].value)"
-                  >
-                    <mat-card-header>
-                      <mat-icon mat-card-avatar>admin_panel_settings</mat-icon>
-                      <mat-card-title>Administrador</mat-card-title>
-                      <mat-card-subtitle
-                        >Acceso completo al sistema</mat-card-subtitle
-                      >
-                    </mat-card-header>
-                    <mat-card-content>
-                      <p>
-                        Gestión de usuarios, configuración del sistema y acceso
-                        a todos los módulos.
-                      </p>
-                    </mat-card-content>
-                  </mat-card>
 
-                  <mat-card
-                    class="user-type-card"
-                    [class.selected]="selectedUserType === 'store'"
-                    (click)="selectUserType(typeUserOptions[1].value)"
-                  >
-                    <mat-card-header>
-                      <mat-icon mat-card-avatar>store</mat-icon>
-                      <mat-card-title>Tienda</mat-card-title>
-                      <mat-card-subtitle>Gestión de tienda</mat-card-subtitle>
-                    </mat-card-header>
-                    <mat-card-content>
-                      <p>
-                        Administración de inventario, ventas y operaciones de
-                        tienda.
-                      </p>
-                    </mat-card-content>
-                  </mat-card>
-
-                  <mat-card
-                    class="user-type-card"
-                    [class.selected]="selectedUserType === 'vendor'"
-                    (click)="selectUserType(typeUserOptions[2].value)"
-                  >
-                    <mat-card-header>
-                      <mat-icon mat-card-avatar>person_pin</mat-icon>
-                      <mat-card-title>Vendedor</mat-card-title>
-                      <mat-card-subtitle>Personal de ventas</mat-card-subtitle>
-                    </mat-card-header>
-                    <mat-card-content>
-                      <p>Gestión de clientes, ventas y seguimiento de metas.</p>
-                    </mat-card-content>
-                  </mat-card>
-
-                  <mat-card
-                    class="user-type-card"
-                    [class.selected]="selectedUserType === 'accountant'"
-                    (click)="selectUserType(typeUserOptions[3].value)"
-                  >
-                    <mat-card-header>
-                      <mat-icon mat-card-avatar>calculate</mat-icon>
-                      <mat-card-title>Contable</mat-card-title>
-                      <mat-card-subtitle>Área contable</mat-card-subtitle>
-                    </mat-card-header>
-                    <mat-card-content>
-                      <p>
-                        Gestión de contabilidad, reportes financieros y control
-                        fiscal.
-                      </p>
-                    </mat-card-content>
-                  </mat-card>
-
-                  <mat-card
-                    class="user-type-card"
-                    [class.selected]="selectedUserType === 'financial'"
-                    (click)="selectUserType(typeUserOptions[4].value)"
-                  >
-                    <mat-card-header>
-                      <mat-icon mat-card-avatar>trending_up</mat-icon>
-                      <mat-card-title>Analista Financiero</mat-card-title>
-                      <mat-card-subtitle>Análisis financiero</mat-card-subtitle>
-                    </mat-card-header>
-                    <mat-card-content>
-                      <p>
-                        Análisis de riesgos, proyecciones y estrategias
-                        financieras.
-                      </p>
-                    </mat-card-content>
-                  </mat-card>
-                </div>
-              </div>
+              <app-user-type-selection
+                [selectedUserType]="selectedUserType"
+                (userTypeSelected)="selectUserType($event)"
+              >
+              </app-user-type-selection>
 
               <div class="stepper-actions">
                 <button
@@ -260,6 +171,7 @@
           </mat-step>
 
           <!-- Paso 3: Información específica -->
+
           <mat-step [stepControl]="specificForm" label="Información Específica">
             <form [formGroup]="specificForm">
               <!-- Campos para Vendedor -->
@@ -307,10 +219,24 @@
                   </mat-form-field>
 
                   <mat-form-field appearance="fill" class="half-width">
-                    <mat-label>Tienda Asignada</mat-label>
-                    <mat-select formControlName="storeId">
-                      <mat-option value="">Sin asignar</mat-option>
-                      <mat-option *ngFor="let store of stores" [value]="store.storeInfo.storeId">
+                    <mat-label>Manager ID (opcional)</mat-label>
+                    <input
+                      matInput
+                      formControlName="managerId"
+                      placeholder="ID del Manager"
+                    />
+                    <mat-icon matSuffix>supervisor_account</mat-icon>
+                  </mat-form-field>
+                </div>
+
+                <div class="form-row">
+                  <mat-form-field appearance="fill" class="full-width">
+                    <mat-label>Tiendas Asignadas</mat-label>
+                    <mat-select formControlName="storeIds" multiple>
+                      <mat-option
+                        *ngFor="let store of stores"
+                        [value]="store.storeInfo.storeId"
+                      >
                         {{ store.storeInfo.storeName }} ({{ store.storeInfo.storeCode }})
                       </mat-option>
                     </mat-select>

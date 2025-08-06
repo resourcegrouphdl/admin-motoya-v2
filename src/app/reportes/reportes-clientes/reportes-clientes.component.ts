@@ -1,22 +1,13 @@
 import {Component, OnInit} from '@angular/core';
 
-import {MatIcon} from "@angular/material/icon";
-import {MatProgressBar} from "@angular/material/progress-bar";
-import {MatTooltip} from "@angular/material/tooltip";
 import { Router, NavigationEnd } from '@angular/router';
 import {ClientesmotoyaService} from "../../services/products/clientesmotoya.service";
 import {ClientesAnalisis} from "../../common_module/models/clienteanalisis";
-import {ChartComponent} from "ng-apexcharts";
 
 @Component({
   selector: 'app-reportes-clientes',
   standalone: true,
-  imports: [
-    MatIcon,
-    MatProgressBar,
-    MatTooltip,
-    ChartComponent
-  ],
+  imports: [],
   templateUrl: './reportes-clientes.component.html',
   styleUrl: './reportes-clientes.component.css'
 })

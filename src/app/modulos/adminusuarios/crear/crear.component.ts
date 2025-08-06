@@ -1,26 +1,37 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, Inject, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, inject, Inject, OnInit, ViewChild } from '@angular/core';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
-import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogModule,
+  MatDialogRef,
+} from '@angular/material/dialog';
 import { MatCardModule } from '@angular/material/card';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatStepperModule } from '@angular/material/stepper';
-
-import { AccessLevel, RiskLevel, UserType } from '../modelos/enums';
+import { MatStepper, MatStepperModule } from '@angular/material/stepper';
+import { UserType } from '../modelos/enums';
+import { DEFAULT_PERMISSIONS, UserTypeConfig } from '../modelos/interface-base';
+import { BaseUser } from '../modelos/clases-herencia';
+import { AccessLevel, RiskLevel } from '../modelos/enums';
 import { UserService } from '../services/user.service';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
-import { BaseUser, StoreUser } from '../modelos/clases-herencia';
-import { query } from '@angular/fire/firestore';
+import { StoreUser } from '../modelos/clases-herencia';
+import { UserTypeSelectionComponent } from '../shares/user-type-selection/user-type-selection.component';
 
 // Define or import the CreateUserDialogData interface
 
-
 export interface CreateUserDialogData {
+
   userTypes: any[];
 }
 
@@ -29,8 +40,6 @@ export interface UserCreationResult {
   profile: any;
   additionalData: any;
 }
-
-
 
 @Component({
   selector: 'app-crear',
@@ -47,20 +56,22 @@ export interface UserCreationResult {
     MatStepperModule,
     MatCardModule,
     MatSnackBarModule,
-    MatProgressSpinner
-  ],
+    MatProgressSpinner,
+    UserTypeSelectionComponent,
+],
   templateUrl: './crear.component.html',
-  styleUrl: './crear.component.css'
+  styleUrl: './crear.component.css',
 })
-export class CrearComponent implements OnInit{
+export class CrearComponent implements OnInit {
+
+  @ViewChild('stepper') stepper!: MatStepper;
 
   stores: StoreUser[] = [];
-  
-    
+
   typeForm!: FormGroup;
   profileForm!: FormGroup;
   specificForm!: FormGroup;
-  
+
   selectedUserType: UserType | null = null;
   isCreating = false;
   typeUserOptions = [
@@ -86,7 +97,7 @@ export class CrearComponent implements OnInit{
 
   private initializeForms(): void {
     this.typeForm = this.fb.group({
-      userType: ['', Validators.required]
+      userType: ['', Validators.required],
     });
 
     this.profileForm = this.fb.group({
@@ -96,7 +107,6 @@ export class CrearComponent implements OnInit{
       phone: ['', Validators.required],
       documentType: ['dni', Validators.required],
       documentNumber: ['', Validators.required],
-      
     });
 
     this.specificForm = this.fb.group({
@@ -110,8 +120,11 @@ export class CrearComponent implements OnInit{
     this.updateSpecificForm(userType);
   }
 
+
   private updateSpecificForm(userType: UserType): void {
-    this.specificForm = this.fb.group(this.getFormControlsForUserType(userType));
+    this.specificForm = this.fb.group(
+      this.getFormControlsForUserType(userType)
+    );
   }
 
   private getFormControlsForUserType(userType: UserType): any {
@@ -119,7 +132,10 @@ export class CrearComponent implements OnInit{
       case UserType.VENDOR:
         return {
           employeeId: ['', Validators.required],
-          commissionRate: [5, [Validators.required, Validators.min(0), Validators.max(100)]],
+          commissionRate: [
+            5,
+            [Validators.required, Validators.min(0), Validators.max(100)],
+          ],
           territory: ['', Validators.required],
           storeId: [''],
         };
@@ -162,11 +178,11 @@ export class CrearComponent implements OnInit{
     try {
       const profile = {
         ...this.profileForm.value,
-        createdBy: 'current-user-id' // TODO: obtener del auth service
+        createdBy: 'current-user-id', // TODO: obtener del auth service
       };
 
       const additionalData = this.buildAdditionalData();
-      
+
       const user = await this.userService.createUser(
         this.selectedUserType!,
         profile,
@@ -174,18 +190,17 @@ export class CrearComponent implements OnInit{
       );
 
       this.snackBar.open(
-        `Usuario ${user.getFullName()} creado exitosamente`, 
-        'Cerrar', 
+        `Usuario ${user.getFullName()} creado exitosamente`,
+        'Cerrar',
         { duration: 5000 }
       );
 
       this.dialogRef.close(user);
-
     } catch (error) {
       console.error('Error creating user:', error);
       this.snackBar.open(
-        'Error al crear el usuario. Por favor, inténtelo nuevamente.', 
-        'Cerrar', 
+        'Error al crear el usuario. Por favor, inténtelo nuevamente.',
+        'Cerrar',
         { duration: 5000 }
       );
     } finally {
@@ -195,24 +210,26 @@ export class CrearComponent implements OnInit{
 
   private buildAdditionalData(): any {
     const specificData = this.specificForm.value;
-    
+
     switch (this.selectedUserType) {
+      case UserType.VENDOR:
       case UserType.VENDOR:
         return {
           vendorInfo: {
             employeeId: specificData.employeeId,
             commissionRate: specificData.commissionRate / 100,
             territory: specificData.territory,
-            hireDate: new Date()
+            hireDate: new Date(),
+            managerId: specificData.managerId || undefined,
           },
-          storeAssignments: specificData.storeId ? [{
-            storeId: specificData.storeId,
-            storeName: this.getStoreName(specificData.storeId),
+          storeAssignments: (specificData.storeIds || []).map((storeId: string) => ({
+            storeId,
+            storeName: this.getStoreName(storeId),
             assignedAt: new Date(),
             assignedBy: 'current-user-id',
             isActive: true,
-            permissions: ['read', 'create', 'update']
-          }] : []
+            permissions: DEFAULT_PERMISSIONS[UserType.VENDOR].flatMap(p => p.actions),
+          })),
         };
 
       case UserType.FINANCIAL:
@@ -223,8 +240,8 @@ export class CrearComponent implements OnInit{
             riskLevel: specificData.riskLevel,
             certifications: [],
             department: specificData.department,
-            analysisTools: []
-          }
+            analysisTools: [],
+          },
         };
 
       case UserType.ACCOUNTANT:
@@ -234,8 +251,9 @@ export class CrearComponent implements OnInit{
             specializations: specificData.specializations || [],
             certifications: [],
             department: specificData.department,
-            canApproveTransactions: specificData.accessLevel === AccessLevel.SENIOR
-          }
+            canApproveTransactions:
+              specificData.accessLevel === AccessLevel.SENIOR,
+          },
         };
 
       case UserType.STORE:
@@ -249,10 +267,10 @@ export class CrearComponent implements OnInit{
               city: 'Lima',
               state: 'Lima',
               zipCode: '15001',
-              country: 'Peru'
+              country: 'Peru',
             },
-            maxInventory: specificData.maxInventory
-          }
+            maxInventory: specificData.maxInventory,
+          },
         };
 
       default:
@@ -261,20 +279,24 @@ export class CrearComponent implements OnInit{
   }
 
   canCreateUser(): boolean {
-    return this.typeForm.valid && this.profileForm.valid && this.specificForm.valid;
+    return (
+      this.typeForm.valid && this.profileForm.valid && this.specificForm.valid
+    );
   }
 
   private getStoreName(storeId: string): string {
     const storeNames: Record<string, string> = {
-      'store1': 'Tienda Lima Norte',
-      'store2': 'Tienda Lima Sur', 
-      'store3': 'Tienda Callao'
+      store1: 'Tienda Lima Norte',
+      store2: 'Tienda Lima Sur',
+      store3: 'Tienda Callao',
     };
     return storeNames[storeId] || 'Tienda Sin Nombre';
   }
 
   private generateStoreId(): string {
-    return 'store_' + Date.now().toString(36) + Math.random().toString(36).substr(2);
+    return (
+      'store_' + Date.now().toString(36) + Math.random().toString(36).substr(2)
+    );
   }
 
   closeDialog(): void {
@@ -282,17 +304,16 @@ export class CrearComponent implements OnInit{
   }
 
 
-  private async getStoresNames():Promise<void>{
-    
-  try {
-    const storesList = await this.userService.getUsersByType(UserType.STORE);
-    this.stores = storesList as StoreUser[];
-    
-  }catch(error){
-    console.error('Error loading users:', error);
+
+  private async getStoresNames(): Promise<void> {
+    try {
+      const storesList = await this.userService.getUsersByType(UserType.STORE);
+      this.stores = storesList as StoreUser[];
+    } catch (error) {
+      console.error('Error loading users:', error);
       this.snackBar.open('Error al cargar usuarios', 'Cerrar', {
-        duration: 5000
+        duration: 5000,
       });
-  }
+    }
   }
 }

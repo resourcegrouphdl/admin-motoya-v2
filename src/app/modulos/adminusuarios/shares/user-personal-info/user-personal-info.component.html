@@ -1,0 +1,135 @@
+<div class="personal-info-form">
+       <form [formGroup]="profileForm">
+              <div class="form-row pt-2">
+                <mat-form-field appearance="fill" class="half-width">
+                  <mat-label>Nombres</mat-label>
+
+                  <input
+                    matInput
+                    formControlName="firstName"
+                    placeholder="Ingresa los nombres"
+                  />
+
+                  <mat-icon matSuffix>person</mat-icon>
+
+                  <mat-error
+                    *ngIf="profileForm.get('firstName')?.hasError('required')"
+                  >
+                    Los nombres son requeridos
+                  </mat-error>
+
+                  <mat-error
+                    *ngIf="profileForm.get('firstName')?.hasError('minlength')"
+                  >
+                    Mínimo 2 caracteres
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="fill" class="half-width">
+                  <mat-label>Apellidos</mat-label>
+                  <input
+                    matInput
+                    formControlName="lastName"
+                    placeholder="Ingresa los apellidos"
+                  />
+                  <mat-icon matSuffix>person</mat-icon>
+                  <mat-error
+                    *ngIf="profileForm.get('lastName')?.hasError('required')"
+                  >
+                    Los apellidos son requeridos
+                  </mat-error>
+                  <mat-error
+                    *ngIf="profileForm.get('lastName')?.hasError('minlength')"
+                  >
+                    Mínimo 2 caracteres
+                  </mat-error>
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field appearance="fill" class="full-width">
+                  <mat-label>Correo Electrónico</mat-label>
+                  <input
+                    matInput
+                    type="email"
+                    formControlName="email"
+                    placeholder="usuario@ejemplo.com"
+                  />
+                  <mat-icon matSuffix>email</mat-icon>
+                  <mat-error
+                    *ngIf="profileForm.get('email')?.hasError('required')"
+                  >
+                    El correo es requerido
+                  </mat-error>
+                  <mat-error
+                    *ngIf="profileForm.get('email')?.hasError('email')"
+                  >
+                    Ingresa un correo válido
+                  </mat-error>
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field appearance="fill" class="half-width">
+                  <mat-label>Teléfono</mat-label>
+                  <input
+                    matInput
+                    formControlName="phone"
+                    placeholder="+51 999 999 999"
+                  />
+                  <mat-icon matSuffix>phone</mat-icon>
+                  <mat-error
+                    *ngIf="profileForm.get('phone')?.hasError('required')"
+                  >
+                    El teléfono es requerido
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="fill" class="half-width">
+                  <mat-label>Tipo de Documento</mat-label>
+                  <mat-select formControlName="documentType">
+                    <mat-option value="dni">DNI</mat-option>
+                    <mat-option value="ce">Carné de Extranjería</mat-option>
+                    <mat-option value="passport">Pasaporte</mat-option>
+                    <mat-option value="ruc">RUC</mat-option>
+                  </mat-select>
+                  <mat-icon matSuffix>badge</mat-icon>
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field appearance="fill" class="full-width">
+                  <mat-label>Número de Documento</mat-label>
+                  <input
+                    matInput
+                    formControlName="documentNumber"
+                    placeholder="Número de documento"
+                  />
+                  <mat-icon matSuffix>fingerprint</mat-icon>
+                  <mat-error
+                    *ngIf="
+                      profileForm.get('documentNumber')?.hasError('required')
+                    "
+                  >
+                    El número de documento es requerido
+                  </mat-error>
+                </mat-form-field>
+              </div>
+
+              <div class="stepper-actions">
+                <button mat-button matStepperPrevious>
+                  <mat-icon>navigate_before</mat-icon>
+                  Anterior
+                </button>
+                <button
+                  mat-raised-button
+                  color="primary"
+                  matStepperNext
+                  [disabled]="!profileForm.valid"
+                >
+                  Siguiente
+                  <mat-icon>navigate_next</mat-icon>
+                </button>
+              </div>
+            </form>
+</div>
