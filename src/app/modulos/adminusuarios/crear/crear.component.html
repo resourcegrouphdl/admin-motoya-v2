@@ -1,492 +1,223 @@
-<div
-  class="w-[100%] m-auto overscroll-y-scroll h-[calc(100%-64px)] p-5 overscroll-x-scroll overflow-hidden scrollbar-hide"
->
-  <div class="">
-    <h2 mat-dialog-title>
-      <mat-icon>person_add</mat-icon>
-      Crear Nuevo Usuario
-    </h2>
-    <div class="h-full">
-      <mat-dialog-content class="">
-        <mat-stepper #stepper [linear]="true" orientation="vertical">
-          <!-- Paso 1: Selección de tipo de usuario -->
-          <mat-step [stepControl]="typeForm" label="Tipo de Usuario">
-            <form [formGroup]="typeForm">
-
-              <app-user-type-selection
-                [selectedUserType]="selectedUserType"
-                (userTypeSelected)="selectUserType($event)"
-              >
-              </app-user-type-selection>
-
-              <div class="stepper-actions">
-                <button
-                  mat-raised-button
-                  color="primary"
-                  matStepperNext
-                  [disabled]="!typeForm.valid"
-                >
-                  Siguiente
-                  <mat-icon>navigate_next</mat-icon>
-                </button>
-              </div>
-            </form>
-          </mat-step>
-
-          <!-- Paso 2: Información personal -->
-          <mat-step [stepControl]="profileForm" label="Información Personal">
-            <form [formGroup]="profileForm">
-              <div class="form-row pt-2">
-                <mat-form-field appearance="fill" class="half-width">
-                  <mat-label>Nombres</mat-label>
-
-                  <input
-                    matInput
-                    formControlName="firstName"
-                    placeholder="Ingresa los nombres"
-                  />
-
-                  <mat-icon matSuffix>person</mat-icon>
-
-                  <mat-error
-                    *ngIf="profileForm.get('firstName')?.hasError('required')"
-                  >
-                    Los nombres son requeridos
-                  </mat-error>
-
-                  <mat-error
-                    *ngIf="profileForm.get('firstName')?.hasError('minlength')"
-                  >
-                    Mínimo 2 caracteres
-                  </mat-error>
-                </mat-form-field>
-
-                <mat-form-field appearance="fill" class="half-width">
-                  <mat-label>Apellidos</mat-label>
-                  <input
-                    matInput
-                    formControlName="lastName"
-                    placeholder="Ingresa los apellidos"
-                  />
-                  <mat-icon matSuffix>person</mat-icon>
-                  <mat-error
-                    *ngIf="profileForm.get('lastName')?.hasError('required')"
-                  >
-                    Los apellidos son requeridos
-                  </mat-error>
-                  <mat-error
-                    *ngIf="profileForm.get('lastName')?.hasError('minlength')"
-                  >
-                    Mínimo 2 caracteres
-                  </mat-error>
-                </mat-form-field>
-              </div>
-
-              <div class="form-row">
-                <mat-form-field appearance="fill" class="full-width">
-                  <mat-label>Correo Electrónico</mat-label>
-                  <input
-                    matInput
-                    type="email"
-                    formControlName="email"
-                    placeholder="usuario@ejemplo.com"
-                  />
-                  <mat-icon matSuffix>email</mat-icon>
-                  <mat-error
-                    *ngIf="profileForm.get('email')?.hasError('required')"
-                  >
-                    El correo es requerido
-                  </mat-error>
-                  <mat-error
-                    *ngIf="profileForm.get('email')?.hasError('email')"
-                  >
-                    Ingresa un correo válido
-                  </mat-error>
-                </mat-form-field>
-              </div>
-
-              <div class="form-row">
-                <mat-form-field appearance="fill" class="half-width">
-                  <mat-label>Teléfono</mat-label>
-                  <input
-                    matInput
-                    formControlName="phone"
-                    placeholder="+51 999 999 999"
-                  />
-                  <mat-icon matSuffix>phone</mat-icon>
-                  <mat-error
-                    *ngIf="profileForm.get('phone')?.hasError('required')"
-                  >
-                    El teléfono es requerido
-                  </mat-error>
-                </mat-form-field>
-
-                <mat-form-field appearance="fill" class="half-width">
-                  <mat-label>Tipo de Documento</mat-label>
-                  <mat-select formControlName="documentType">
-                    <mat-option value="dni">DNI</mat-option>
-                    <mat-option value="ce">Carné de Extranjería</mat-option>
-                    <mat-option value="passport">Pasaporte</mat-option>
-                    <mat-option value="ruc">RUC</mat-option>
-                  </mat-select>
-                  <mat-icon matSuffix>badge</mat-icon>
-                </mat-form-field>
-              </div>
-
-              <div class="form-row">
-                <mat-form-field appearance="fill" class="full-width">
-                  <mat-label>Número de Documento</mat-label>
-                  <input
-                    matInput
-                    formControlName="documentNumber"
-                    placeholder="Número de documento"
-                  />
-                  <mat-icon matSuffix>fingerprint</mat-icon>
-                  <mat-error
-                    *ngIf="
-                      profileForm.get('documentNumber')?.hasError('required')
-                    "
-                  >
-                    El número de documento es requerido
-                  </mat-error>
-                </mat-form-field>
-              </div>
-
-              <div class="stepper-actions">
-                <button mat-button matStepperPrevious>
-                  <mat-icon>navigate_before</mat-icon>
-                  Anterior
-                </button>
-                <button
-                  mat-raised-button
-                  color="primary"
-                  matStepperNext
-                  [disabled]="!profileForm.valid"
-                >
-                  Siguiente
-                  <mat-icon>navigate_next</mat-icon>
-                </button>
-              </div>
-            </form>
-          </mat-step>
-
-          <!-- Paso 3: Información específica -->
-
-          <mat-step [stepControl]="specificForm" label="Información Específica">
-            <form [formGroup]="specificForm">
-              <!-- Campos para Vendedor -->
-              <div
-                *ngIf="selectedUserType === 'vendor'"
-                class="specific-form-section"
-              >
-                <h4>
-                  <mat-icon>person_pin</mat-icon> Información del Vendedor
-                </h4>
-
-                <div class="form-row">
-                  <mat-form-field appearance="fill" class="half-width">
-                    <mat-label>ID de Empleado</mat-label>
-                    <input
-                      matInput
-                      formControlName="employeeId"
-                      placeholder="EMP001"
-                    />
-                    <mat-icon matSuffix>badge</mat-icon>
-                  </mat-form-field>
-
-                  <mat-form-field appearance="fill" class="half-width">
-                    <mat-label>Tasa de Comisión (%)</mat-label>
-                    <input
-                      matInput
-                      type="number"
-                      formControlName="commissionRate"
-                      min="0"
-                      max="100"
-                    />
-                    <mat-icon matSuffix>percent</mat-icon>
-                  </mat-form-field>
-                </div>
-
-                <div class="form-row">
-                  <mat-form-field appearance="fill" class="half-width">
-                    <mat-label>Territorio</mat-label>
-                    <input
-                      matInput
-                      formControlName="territory"
-                      placeholder="Lima Norte"
-                    />
-                    <mat-icon matSuffix>map</mat-icon>
-                  </mat-form-field>
-
-                  <mat-form-field appearance="fill" class="half-width">
-                    <mat-label>Manager ID (opcional)</mat-label>
-                    <input
-                      matInput
-                      formControlName="managerId"
-                      placeholder="ID del Manager"
-                    />
-                    <mat-icon matSuffix>supervisor_account</mat-icon>
-                  </mat-form-field>
-                </div>
-
-                <div class="form-row">
-                  <mat-form-field appearance="fill" class="full-width">
-                    <mat-label>Tiendas Asignadas</mat-label>
-                    <mat-select formControlName="storeIds" multiple>
-                      <mat-option
-                        *ngFor="let store of stores"
-                        [value]="store.storeInfo.storeId"
-                      >
-                        {{ store.storeInfo.storeName }} ({{ store.storeInfo.storeCode }})
-                      </mat-option>
-                    </mat-select>
-                    <mat-icon matSuffix>store</mat-icon>
-                  </mat-form-field>
-                </div>
-              </div>
-
-              <!-- Campos para Analista Financiero -->
-              <div
-                *ngIf="selectedUserType === 'financial'"
-                class="specific-form-section"
-              >
-                <h4>
-                  <mat-icon>trending_up</mat-icon> Información del Analista
-                  Financiero
-                </h4>
-
-                <div class="form-row">
-                  <mat-form-field appearance="fill" class="half-width">
-                    <mat-label>Límite de Aprobación</mat-label>
-                    <input
-                      matInput
-                      type="number"
-                      formControlName="approvalLimit"
-                      min="0"
-                    />
-                    <mat-icon matSuffix>attach_money</mat-icon>
-                  </mat-form-field>
-
-                  <mat-form-field appearance="fill" class="half-width">
-                    <mat-label>Nivel de Riesgo</mat-label>
-                    <mat-select formControlName="riskLevel">
-                      <mat-option value="low">Bajo</mat-option>
-                      <mat-option value="medium">Medio</mat-option>
-                      <mat-option value="high">Alto</mat-option>
-                    </mat-select>
-                    <mat-icon matSuffix>warning</mat-icon>
-                  </mat-form-field>
-                </div>
-
-                <div class="form-row">
-                  <mat-form-field appearance="fill" class="full-width">
-                    <mat-label>Departamento</mat-label>
-                    <input
-                      matInput
-                      formControlName="department"
-                      placeholder="Finanzas"
-                    />
-                    <mat-icon matSuffix>business</mat-icon>
-                  </mat-form-field>
-                </div>
-              </div>
-
-              <!-- Campos para Contable -->
-              <div
-                *ngIf="selectedUserType === 'accountant'"
-                class="specific-form-section"
-              >
-                <h4><mat-icon>calculate</mat-icon> Información del Contable</h4>
-
-                <div class="form-row">
-                  <mat-form-field appearance="fill" class="half-width">
-                    <mat-label>Nivel de Acceso</mat-label>
-                    <mat-select formControlName="accessLevel">
-                      <mat-option value="junior">Junior</mat-option>
-                      <mat-option value="senior">Senior</mat-option>
-                      <mat-option value="manager">Manager</mat-option>
-                    </mat-select>
-                    <mat-icon matSuffix>security</mat-icon>
-                  </mat-form-field>
-
-                  <mat-form-field appearance="outline" class="half-width">
-                    <mat-label>Departamento</mat-label>
-                    <input
-                      matInput
-                      formControlName="department"
-                      placeholder="Contabilidad"
-                    />
-                    <mat-icon matSuffix>business</mat-icon>
-                  </mat-form-field>
-                </div>
-              </div>
-
-              <!-- Campos para Tienda -->
-              <div
-                *ngIf="selectedUserType === 'store'"
-                class="specific-form-section"
-              >
-                <h4><mat-icon>store</mat-icon> Información de la Tienda</h4>
-
-                <div class="form-row">
-                  <mat-form-field appearance="fill" class="half-width">
-                    <mat-label>Nombre de la Tienda</mat-label>
-                    <input
-                      matInput
-                      formControlName="storeName"
-                      placeholder="Tienda Principal"
-                    />
-                    <mat-icon matSuffix>store</mat-icon>
-                  </mat-form-field>
-
-                  <mat-form-field appearance="fill" class="half-width">
-                    <mat-label>Código de Tienda</mat-label>
-                    <input
-                      matInput
-                      formControlName="storeCode"
-                      placeholder="TDA001"
-                    />
-                    <mat-icon matSuffix>qr_code</mat-icon>
-                  </mat-form-field>
-                </div>
-
-                <div class="form-row">
-                  <mat-form-field appearance="fill" class="half-width">
-                    <mat-label>Inventario Máximo</mat-label>
-                    <input
-                      matInput
-                      type="number"
-                      formControlName="maxInventory"
-                      min="1"
-                    />
-                    <mat-icon matSuffix>inventory</mat-icon>
-                  </mat-form-field>
-
-                  <mat-form-field appearance="fill" class="half-width">
-                    <mat-label>Dirección</mat-label>
-                    <input
-                      matInput
-                      formControlName="address"
-                      placeholder="Av. Principal 123"
-                    />
-                    <mat-icon matSuffix>location_on</mat-icon>
-                  </mat-form-field>
-                </div>
-              </div>
-
-              <!-- Para Admin no hay campos específicos -->
-              <div
-                *ngIf="selectedUserType === 'admin'"
-                class="specific-form-section"
-              >
-                <div class="admin-info">
-                  <mat-icon>admin_panel_settings</mat-icon>
-                  <h4>Usuario Administrador</h4>
-                  <p>
-                    El usuario administrador tendrá acceso completo a todas las
-                    funcionalidades del sistema.
-                  </p>
-                </div>
-              </div>
-
-              <div class="stepper-actions">
-                <button mat-button matStepperPrevious>
-                  <mat-icon>navigate_before</mat-icon>
-                  Anterior
-                </button>
-                <button
-                  mat-raised-button
-                  color="primary"
-                  matStepperNext
-                  [disabled]="!specificForm.valid"
-                >
-                  Siguiente
-                  <mat-icon>navigate_next</mat-icon>
-                </button>
-              </div>
-            </form>
-          </mat-step>
-
-          <!-- Paso 4: Confirmación -->
-          <mat-step label="Confirmación">
-            <div class="confirmation-section">
-              <h4>
-                <mat-icon>check_circle</mat-icon> Confirmar Creación de Usuario
-              </h4>
-
-              <mat-card class="summary-card">
-                <mat-card-header>
-                  <mat-card-title>Resumen del Usuario</mat-card-title>
-                </mat-card-header>
-                <mat-card-content>
-                  <div class="summary-item">
-                    <strong>Tipo:</strong>
-                    <span class="user-type-badge" [ngClass]="selectedUserType">
-                      {{ selectedUserType | titlecase }}
-                    </span>
+   <h2 mat-dialog-title>Crear Nuevo Usuario</h2>
+    
+    <mat-dialog-content>
+      <mat-stepper [linear]="true" #stepper>
+        
+        <!-- Step 1: Seleccionar tipo de usuario -->
+        <mat-step [stepControl]="userTypeForm" label="Tipo de Usuario">
+          <form [formGroup]="userTypeForm">
+            <mat-form-field appearance="outline">
+              <mat-label>Tipo de Usuario</mat-label>
+              <mat-select formControlName="userType" (selectionChange)="onUserTypeChange($event.value)">
+                <mat-option *ngFor="let type of userTypes" [value]="type.value">
+                  <div>
+                    <div>{{ type.label }}</div>
+                    <div style="font-size: 12px; color: #666;">{{ type.description }}</div>
                   </div>
-                  <div class="summary-item">
-                    <strong>Nombre:</strong>
-                    {{ profileForm.get("firstName")?.value }}
-                    {{ profileForm.get("lastName")?.value }}
-                  </div>
-                  <div class="summary-item">
-                    <strong>Email:</strong>
-                    {{ profileForm.get("email")?.value }}
-                  </div>
-                  <div class="summary-item">
-                    <strong>Teléfono:</strong>
-                    {{ profileForm.get("phone")?.value }}
-                  </div>
-                  <div class="summary-item">
-                    <strong>Documento:</strong>
-                    {{ profileForm.get("documentType")?.value | uppercase }} -
-                    {{ profileForm.get("documentNumber")?.value }}
-                  </div>
-                </mat-card-content>
-              </mat-card>
-
-              <div class="warning-message">
-                <mat-icon>info</mat-icon>
-                <div>
-                  <strong>Importante:</strong>
-                  <ul>
-                    <li>Se creará una cuenta de usuario en el sistema</li>
-                    <li>Se generará una contraseña temporal</li>
-                    <li>Se enviará un email con las credenciales de acceso</li>
-                    <li>
-                      El usuario deberá cambiar su contraseña en el primer
-                      inicio de sesión
-                    </li>
-                  </ul>
-                </div>
-              </div>
-
-              <div class="stepper-actions">
-                <button mat-button matStepperPrevious>
-                  <mat-icon>navigate_before</mat-icon>
-                  Anterior
-                </button>
-                <button
-                  mat-raised-button
-                  color="primary"
-                  [disabled]="!canCreateUser() || isCreating"
-                  (click)="createUser()"
-                >
-                  <mat-icon *ngIf="!isCreating">person_add</mat-icon>
-                  <mat-spinner *ngIf="isCreating" diameter="20"></mat-spinner>
-                  {{ isCreating ? "Creando..." : "Crear Usuario" }}
-                </button>
-              </div>
+                </mat-option>
+              </mat-select>
+              <mat-error *ngIf="userTypeForm.get('userType')?.hasError('required')">
+                Seleccione un tipo de usuario
+              </mat-error>
+            </mat-form-field>
+            
+            <div>
+              <button mat-button matStepperNext [disabled]="!userTypeForm.valid">Siguiente</button>
             </div>
-          </mat-step>
-        </mat-stepper>
-      </mat-dialog-content>
-    </div>
+          </form>
+        </mat-step>
+
+        <!-- Step 2: Datos básicos -->
+        <mat-step [stepControl]="basicDataForm" label="Datos Básicos">
+          <form [formGroup]="basicDataForm">
+            
+            <mat-form-field appearance="outline">
+              <mat-label>Nombres</mat-label>
+              <input matInput formControlName="firstName">
+              <mat-error *ngIf="basicDataForm.get('firstName')?.hasError('required')">
+                Nombres es requerido
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Apellidos</mat-label>
+              <input matInput formControlName="lastName">
+              <mat-error *ngIf="basicDataForm.get('lastName')?.hasError('required')">
+                Apellidos es requerido
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Email</mat-label>
+              <input matInput type="email" formControlName="email">
+              <mat-error *ngIf="basicDataForm.get('email')?.hasError('required')">
+                Email es requerido
+              </mat-error>
+              <mat-error *ngIf="basicDataForm.get('email')?.hasError('email')">
+                Email no válido
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Teléfono</mat-label>
+              <input matInput formControlName="phone">
+              <mat-error *ngIf="basicDataForm.get('phone')?.hasError('required')">
+                Teléfono es requerido
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Tipo de Documento</mat-label>
+              <mat-select formControlName="documentType">
+                <mat-option *ngFor="let doc of documentTypes" [value]="doc.value">
+                  {{ doc.label }}
+                </mat-option>
+              </mat-select>
+              <mat-error *ngIf="basicDataForm.get('documentType')?.hasError('required')">
+                Seleccione tipo de documento
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Número de Documento</mat-label>
+              <input matInput formControlName="documentNumber">
+              <mat-error *ngIf="basicDataForm.get('documentNumber')?.hasError('required')">
+                Número de documento es requerido
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Contraseña</mat-label>
+              <input matInput type="password" formControlName="password">
+              <mat-error *ngIf="basicDataForm.get('password')?.hasError('required')">
+                Contraseña es requerida
+              </mat-error>
+              <mat-error *ngIf="basicDataForm.get('password')?.hasError('minlength')">
+                Mínimo 6 caracteres
+              </mat-error>
+            </mat-form-field>
+
+            <div>
+              <button mat-button matStepperPrevious>Anterior</button>
+              <button mat-button matStepperNext [disabled]="!basicDataForm.valid">Siguiente</button>
+            </div>
+          </form>
+        </mat-step>
+
+        <!-- Step 3: Permisos específicos -->
+        <mat-step [stepControl]="specificDataForm" label="Permisos Específicos">
+          <form [formGroup]="specificDataForm">
+            <h3>Permisos para {{ getSelectedUserTypeLabel() }}</h3>
+            
+            <!-- Permisos dinámicos según tipo de usuario -->
+            <ng-container [ngSwitch]="selectedUserType">
+              
+              <!-- Comercial -->
+              <div *ngSwitchCase="'comercial'">
+                <mat-form-field appearance="outline">
+                  <mat-label>Equipo de Ventas</mat-label>
+                  <input matInput formControlName="salesTeam">
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Meta de Ventas</mat-label>
+                  <input matInput type="number" formControlName="salesTarget">
+                </mat-form-field>
+              </div>
+
+              <!-- Logística -->
+              <div *ngSwitchCase="'logistica'">
+                <mat-form-field appearance="outline">
+                  <mat-label>Nivel de Inventario</mat-label>
+                  <mat-select formControlName="inventoryLevel">
+                    <mat-option value="basic">Básico</mat-option>
+                    <mat-option value="advanced">Avanzado</mat-option>
+                    <mat-option value="full">Completo</mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+
+              <!-- Finanzas -->
+              <div *ngSwitchCase="'finanzas'">
+                <mat-checkbox formControlName="accountingAccess">Acceso a Contabilidad</mat-checkbox>
+                <mat-checkbox formControlName="treasuryAccess">Acceso a Tesorería</mat-checkbox>
+                <mat-checkbox formControlName="bankAccess">Acceso a Bancos</mat-checkbox>
+                <mat-checkbox formControlName="creditAccess">Acceso a Créditos</mat-checkbox>
+              </div>
+
+              <!-- Gerencia -->
+              <div *ngSwitchCase="'gerencia'">
+                <mat-checkbox formControlName="auditAccess">Acceso a Auditoría</mat-checkbox>
+                <mat-checkbox formControlName="costsAccess">Acceso a Costos</mat-checkbox>
+                <mat-checkbox formControlName="financialStatementsAccess">Acceso a EE.FF.</mat-checkbox>
+                <mat-form-field appearance="outline">
+                  <mat-label>Nivel de Acceso al Sistema</mat-label>
+                  <mat-select formControlName="systemAccessLevel">
+                    <mat-option value="restricted">Restringido</mat-option>
+                    <mat-option value="full">Completo</mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+
+              <!-- Contabilidad -->
+              <div *ngSwitchCase="'contabilidad'">
+                <mat-checkbox formControlName="billingAccess">Acceso a Facturación</mat-checkbox>
+                <mat-checkbox formControlName="purchaseBooksAccess">Acceso a Libro de Compras</mat-checkbox>
+                <mat-checkbox formControlName="salesBooksAccess">Acceso a Libro de Ventas</mat-checkbox>
+                <mat-checkbox formControlName="kardexAccess">Acceso a Kardex</mat-checkbox>
+                <mat-checkbox formControlName="electronicBooksAccess">Acceso a Libros Electrónicos</mat-checkbox>
+              </div>
+
+              <!-- Administración -->
+              <div *ngSwitchCase="'administracion'">
+                <mat-checkbox formControlName="companyManagement">Gestión de Empresas</mat-checkbox>
+                <mat-checkbox formControlName="supplierManagement">Gestión de Proveedores</mat-checkbox>
+                <mat-checkbox formControlName="productManagement">Gestión de Productos</mat-checkbox>
+                <mat-checkbox formControlName="categoryManagement">Gestión de Categorías</mat-checkbox>
+                <mat-checkbox formControlName="priceManagement">Gestión de Precios</mat-checkbox>
+              </div>
+
+              <!-- Recursos Humanos -->
+              <div *ngSwitchCase="'recursos_humanos'">
+                <mat-checkbox formControlName="contractsAccess">Acceso a Contratos</mat-checkbox>
+                <mat-checkbox formControlName="personnelControlAccess">Control de Personal</mat-checkbox>
+                <mat-checkbox formControlName="trainingAccess">Acceso a Capacitación</mat-checkbox>
+                <mat-checkbox formControlName="performanceEvaluationAccess">Evaluación de Desempeño</mat-checkbox>
+              </div>
+
+            </ng-container>
+
+            <div>
+              <button mat-button matStepperPrevious>Anterior</button>
+              <button mat-button matStepperNext>Siguiente</button>
+            </div>
+          </form>
+        </mat-step>
+
+        <!-- Step 4: Confirmación -->
+        <mat-step label="Confirmación">
+          <div>
+            <h3>Resumen del Usuario</h3>
+            <p><strong>Tipo:</strong> {{ getSelectedUserTypeLabel() }}</p>
+            <p><strong>Nombre:</strong> {{ basicDataForm.get('firstName')?.value }} {{ basicDataForm.get('lastName')?.value }}</p>
+            <p><strong>Email:</strong> {{ basicDataForm.get('email')?.value }}</p>
+            <p><strong>Teléfono:</strong> {{ basicDataForm.get('phone')?.value }}</p>
+            <p><strong>Documento:</strong> {{ basicDataForm.get('documentType')?.value }} - {{ basicDataForm.get('documentNumber')?.value }}</p>
+          </div>
+
+          <div>
+            <button mat-button matStepperPrevious>Anterior</button>
+            <button mat-raised-button color="primary" 
+                    (click)="createUser()" 
+                    [disabled]="isCreating">
+              <mat-spinner diameter="20" *ngIf="isCreating"></mat-spinner>
+              {{ isCreating ? 'Creando...' : 'Crear Usuario' }}
+            </button>
+          </div>
+        </mat-step>
+
+      </mat-stepper>
+    </mat-dialog-content>
+
     <mat-dialog-actions>
-      <button mat-button (click)="closeDialog()" [disabled]="isCreating">
-        Cancelar
-      </button>
+      <button mat-button (click)="close()">Cancelar</button>
     </mat-dialog-actions>
-  </div>
-</div>

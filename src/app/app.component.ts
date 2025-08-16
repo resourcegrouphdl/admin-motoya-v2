@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { RouterOutlet, Router } from '@angular/router';
+import { RouterOutlet } from '@angular/router';
 import { NgClass } from '@angular/common';
 
 
@@ -21,8 +21,8 @@ export class AppComponent {
     }
   }
 
- 
-  
 
-  
+
+
+
 }

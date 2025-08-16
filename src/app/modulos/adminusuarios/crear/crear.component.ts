@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, Inject, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -13,40 +13,39 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
 import {
   MAT_DIALOG_DATA,
+  MatDialog,
   MatDialogModule,
   MatDialogRef,
 } from '@angular/material/dialog';
 import { MatCardModule } from '@angular/material/card';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatStepper, MatStepperModule } from '@angular/material/stepper';
-import { UserType } from '../modelos/enums';
-import { DEFAULT_PERMISSIONS, UserTypeConfig } from '../modelos/interface-base';
-import { BaseUser } from '../modelos/clases-herencia';
-import { AccessLevel, RiskLevel } from '../modelos/enums';
-import { UserService } from '../services/user.service';
-import { MatProgressSpinner } from '@angular/material/progress-spinner';
-import { StoreUser } from '../modelos/clases-herencia';
-import { UserTypeSelectionComponent } from '../shares/user-type-selection/user-type-selection.component';
+import { MatStepperModule } from '@angular/material/stepper';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatChipsModule, } from '@angular/material/chips';;
+import { UserType, DocumentType } from '../enums/user-type.types';
 
-// Define or import the CreateUserDialogData interface
+import { UserFactoryService } from '../services/user-factory.service';
+import { Auth } from '@angular/fire/auth';
+import { FirebaseUserService } from '../services/firebase-user.service';
+import { ErrorHandlerService } from '../services/error-handler.service';
 
+
+// Interfaces locales
 export interface CreateUserDialogData {
-
-  userTypes: any[];
+  userTypes?: any[];
+  preselectedType?: UserType;
 }
 
-export interface UserCreationResult {
-  userType: UserType;
-  profile: any;
-  additionalData: any;
-}
+
 
 @Component({
   selector: 'app-crear',
-  standalone: true,
+  standalone: true, // Componente Standalone de Angular 17
   imports: [
+    // Angular Common
     CommonModule,
     ReactiveFormsModule,
+    // Angular Material
     MatDialogModule,
     MatButtonModule,
     MatIconModule,
@@ -56,151 +55,167 @@ export interface UserCreationResult {
     MatStepperModule,
     MatCardModule,
     MatSnackBarModule,
-    MatProgressSpinner,
-    UserTypeSelectionComponent,
+    MatProgressSpinnerModule,
+    MatChipsModule,
 ],
   templateUrl: './crear.component.html',
-  styleUrl: './crear.component.css',
+  styleUrl: './crear.component.css', // styleUrl en lugar de styleUrls (Angular 17)
 })
-export class CrearComponent implements OnInit {
+export class CrearComponent  {
 
-  @ViewChild('stepper') stepper!: MatStepper;
+  private fb = inject(FormBuilder);
+  private dialogRef = inject(MatDialogRef<CrearComponent>);
+  private data = inject(MAT_DIALOG_DATA);
+  private userFactory = inject(UserFactoryService);
+  private firebaseUserService = inject(FirebaseUserService);
+  private snackBar = inject(MatSnackBar);
+  private auth = inject(Auth);
 
-  stores: StoreUser[] = [];
-
-  typeForm!: FormGroup;
-  profileForm!: FormGroup;
-  specificForm!: FormGroup;
-
-  selectedUserType: UserType | null = null;
+  userTypeForm!: FormGroup;
+  basicDataForm!: FormGroup;
+  specificDataForm!: FormGroup;
+  
+  selectedUserType: string = '';
   isCreating = false;
-  typeUserOptions = [
-    { value: UserType.ADMIN, label: 'Administrador' },
-    { value: UserType.STORE, label: 'Tienda' },
-    { value: UserType.VENDOR, label: 'Vendedor' },
-    { value: UserType.ACCOUNTANT, label: 'Contable' },
-    { value: UserType.FINANCIAL, label: 'Analista Financiero' },
+
+  userTypes = [
+    { value: UserType.COMERCIAL, label: 'Comercial', description: 'Ventas, marketing' },
+    { value: UserType.LOGISTICA, label: 'Logística', description: 'Inventarios, almacén' },
+    { value: UserType.FINANZAS, label: 'Finanzas', description: 'Contabilidad, tesorería, bancos, créditos y cobranzas' },
+    { value: UserType.GERENCIA, label: 'Gerencia', description: 'EE.FF., Auditoría, Costos, Accesos' },
+    { value: UserType.CONTABILIDAD, label: 'Contabilidad', description: 'Facturación, Libro de compras, Ventas, kardex, libros electrónicos' },
+    { value: UserType.ADMINISTRACION, label: 'Administración', description: 'Empresas, proveedores, productos, categorías, precios' },
+    { value: UserType.RECURSOS_HUMANOS, label: 'Recursos Humanos', description: 'Contratos, control de personal, capacitación, evaluación de desempeño' }
   ];
 
-  constructor(
-    private fb: FormBuilder,
-    private dialogRef: MatDialogRef<CrearComponent>,
-    private userService: UserService,
-    private snackBar: MatSnackBar,
-    @Inject(MAT_DIALOG_DATA) public data: CreateUserDialogData
-  ) {
+  documentTypes = [
+    { value: DocumentType.DNI, label: 'DNI' },
+    { value: DocumentType.RUC, label: 'RUC' },
+    { value: DocumentType.CARNET_EXTRANJERIA, label: 'Carnet de Extranjería' },
+    { value: DocumentType.PASAPORTE, label: 'Pasaporte' }
+  ];
+
+  constructor() {
     this.initializeForms();
   }
-  ngOnInit(): void {
-    this.getStoresNames();
-  }
 
-  private initializeForms(): void {
-    this.typeForm = this.fb.group({
-      userType: ['', Validators.required],
+  initializeForms(): void {
+    this.userTypeForm = this.fb.group({
+      userType: ['', Validators.required]
     });
 
-    this.profileForm = this.fb.group({
-      firstName: ['', [Validators.required, Validators.minLength(2)]],
-      lastName: ['', [Validators.required, Validators.minLength(2)]],
+    this.basicDataForm = this.fb.group({
+      firstName: ['', Validators.required],
+      lastName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       phone: ['', Validators.required],
-      documentType: ['dni', Validators.required],
+      documentType: ['', Validators.required],
       documentNumber: ['', Validators.required],
+      password: ['', [Validators.required, Validators.minLength(6)]]
     });
 
-    this.specificForm = this.fb.group({
-      // Campos dinámicos según el tipo de usuario
-    });
+    this.specificDataForm = this.fb.group({});
   }
 
-  selectUserType(userType: UserType): void {
+  onUserTypeChange(userType: string): void {
     this.selectedUserType = userType;
-    this.typeForm.patchValue({ userType });
-    this.updateSpecificForm(userType);
+    this.buildSpecificDataForm(userType);
   }
 
+  buildSpecificDataForm(userType: string): void {
+    const controls: any = {};
 
-  private updateSpecificForm(userType: UserType): void {
-    this.specificForm = this.fb.group(
-      this.getFormControlsForUserType(userType)
-    );
-  }
-
-  private getFormControlsForUserType(userType: UserType): any {
     switch (userType) {
-      case UserType.VENDOR:
-        return {
-          employeeId: ['', Validators.required],
-          commissionRate: [
-            5,
-            [Validators.required, Validators.min(0), Validators.max(100)],
-          ],
-          territory: ['', Validators.required],
-          storeId: [''],
-        };
-
-      case UserType.FINANCIAL:
-        return {
-          approvalLimit: [200000, [Validators.required, Validators.min(0)]],
-          riskLevel: [RiskLevel.MEDIUM, Validators.required],
-          specializations: [[]],
-          department: ['', Validators.required],
-        };
-
-      case UserType.ACCOUNTANT:
-        return {
-          accessLevel: [AccessLevel.JUNIOR, Validators.required],
-          department: ['', Validators.required],
-          specializations: [[]],
-        };
-
-      case UserType.STORE:
-        return {
-          storeName: ['', Validators.required],
-          storeCode: ['', Validators.required],
-          maxInventory: [1000, [Validators.required, Validators.min(1)]],
-          address: ['', Validators.required],
-        };
-
-      default:
-        return {};
+      case UserType.COMERCIAL:
+        controls.salesTeam = [''];
+        controls.salesTarget = [''];
+        break;
+      
+      case UserType.LOGISTICA:
+        controls.inventoryLevel = ['basic'];
+        break;
+      
+      case UserType.FINANZAS:
+        controls.accountingAccess = [false];
+        controls.treasuryAccess = [false];
+        controls.bankAccess = [false];
+        controls.creditAccess = [false];
+        break;
+      
+      case UserType.GERENCIA:
+        controls.auditAccess = [false];
+        controls.costsAccess = [false];
+        controls.financialStatementsAccess = [false];
+        controls.systemAccessLevel = ['restricted'];
+        break;
+      
+      case UserType.CONTABILIDAD:
+        controls.billingAccess = [false];
+        controls.purchaseBooksAccess = [false];
+        controls.salesBooksAccess = [false];
+        controls.kardexAccess = [false];
+        controls.electronicBooksAccess = [false];
+        break;
+      
+      case UserType.ADMINISTRACION:
+        controls.companyManagement = [false];
+        controls.supplierManagement = [false];
+        controls.productManagement = [false];
+        controls.categoryManagement = [false];
+        controls.priceManagement = [false];
+        break;
+      
+      case UserType.RECURSOS_HUMANOS:
+        controls.contractsAccess = [false];
+        controls.personnelControlAccess = [false];
+        controls.trainingAccess = [false];
+        controls.performanceEvaluationAccess = [false];
+        break;
     }
+
+    this.specificDataForm = this.fb.group(controls);
+  }
+
+  getSelectedUserTypeLabel(): string {
+    const userType = this.userTypes.find(type => type.value === this.selectedUserType);
+    return userType ? userType.label : '';
   }
 
   async createUser(): Promise<void> {
-    if (!this.canCreateUser() || this.isCreating) {
+    if (!this.isFormsValid()) {
+      this.snackBar.open('Por favor complete todos los campos requeridos', 'Cerrar', {
+        duration: 3000
+      });
       return;
     }
 
     this.isCreating = true;
 
     try {
-      const profile = {
-        ...this.profileForm.value,
-        createdBy: 'current-user-id', // TODO: obtener del auth service
+      const currentUser = this.auth.currentUser;
+      if (!currentUser) {
+        throw new Error('Usuario no autenticado');
+      }
+
+      const userData = {
+        ...this.basicDataForm.value,
+        userType: this.userTypeForm.value.userType,
+        specificData: this.specificDataForm.value
       };
 
-      const additionalData = this.buildAdditionalData();
+      const newUserUid = await this.firebaseUserService.createUser(userData, currentUser.uid);
 
-      const user = await this.userService.createUser(
-        this.selectedUserType!,
-        profile,
-        additionalData
-      );
+      this.snackBar.open('Usuario creado exitosamente', 'Cerrar', {
+        duration: 3000
+      });
 
-      this.snackBar.open(
-        `Usuario ${user.getFullName()} creado exitosamente`,
-        'Cerrar',
-        { duration: 5000 }
-      );
+      this.dialogRef.close({ success: true, userUid: newUserUid });
 
-      this.dialogRef.close(user);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating user:', error);
       this.snackBar.open(
-        'Error al crear el usuario. Por favor, inténtelo nuevamente.',
-        'Cerrar',
+        error.message || 'Error al crear usuario', 
+        'Cerrar', 
         { duration: 5000 }
       );
     } finally {
@@ -208,112 +223,13 @@ export class CrearComponent implements OnInit {
     }
   }
 
-  private buildAdditionalData(): any {
-    const specificData = this.specificForm.value;
-
-    switch (this.selectedUserType) {
-      case UserType.VENDOR:
-      case UserType.VENDOR:
-        return {
-          vendorInfo: {
-            employeeId: specificData.employeeId,
-            commissionRate: specificData.commissionRate / 100,
-            territory: specificData.territory,
-            hireDate: new Date(),
-            managerId: specificData.managerId || undefined,
-          },
-          storeAssignments: (specificData.storeIds || []).map((storeId: string) => ({
-            storeId,
-            storeName: this.getStoreName(storeId),
-            assignedAt: new Date(),
-            assignedBy: 'current-user-id',
-            isActive: true,
-            permissions: DEFAULT_PERMISSIONS[UserType.VENDOR].flatMap(p => p.actions),
-          })),
-        };
-
-      case UserType.FINANCIAL:
-        return {
-          financialInfo: {
-            specializations: specificData.specializations || [],
-            approvalLimit: specificData.approvalLimit,
-            riskLevel: specificData.riskLevel,
-            certifications: [],
-            department: specificData.department,
-            analysisTools: [],
-          },
-        };
-
-      case UserType.ACCOUNTANT:
-        return {
-          accountantInfo: {
-            accessLevel: specificData.accessLevel,
-            specializations: specificData.specializations || [],
-            certifications: [],
-            department: specificData.department,
-            canApproveTransactions:
-              specificData.accessLevel === AccessLevel.SENIOR,
-          },
-        };
-
-      case UserType.STORE:
-        return {
-          storeInfo: {
-            storeId: this.generateStoreId(),
-            storeName: specificData.storeName,
-            storeCode: specificData.storeCode,
-            address: {
-              street: specificData.address,
-              city: 'Lima',
-              state: 'Lima',
-              zipCode: '15001',
-              country: 'Peru',
-            },
-            maxInventory: specificData.maxInventory,
-          },
-        };
-
-      default:
-        return {};
-    }
+  private isFormsValid(): boolean {
+    return this.userTypeForm.valid && 
+           this.basicDataForm.valid && 
+           this.specificDataForm.valid;
   }
 
-  canCreateUser(): boolean {
-    return (
-      this.typeForm.valid && this.profileForm.valid && this.specificForm.valid
-    );
-  }
-
-  private getStoreName(storeId: string): string {
-    const storeNames: Record<string, string> = {
-      store1: 'Tienda Lima Norte',
-      store2: 'Tienda Lima Sur',
-      store3: 'Tienda Callao',
-    };
-    return storeNames[storeId] || 'Tienda Sin Nombre';
-  }
-
-  private generateStoreId(): string {
-    return (
-      'store_' + Date.now().toString(36) + Math.random().toString(36).substr(2)
-    );
-  }
-
-  closeDialog(): void {
+  close(): void {
     this.dialogRef.close();
-  }
-
-
-
-  private async getStoresNames(): Promise<void> {
-    try {
-      const storesList = await this.userService.getUsersByType(UserType.STORE);
-      this.stores = storesList as StoreUser[];
-    } catch (error) {
-      console.error('Error loading users:', error);
-      this.snackBar.open('Error al cargar usuarios', 'Cerrar', {
-        duration: 5000,
-      });
-    }
   }
 }
