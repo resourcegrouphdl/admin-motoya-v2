@@ -1,0 +1,378 @@
+ <h2 mat-dialog-title>👤 Crear Nuevo Vendedor</h2>
+    
+    <mat-dialog-content>
+      <mat-stepper [linear]="true" #stepper>
+        
+        <!-- Step 1: Datos Personales -->
+        <mat-step [stepControl]="personalForm" label="Datos Personales">
+          <form [formGroup]="personalForm">
+            <div class="form-section">
+              <h3>Información Personal</h3>
+              
+              <div class="form-row">
+                <mat-form-field appearance="fill">
+                  <mat-label>Nombres</mat-label>
+                  <input matInput formControlName="firstName" placeholder="Juan Carlos">
+                  <mat-error *ngIf="personalForm.get('firstName')?.hasError('required')">
+                    Nombres es requerido
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="fill">
+                  <mat-label>Apellidos</mat-label>
+                  <input matInput formControlName="lastName" placeholder="García López">
+                  <mat-error *ngIf="personalForm.get('lastName')?.hasError('required')">
+                    Apellidos es requerido
+                  </mat-error>
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field appearance="fill">
+                  <mat-label>Email</mat-label>
+                  <input matInput type="email" formControlName="email" placeholder="vendedor@email.com">
+                  <mat-error *ngIf="personalForm.get('email')?.hasError('required')">
+                    Email es requerido
+                  </mat-error>
+                  <mat-error *ngIf="personalForm.get('email')?.hasError('email')">
+                    Email no válido
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="fill">
+                  <mat-label>Teléfono</mat-label>
+                  <input matInput formControlName="phone" placeholder="999888777">
+                  <mat-error *ngIf="personalForm.get('phone')?.hasError('required')">
+                    Teléfono es requerido
+                  </mat-error>
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field appearance="fill">
+                  <mat-label>Tipo de Documento</mat-label>
+                  <mat-select formControlName="documentType">
+                    <mat-option *ngFor="let doc of documentTypes" [value]="doc.value">
+                      {{ doc.label }}
+                    </mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="personalForm.get('documentType')?.hasError('required')">
+                    Seleccione tipo de documento
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="fill">
+                  <mat-label>Número de Documento</mat-label>
+                  <input matInput formControlName="documentNumber" placeholder="12345678">
+                  <mat-error *ngIf="personalForm.get('documentNumber')?.hasError('required')">
+                    Número de documento es requerido
+                  </mat-error>
+                </mat-form-field>
+              </div>
+
+              
+
+              <div class="optional-section">
+                <h4>Información Adicional (Opcional)</h4>
+                <div class="form-row">
+                  <mat-form-field appearance="fill">
+                    <mat-label>Fecha de Nacimiento</mat-label>
+                    <input matInput [matDatepicker]="birthPicker" formControlName="birthDate">
+                    <mat-datepicker-toggle matSuffix [for]="birthPicker"></mat-datepicker-toggle>
+                    <mat-datepicker #birthPicker></mat-datepicker>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="fill">
+                    <mat-label>Género</mat-label>
+                    <mat-select formControlName="gender">
+                      <mat-option value="masculino">Masculino</mat-option>
+                      <mat-option value="femenino">Femenino</mat-option>
+                      <mat-option value="otro">Otro</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+              </div>
+            </div>
+
+            <div class="step-actions">
+              <button mat-button matStepperNext [disabled]="!personalForm.valid">
+                Siguiente
+              </button>
+            </div>
+          </form>
+        </mat-step>
+
+        <!-- Step 2: Asignación de Tienda -->
+        <mat-step [stepControl]="tiendaForm" label="Asignación de Tienda">
+          <form [formGroup]="tiendaForm">
+            <div class="form-section">
+              <h3>Asignación a Tienda</h3>
+              
+              <mat-form-field appearance="fill">
+                <mat-label>Seleccionar Tienda</mat-label>
+                <mat-select formControlName="tiendaId" (selectionChange)="onTiendaChange()">
+                  <mat-option *ngFor="let tienda of availableTiendas" [value]="tienda.value">
+                    {{ tienda.label }}
+                  </mat-option>
+                </mat-select>
+                <mat-error *ngIf="tiendaForm.get('tiendaId')?.hasError('required')">
+                  Debe seleccionar una tienda
+                </mat-error>
+                <mat-hint *ngIf="availableTiendas.length === 0">
+                  No hay tiendas activas disponibles
+                </mat-hint>
+              </mat-form-field>
+
+              <div *ngIf="selectedTiendaInfo" class="tienda-info-card">
+                <h4>Información de la Tienda Seleccionada</h4>
+                <div class="tienda-details">
+                  <p><strong>Nombre:</strong> {{ selectedTiendaInfo.businessName }}</p>
+                  <p><strong>Categoría:</strong> {{ selectedTiendaInfo.businessCategory }}</p>
+                  <p><strong>Ubicación:</strong> {{ selectedTiendaInfo.city }}, {{ selectedTiendaInfo.district }}</p>
+                  <p><strong>Dirección:</strong> {{ selectedTiendaInfo.address }}</p>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field appearance="fill">
+                  <mat-label>Cargo/Posición</mat-label>
+                  <mat-select formControlName="position">
+                    <mat-option *ngFor="let pos of positions" [value]="pos">
+                      {{ pos }}
+                    </mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="tiendaForm.get('position')?.hasError('required')">
+                    Posición es requerida
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="fill">
+                  <mat-label>ID de Empleado</mat-label>
+                  <input matInput formControlName="employeeId" placeholder="EMP-001">
+                  <mat-hint>Código interno de la tienda (opcional)</mat-hint>
+                </mat-form-field>
+              </div>
+            </div>
+
+            <div class="step-actions">
+              <button mat-button matStepperPrevious>Anterior</button>
+              <button mat-button matStepperNext [disabled]="!tiendaForm.valid">
+                Siguiente
+              </button>
+            </div>
+          </form>
+        </mat-step>
+
+        <!-- Step 3: Configuración Laboral -->
+        <mat-step [stepControl]="laboralForm" label="Configuración Laboral">
+          <form [formGroup]="laboralForm">
+            <div class="form-section">
+              <h3>Configuración Laboral</h3>
+              
+              <div class="form-row">
+                <mat-form-field appearance="fill">
+                  <mat-label>Tasa de Comisión (%)</mat-label>
+                  <input matInput type="number" formControlName="commissionRate" 
+                         placeholder="5.0" min="0" max="50" step="0.1">
+                  <mat-error *ngIf="laboralForm.get('commissionRate')?.hasError('required')">
+                    Tasa de comisión es requerida
+                  </mat-error>
+                  <mat-error *ngIf="laboralForm.get('commissionRate')?.hasError('min')">
+                    Comisión mínima: 0%
+                  </mat-error>
+                  <mat-error *ngIf="laboralForm.get('commissionRate')?.hasError('max')">
+                    Comisión máxima: 50%
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="fill">
+                  <mat-label>Meta de Ventas Mensual</mat-label>
+                  <input matInput type="number" formControlName="salesGoal" 
+                         placeholder="10000" min="0">
+                  <mat-hint>Meta en moneda local (opcional)</mat-hint>
+                </mat-form-field>
+              </div>
+
+              <div class="experience-section">
+                <h4>Experiencia y Habilidades</h4>
+                <div class="form-row">
+                  <mat-form-field appearance="fill">
+                    <mat-label>Años de Experiencia</mat-label>
+                    <input matInput type="number" formControlName="experience" 
+                           placeholder="2" min="0" max="50">
+                  </mat-form-field>
+
+                  <mat-form-field appearance="fill">
+                    <mat-label>Nivel Educativo</mat-label>
+                    <mat-select formControlName="education">
+                      <mat-option *ngFor="let edu of educationLevels" [value]="edu">
+                        {{ edu }}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+
+                <mat-form-field appearance="fill" class="full-width">
+                  <mat-label>Idiomas</mat-label>
+                  <input matInput formControlName="languages" 
+                         placeholder="Español, Inglés, Quechua (separar con comas)">
+                </mat-form-field>
+
+                <mat-form-field appearance="fill" class="full-width">
+                  <mat-label>Habilidades Especiales</mat-label>
+                  <input matInput formControlName="skills" 
+                         placeholder="Atención al cliente, Ventas, Marketing digital (separar con comas)">
+                </mat-form-field>
+              </div>
+            </div>
+
+            <div class="step-actions">
+              <button mat-button matStepperPrevious>Anterior</button>
+              <button mat-button matStepperNext [disabled]="!laboralForm.valid">
+                Siguiente
+              </button>
+            </div>
+          </form>
+        </mat-step>
+
+        <!-- Step 4: Datos de Contacto -->
+        <mat-step [stepControl]="contactForm" label="Datos de Contacto">
+          <form [formGroup]="contactForm">
+            <div class="form-section">
+              <h3>Información de Contacto</h3>
+              
+              <mat-form-field appearance="fill" class="full-width">
+                <mat-label>Dirección de Residencia</mat-label>
+                <input matInput formControlName="address" placeholder="Av. Los Olivos 456, San Borja">
+                <mat-error *ngIf="contactForm.get('address')?.hasError('required')">
+                  Dirección es requerida
+                </mat-error>
+              </mat-form-field>
+
+              <div class="form-row">
+                <mat-form-field appearance="fill">
+                  <mat-label>Ciudad</mat-label>
+                  <mat-select formControlName="city">
+                    <mat-option *ngFor="let city of cities" [value]="city">
+                      {{ city }}
+                    </mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="contactForm.get('city')?.hasError('required')">
+                    Ciudad es requerida
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="fill">
+                  <mat-label>Distrito</mat-label>
+                  <input matInput formControlName="district" placeholder="San Borja">
+                  <mat-error *ngIf="contactForm.get('district')?.hasError('required')">
+                    Distrito es requerido
+                  </mat-error>
+                </mat-form-field>
+              </div>
+
+              <div class="emergency-contact-section">
+                <h4>Contacto de Emergencia</h4>
+                <div class="form-row">
+                  <mat-form-field appearance="fill">
+                    <mat-label>Nombre Completo</mat-label>
+                    <input matInput formControlName="emergencyContactName" placeholder="María García">
+                    <mat-error *ngIf="contactForm.get('emergencyContactName')?.hasError('required')">
+                      Nombre de contacto de emergencia es requerido
+                    </mat-error>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="fill">
+                    <mat-label>Teléfono</mat-label>
+                    <input matInput formControlName="emergencyContactPhone" placeholder="999777888">
+                    <mat-error *ngIf="contactForm.get('emergencyContactPhone')?.hasError('required')">
+                      Teléfono de contacto de emergencia es requerido
+                    </mat-error>
+                  </mat-form-field>
+                </div>
+
+                <mat-form-field appearance="fill">
+                  <mat-label>Parentesco</mat-label>
+                  <mat-select formControlName="emergencyContactRelationship">
+                    <mat-option *ngFor="let rel of relationships" [value]="rel">
+                      {{ rel }}
+                    </mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="contactForm.get('emergencyContactRelationship')?.hasError('required')">
+                    Parentesco es requerido
+                  </mat-error>
+                </mat-form-field>
+              </div>
+
+              <mat-form-field appearance="fill" class="full-width">
+                <mat-label>Notas Adicionales</mat-label>
+                <textarea matInput formControlName="notes" rows="3" 
+                          placeholder="Información adicional sobre el vendedor..."></textarea>
+              </mat-form-field>
+            </div>
+
+            <div class="step-actions">
+              <button mat-button matStepperPrevious>Anterior</button>
+              <button mat-button matStepperNext [disabled]="!contactForm.valid">
+                Siguiente
+              </button>
+            </div>
+          </form>
+        </mat-step>
+
+        <!-- Step 5: Confirmación -->
+        <mat-step label="Confirmación">
+          <div class="confirmation-section">
+            <h3>Resumen del Vendedor</h3>
+            
+            <div class="summary-grid">
+              <div class="summary-section">
+                <h4>Datos Personales</h4>
+                <p><strong>Nombre:</strong> {{ getVendedorName() }}</p>
+                <p><strong>Email:</strong> {{ personalForm.get('email')?.value }}</p>
+                <p><strong>Teléfono:</strong> {{ personalForm.get('phone')?.value }}</p>
+                <p><strong>Documento:</strong> {{ personalForm.get('documentType')?.value }} - {{ personalForm.get('documentNumber')?.value }}</p>
+              </div>
+
+              <div class="summary-section">
+                <h4>Asignación</h4>
+                <p><strong>Tienda:</strong> {{ getSelectedTiendaName() }}</p>
+                <p><strong>Posición:</strong> {{ tiendaForm.get('position')?.value }}</p>
+                <p><strong>ID Empleado:</strong> {{ tiendaForm.get('employeeId')?.value || 'No asignado' }}</p>
+              </div>
+
+              <div class="summary-section">
+                <h4>Configuración Laboral</h4>
+                <p><strong>Comisión:</strong> {{ laboralForm.get('commissionRate')?.value }}%</p>
+                <p><strong>Meta Mensual:</strong> {{ laboralForm.get('salesGoal')?.value || 'No definida' }}</p>
+                <p><strong>Experiencia:</strong> {{ laboralForm.get('experience')?.value || 0 }} años</p>
+              </div>
+
+              <div class="summary-section">
+                <h4>Contacto</h4>
+                <p><strong>Dirección:</strong> {{ contactForm.get('address')?.value }}</p>
+                <p><strong>Ciudad:</strong> {{ contactForm.get('city')?.value }}, {{ contactForm.get('district')?.value }}</p>
+                <p><strong>Emergencia:</strong> {{ contactForm.get('emergencyContactName')?.value }}</p>
+              </div>
+            </div>
+
+            <mat-divider></mat-divider>
+
+            <div class="final-actions">
+              <button mat-button matStepperPrevious>Anterior</button>
+              <button mat-raised-button color="primary" 
+                      (click)="createVendedor()" 
+                      [disabled]="isCreating">
+                <mat-spinner diameter="20" *ngIf="isCreating"></mat-spinner>
+                {{ isCreating ? 'Creando...' : 'Crear Vendedor' }}
+              </button>
+            </div>
+          </div>
+        </mat-step>
+
+      </mat-stepper>
+    </mat-dialog-content>
+
+    <mat-dialog-actions>
+      <button mat-button (click)="close()">Cancelar</button>
+    </mat-dialog-actions>

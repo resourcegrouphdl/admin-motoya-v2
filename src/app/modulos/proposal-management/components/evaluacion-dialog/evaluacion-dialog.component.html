@@ -1,0 +1,97 @@
+<h2 mat-dialog-title class="flex items-center text-xl font-bold">
+  <mat-icon class="mr-2 text-blue-600">assessment</mat-icon>
+  Evaluar Propuesta de Financiamiento
+</h2>
+
+<mat-dialog-content class="space-y-6 py-4">
+  <!-- Información de la Propuesta -->
+  <div class="bg-gray-50 rounded-lg p-4">
+    <h3 class="font-semibold text-gray-900 mb-4 flex items-center">
+      <mat-icon class="mr-2 text-gray-600">info</mat-icon>
+      Detalles de la Propuesta
+    </h3>
+    
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <span class="text-sm text-gray-600">Tienda:</span>
+        <p class="font-medium text-gray-900">{{data.tienda}}</p>
+      </div>
+      <div>
+        <span class="text-sm text-gray-600">Fecha de Propuesta:</span>
+        <p class="font-medium text-gray-900">{{data.fechaPropuesta | date:'dd/MM/yyyy HH:mm'}}</p>
+      </div>
+      <div>
+        <span class="text-sm text-gray-600">Marca de la Moto:</span>
+        <p class="font-medium text-gray-900">{{data.marca}}</p>
+      </div>
+      <div>
+        <span class="text-sm text-gray-600">Modelo:</span>
+        <p class="font-medium text-gray-900">{{data.modelo}}</p>
+      </div>
+    </div>
+    
+    <div class="mt-4 pt-4 border-t border-gray-200">
+      <span class="text-sm text-gray-600">Precio de Venta Propuesto:</span>
+      <p class="text-2xl font-bold text-green-600 flex items-center mt-1">
+        <mat-icon class="mr-1">attach_money</mat-icon>
+        S/ {{data.precio | number:'1.0-0'}}
+      </p>
+    </div>
+  </div>
+
+  <!-- Formulario de Evaluación -->
+  <form [formGroup]="evaluacionForm" class="space-y-4">
+    <mat-form-field appearance="outline" class="w-full">
+      <mat-label>Comentarios de Evaluación</mat-label>
+      <textarea matInput 
+                formControlName="comentarios"
+                rows="4"
+                placeholder="Agrega tus comentarios sobre la evaluación de esta propuesta..."></textarea>
+      <mat-hint>{{evaluacionForm.get('comentarios')?.value?.length || 0}}/500 caracteres</mat-hint>
+      <mat-error *ngIf="evaluacionForm.get('comentarios')?.hasError('maxlength')">
+        Los comentarios no pueden exceder 500 caracteres
+      </mat-error>
+    </mat-form-field>
+  </form>
+
+  <!-- Indicador de procesamiento -->
+  <div *ngIf="isProcessing" class="flex items-center justify-center py-4">
+    <mat-spinner diameter="30" class="mr-3"></mat-spinner>
+    <span class="text-gray-600">Procesando evaluación...</span>
+  </div>
+</mat-dialog-content>
+
+<!-- Acciones del diálogo -->
+<mat-dialog-actions *ngIf="data.estado === 'pendiente' && !isProcessing" 
+                    align="end" 
+                    class="space-x-2 pt-4">
+  <button mat-button (click)="onCancelar()" [disabled]="isProcessing">
+    <mat-icon class="mr-1">close</mat-icon>
+    Cancelar
+  </button>
+  
+  <button mat-raised-button 
+          color="warn" 
+          (click)="onRechazar()" 
+          [disabled]="isProcessing || evaluacionForm.invalid"
+          class="ml-2">
+    <mat-icon class="mr-1">cancel</mat-icon>
+    Rechazar Financiamiento
+  </button>
+  
+  <button mat-raised-button 
+          color="primary" 
+          (click)="onAprobar()" 
+          [disabled]="isProcessing || evaluacionForm.invalid"
+          class="ml-2">
+    <mat-icon class="mr-1">check_circle</mat-icon>
+    Aprobar Financiamiento
+  </button>
+</mat-dialog-actions>
+
+<mat-dialog-actions *ngIf="data.estado !== 'pendiente'" align="end">
+  <button mat-button (click)="onCancelar()">
+    <mat-icon class="mr-1">close</mat-icon>
+    Cerrar
+  </button>
+</mat-dialog-actions>

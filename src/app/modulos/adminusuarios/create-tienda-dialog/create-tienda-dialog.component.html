@@ -1,0 +1,321 @@
+<p>create-tienda-dialog works!</p>
+<h2 mat-dialog-title>🏪 Crear Nueva Tienda Afiliada</h2>
+    
+    <mat-dialog-content>
+      <mat-stepper [linear]="true" #stepper>
+        
+        <!-- Step 1: Datos del Representante -->
+        <mat-step [stepControl]="representativeForm" label="Representante Legal">
+          <form [formGroup]="representativeForm">
+            <div class="form-section">
+              <h3>Datos del Representante Legal</h3>
+              
+              <mat-form-field appearance="fill">
+                <mat-label>Nombres</mat-label>
+                <input matInput formControlName="firstName" placeholder="Nombres del representante">
+                <mat-error *ngIf="representativeForm.get('firstName')?.hasError('required')">
+                  Nombres es requerido
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="fill">
+                <mat-label>Apellidos</mat-label>
+                <input matInput formControlName="lastName" placeholder="Apellidos del representante">
+                <mat-error *ngIf="representativeForm.get('lastName')?.hasError('required')">
+                  Apellidos es requerido
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="fill">
+                <mat-label>Email</mat-label>
+                <input matInput type="email" formControlName="email" placeholder="email@tienda.com">
+                <mat-error *ngIf="representativeForm.get('email')?.hasError('required')">
+                  Email es requerido
+                </mat-error>
+                <mat-error *ngIf="representativeForm.get('email')?.hasError('email')">
+                  Email no válido
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="fill">
+                <mat-label>Teléfono</mat-label>
+                <input matInput formControlName="phone" placeholder="999888777">
+                <mat-error *ngIf="representativeForm.get('phone')?.hasError('required')">
+                  Teléfono es requerido
+                </mat-error>
+              </mat-form-field>
+
+              <div class="form-row">
+                <mat-form-field appearance="fill">
+                  <mat-label>Tipo de Documento</mat-label>
+                  <mat-select formControlName="documentType">
+                    <mat-option *ngFor="let doc of documentTypes" [value]="doc.value">
+                      {{ doc.label }}
+                    </mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="representativeForm.get('documentType')?.hasError('required')">
+                    Seleccione tipo de documento
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="fill">
+                  <mat-label>Número de Documento</mat-label>
+                  <input matInput formControlName="documentNumber" placeholder="12345678">
+                  <mat-error *ngIf="representativeForm.get('documentNumber')?.hasError('required')">
+                    Número de documento es requerido
+                  </mat-error>
+                </mat-form-field>
+              </div>
+
+              
+            </div>
+
+            <div class="step-actions">
+              <button mat-button matStepperNext [disabled]="!representativeForm.valid">
+                Siguiente
+              </button>
+            </div>
+          </form>
+        </mat-step>
+
+        <!-- Step 2: Datos del Negocio -->
+        <mat-step [stepControl]="businessForm" label="Datos del Negocio">
+          <form [formGroup]="businessForm">
+            <div class="form-section">
+              <h3>Información del Negocio</h3>
+              
+              <mat-form-field appearance="fill">
+                <mat-label>Nombre Comercial</mat-label>
+                <input matInput formControlName="businessName" placeholder="Mi Tienda SAC">
+                <mat-error *ngIf="businessForm.get('businessName')?.hasError('required')">
+                  Nombre comercial es requerido
+                </mat-error>
+              </mat-form-field>
+
+              
+
+              <mat-form-field appearance="fill">
+                <mat-label>RUC / ID Fiscal</mat-label>
+                <input matInput formControlName="taxId" placeholder="20123456789">
+              </mat-form-field>
+
+          
+            </div>
+
+            <div class="step-actions">
+              <button mat-button matStepperPrevious>Anterior</button>
+              <button mat-button matStepperNext [disabled]="!businessForm.valid">
+                Siguiente
+              </button>
+            </div>
+          </form>
+        </mat-step>
+
+        <!-- Step 3: Ubicación -->
+        <mat-step [stepControl]="locationForm" label="Ubicación">
+          <form [formGroup]="locationForm">
+            <div class="form-section">
+              <h3>Ubicación de la Tienda</h3>
+              
+              <mat-form-field appearance="fill" class="full-width">
+                <mat-label>Dirección</mat-label>
+                <input matInput formControlName="address" placeholder="Av. Principal 123">
+                <mat-error *ngIf="locationForm.get('address')?.hasError('required')">
+                  Dirección es requerida
+                </mat-error>
+              </mat-form-field>
+
+              <div class="form-row">
+                <mat-form-field appearance="fill">
+                  <mat-label>Ciudad</mat-label>
+                  <mat-select formControlName="city">
+                    <mat-option *ngFor="let city of cities" [value]="city">
+                      {{ city }}
+                    </mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="locationForm.get('city')?.hasError('required')">
+                    Ciudad es requerida
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="fill">
+                  <mat-label>Distrito</mat-label>
+                  <input matInput formControlName="district" placeholder="Miraflores">
+                  <mat-error *ngIf="locationForm.get('district')?.hasError('required')">
+                    Distrito es requerido
+                  </mat-error>
+                </mat-form-field>
+              </div>
+
+              <mat-form-field appearance="fill">
+                <mat-label>Código Postal</mat-label>
+                <input matInput formControlName="postalCode" placeholder="15074">
+              </mat-form-field>
+
+              <div class="coordinates-section">
+                <h4>Coordenadas GPS (Opcional)</h4>
+                <div class="form-row">
+                  <mat-form-field appearance="fill">
+                    <mat-label>Latitud</mat-label>
+                    <input matInput type="number" formControlName="latitude" placeholder="-12.0464">
+                  </mat-form-field>
+
+                  <mat-form-field appearance="fill">
+                    <mat-label>Longitud</mat-label>
+                    <input matInput type="number" formControlName="longitude" placeholder="-77.0428">
+                  </mat-form-field>
+                </div>
+                <small>Puedes obtener las coordenadas desde Google Maps</small>
+              </div>
+            </div>
+
+            <div class="step-actions">
+              <button mat-button matStepperPrevious>Anterior</button>
+              <button mat-button matStepperNext [disabled]="!locationForm.valid">
+                Siguiente
+              </button>
+            </div>
+          </form>
+        </mat-step>
+
+        <!-- Step 4: Configuración Comercial -->
+        <mat-step [stepControl]="commercialForm" label="Configuración Comercial">
+          <form [formGroup]="commercialForm">
+            <div class="form-section">
+              <h3>Configuración Comercial</h3>
+              
+              
+
+              <mat-form-field appearance="fill">
+                <mat-label>Cuenta Bancaria</mat-label>
+                <input matInput formControlName="bankAccount" placeholder="123-456789-001">
+                <mat-hint>Para transferencias de comisiones</mat-hint>
+              </mat-form-field>
+
+              <div class="contact-section">
+                <h4>Persona de Contacto</h4>
+                <div class="form-row">
+                  <mat-form-field appearance="fill">
+                    <mat-label>Nombre Completo</mat-label>
+                    <input matInput formControlName="contactPersonName" placeholder="María García">
+                    <mat-error *ngIf="commercialForm.get('contactPersonName')?.hasError('required')">
+                      Nombre de contacto es requerido
+                    </mat-error>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="fill">
+                    <mat-label>Teléfono de Contacto</mat-label>
+                    <input matInput formControlName="contactPersonPhone" placeholder="999777888">
+                    <mat-error *ngIf="commercialForm.get('contactPersonPhone')?.hasError('required')">
+                      Teléfono de contacto es requerido
+                    </mat-error>
+                  </mat-form-field>
+                </div>
+              </div>
+            </div>
+
+            <div class="step-actions">
+              <button mat-button matStepperPrevious>Anterior</button>
+              <button mat-button matStepperNext [disabled]="!commercialForm.valid">
+                Siguiente
+              </button>
+            </div>
+          </form>
+        </mat-step>
+
+        <!-- Step 5: Información Adicional -->
+        <mat-step [stepControl]="additionalForm" label="Información Adicional">
+          <form [formGroup]="additionalForm">
+            <div class="form-section">
+              <h3>Información Adicional</h3>
+              
+              <mat-form-field appearance="fill">
+                <mat-label>Sitio Web</mat-label>
+                <input matInput formControlName="website" placeholder="https://mitienda.com">
+              </mat-form-field>
+
+              <div class="social-media-section">
+                <h4>Redes Sociales</h4>
+                <mat-form-field appearance="fill">
+                  <mat-label>Facebook</mat-label>
+                  <input matInput formControlName="facebook" placeholder="https://facebook.com/mitienda">
+                </mat-form-field>
+
+                <mat-form-field appearance="fill">
+                  <mat-label>Instagram</mat-label>
+                  <input matInput formControlName="instagram" placeholder="https://instagram.com/mitienda">
+                </mat-form-field>
+
+                <mat-form-field appearance="fill">
+                  <mat-label>WhatsApp</mat-label>
+                  <input matInput formControlName="whatsapp" placeholder="999888777">
+                </mat-form-field>
+              </div>
+
+              <mat-form-field appearance="fill" class="full-width">
+                <mat-label>Notas Adicionales</mat-label>
+                <textarea matInput formControlName="notes" rows="4" 
+                          placeholder="Información adicional sobre la tienda..."></textarea>
+              </mat-form-field>
+            </div>
+
+            <div class="step-actions">
+              <button mat-button matStepperPrevious>Anterior</button>
+              <button mat-button matStepperNext>Siguiente</button>
+            </div>
+          </form>
+        </mat-step>
+
+        <!-- Step 6: Confirmación -->
+        <mat-step label="Confirmación">
+          <div class="confirmation-section">
+            <h3>Resumen de la Tienda</h3>
+            
+            <div class="summary-grid">
+              <div class="summary-section">
+                <h4>Representante Legal</h4>
+                <p><strong>Nombre:</strong> {{ getRepresentativeName() }}</p>
+                <p><strong>Email:</strong> {{ representativeForm.get('email')?.value }}</p>
+                <p><strong>Teléfono:</strong> {{ representativeForm.get('phone')?.value }}</p>
+                <p><strong>Documento:</strong> {{ representativeForm.get('documentType')?.value }} - {{ representativeForm.get('documentNumber')?.value }}</p>
+              </div>
+
+              <div class="summary-section">
+                <h4>Negocio</h4>
+                <p><strong>Nombre:</strong> {{ businessForm.get('businessName')?.value }}</p>
+                <p><strong>Categoría:</strong> {{ businessForm.get('businessCategory')?.value }}</p>
+                <p><strong>RUC:</strong> {{ businessForm.get('taxId')?.value || 'No especificado' }}</p>
+              </div>
+
+              <div class="summary-section">
+                <h4>Ubicación</h4>
+                <p><strong>Dirección:</strong> {{ locationForm.get('address')?.value }}</p>
+                <p><strong>Ciudad:</strong> {{ locationForm.get('city')?.value }}, {{ locationForm.get('district')?.value }}</p>
+              </div>
+
+              <div class="summary-section">
+                <h4>Comercial</h4>
+                <p><strong>Cuenta Bancaria:</strong> {{ commercialForm.get('bankAccount')?.value || 'No especificada' }}</p>
+                <p><strong>Contacto:</strong> {{ commercialForm.get('contactPersonName')?.value }}</p>
+              </div>
+            </div>
+
+            <mat-divider></mat-divider>
+
+            <div class="final-actions">
+              <button mat-button matStepperPrevious>Anterior</button>
+              <button mat-raised-button color="primary" 
+                      (click)="createTienda()" 
+                      [disabled]="isCreating">
+                <mat-spinner diameter="20" *ngIf="isCreating"></mat-spinner>
+                {{ isCreating ? 'Creando...' : 'Crear Tienda' }}
+              </button>
+            </div>
+          </div>
+        </mat-step>
+
+      </mat-stepper>
+    </mat-dialog-content>
+    <mat-dialog-actions>
+      <button mat-button (click)="close()">Cancelar</button>
+    </mat-dialog-actions>

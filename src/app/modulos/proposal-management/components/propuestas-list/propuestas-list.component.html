@@ -1,0 +1,98 @@
+<div class="min-h-screen bg-gray-50 p-6">
+  <!-- Header -->
+  <div class="max-w-7xl mx-auto mb-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">Evaluación de Propuestas</h1>
+    <p class="text-gray-600">Gestiona las propuestas de precio recibidas de tus tiendas afiliadas</p>
+  </div>
+
+  <div class="max-w-7xl mx-auto">
+    <!-- Filtros -->
+    <mat-card class="mb-6">
+      <mat-card-content class="p-4">
+        <div class="flex items-center space-x-4">
+          <mat-form-field appearance="outline" class="w-48">
+            <mat-label>Filtrar por estado</mat-label>
+            <mat-select [(value)]="filtroEstado">
+              <mat-option value="pendiente">Pendientes</mat-option>
+              <mat-option value="aprobada">Aprobadas</mat-option>
+              <mat-option value="rechazada">Rechazadas</mat-option>
+              <mat-option value="todas">Todas</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Lista de Propuestas -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <mat-card *ngFor="let propuesta of filtrarPorEstado((propuestas$ | async) ?? [])" 
+                class="hover:shadow-lg transition-shadow duration-300">
+        
+        <!-- Header de la card -->
+        <mat-card-header class="pb-4">
+          <div mat-card-avatar class="bg-blue-100 flex items-center justify-center">
+            <mat-icon class="text-blue-600">store</mat-icon>
+          </div>
+          <mat-card-title class="text-lg">{{propuesta.tienda}}</mat-card-title>
+          <mat-card-subtitle>{{propuesta.fechaPropuesta | date:'dd/MM/yyyy'}}</mat-card-subtitle>
+          
+          <!-- Badge de estado -->
+          <div class="ml-auto">
+            <span [class]="'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ' + getEstadoColor(propuesta.estado)">
+              <mat-icon class="mr-1 text-sm">{{getEstadoIcon(propuesta.estado)}}</mat-icon>
+              {{propuesta.estado | titlecase}}
+            </span>
+          </div>
+        </mat-card-header>
+
+        <!-- Contenido de la card -->
+        <mat-card-content class="space-y-4">
+          <!-- Información de la moto -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <p class="text-sm text-gray-600 mb-1">Marca</p>
+              <p class="font-semibold flex items-center">
+                <mat-icon class="mr-2 text-gray-500 text-base">two_wheeler</mat-icon>
+                {{propuesta.marca}}
+              </p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-600 mb-1">Modelo</p>
+              <p class="font-semibold">{{propuesta.modelo}}</p>
+            </div>
+          </div>
+
+          <!-- Precio -->
+          <div class="bg-green-50 rounded-lg p-4 border border-green-200">
+            <p class="text-sm text-green-700 mb-1">Precio Propuesto</p>
+            <p class="text-2xl font-bold text-green-800 flex items-center">
+              <mat-icon class="mr-1">attach_money</mat-icon>
+              S/ {{propuesta.precio | number:'1.0-0'}}
+            </p>
+          </div>
+        </mat-card-content>
+
+        <!-- Acciones -->
+        <mat-card-actions class="pt-4">
+          <button mat-raised-button 
+                  color="primary" 
+                  class="w-full"
+                  (click)="evaluarPropuesta(propuesta)">
+            <mat-icon class="mr-2">
+              {{propuesta.estado === 'pendiente' ? 'assessment' : 'visibility'}}
+            </mat-icon>
+            {{propuesta.estado === 'pendiente' ? 'Evaluar Propuesta' : 'Ver Detalles'}}
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+
+    <!-- Estado vacío -->
+    <div *ngIf="(filtrarPorEstado((propuestas$ | async) ?? []))?.length === 0" 
+         class="text-center py-12">
+      <mat-icon class="text-6xl text-gray-400 mb-4">inbox</mat-icon>
+      <h3 class="text-xl font-medium text-gray-900 mb-2">No hay propuestas</h3>
+      <p class="text-gray-600">No se encontraron propuestas con el filtro seleccionado</p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,457 @@
+<div class="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-900 dark:to-slate-800">
+  <!-- Header Navigation -->
+  <header class="bg-white dark:bg-slate-800 shadow-lg border-b border-slate-200 dark:border-slate-700">
+    <div class="px-6 py-4">
+      <div class="flex items-center justify-between">
+        <!-- Left side - Logo and Title -->
+        <div class="flex items-center space-x-4">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg flex items-center justify-center">
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+              </svg>
+            </div>
+            <div>
+              <h1 class="text-xl font-bold text-slate-800 dark:text-white">MotoYA! Admin</h1>
+              <p class="text-sm text-slate-600 dark:text-slate-300">Panel de Administración</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Center - Time Range Selector -->
+        <div class="hidden md:flex items-center space-x-2">
+          <span class="text-sm text-slate-600 dark:text-slate-300">Período:</span>
+          <div class="flex bg-slate-100 dark:bg-slate-700 rounded-lg p-1">
+            <button 
+              *ngFor="let range of ['1d', '7d', '30d']"
+              [class]="selectedTimeRange === range ? 
+                'bg-white dark:bg-slate-600 text-blue-600 dark:text-blue-400 shadow-sm' : 
+                'text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white'"
+              class="px-3 py-1 text-sm font-medium rounded-md transition-all duration-200"
+              (click)="onTimeRangeChange(range)">
+              {{ range === '1d' ? 'Hoy' : range === '7d' ? '7 días' : '30 días' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Right side - User info and actions -->
+        <div class="flex items-center space-x-4">
+          <!-- Refresh Button -->
+          <button 
+            (click)="refreshData()"
+            [disabled]="isRefreshing"
+            class="p-2 text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 
+                   hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-all duration-200">
+            <svg [class]="isRefreshing ? 'animate-spin' : ''" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+          </button>
+
+          <!-- User Avatar and Info -->
+          <div class="flex items-center space-x-3">
+            <div class="text-right">
+              <p class="text-sm font-medium text-slate-800 dark:text-white">{{ currentUser.name }}</p>
+              <p class="text-xs text-slate-600 dark:text-slate-300">{{ currentUser.role }}</p>
+            </div>
+            <img [src]="currentUser.avatar" 
+                 [alt]="currentUser.name"
+                 class="w-10 h-10 rounded-full ring-2 ring-blue-500">
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="p-6">
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="flex items-center justify-center h-64">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+    </div>
+
+    <!-- Dashboard Content -->
+    <div *ngIf="!isLoading && dashboardData" class="space-y-6">
+      
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Pending Proposals -->
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6 border border-slate-200 dark:border-slate-700 
+                    hover:shadow-xl transition-all duration-300 cursor-pointer group"
+             (click)="navigateToProposals('pending')">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm font-medium text-slate-600 dark:text-slate-300">Propuestas Pendientes</p>
+              <p class="text-3xl font-bold text-slate-800 dark:text-white mt-2">
+                {{ formatNumber(dashboardData.realTimeStats.pendingCount) }}
+              </p>
+              <div class="flex items-center mt-2">
+                <svg class="w-4 h-4 text-yellow-500 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span class="text-sm text-slate-600 dark:text-slate-300">Requieren atención</span>
+              </div>
+            </div>
+            <div class="w-12 h-12 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center 
+                        group-hover:bg-yellow-200 dark:group-hover:bg-yellow-900/50 transition-colors">
+              <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Today Approved -->
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6 border border-slate-200 dark:border-slate-700 
+                    hover:shadow-xl transition-all duration-300">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm font-medium text-slate-600 dark:text-slate-300">Aprobadas Hoy</p>
+              <p class="text-3xl font-bold text-green-600 dark:text-green-400 mt-2">
+                {{ formatNumber(dashboardData.realTimeStats.todayApproved) }}
+              </p>
+              <div class="flex items-center mt-2">
+                <svg class="w-4 h-4 text-green-500 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <span class="text-sm text-green-600 dark:text-green-400">+12% vs ayer</span>
+              </div>
+            </div>
+            <div class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+              <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Average Response Time -->
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6 border border-slate-200 dark:border-slate-700 
+                    hover:shadow-xl transition-all duration-300">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm font-medium text-slate-600 dark:text-slate-300">Tiempo Promedio</p>
+              <p class="text-3xl font-bold text-blue-600 dark:text-blue-400 mt-2">
+                {{ dashboardData.realTimeStats.avgResponseTime }}m
+              </p>
+              <div class="flex items-center mt-2">
+                <svg class="w-4 h-4 text-blue-500 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                </svg>
+                <span class="text-sm text-blue-600 dark:text-blue-400">-5m vs semana anterior</span>
+              </div>
+            </div>
+            <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+              <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Total Amount -->
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6 border border-slate-200 dark:border-slate-700 
+                    hover:shadow-xl transition-all duration-300">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm font-medium text-slate-600 dark:text-slate-300">Monto Total</p>
+              <p class="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-2">
+                {{ formatCurrency(dashboardData.realTimeStats.totalAmount) }}
+              </p>
+              <div class="flex items-center mt-2">
+                <svg class="w-4 h-4 text-purple-500 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                </svg>
+                <span class="text-sm text-purple-600 dark:text-purple-400">Este período</span>
+              </div>
+            </div>
+            <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+              <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Alerts and Quick Actions Row -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Alerts Panel -->
+        <div class="lg:col-span-2">
+          <div class="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700">
+            <div class="p-6 border-b border-slate-200 dark:border-slate-700">
+              <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-slate-800 dark:text-white flex items-center">
+                  <svg class="w-5 h-5 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 15.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                  </svg>
+                  Alertas Importantes
+                </h3>
+                <span class="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-xs font-medium px-2 py-1 rounded-full">
+                  {{ dashboardData.alerts.length }}
+                </span>
+              </div>
+            </div>
+            <div class="p-6 space-y-4 max-h-96 overflow-y-auto">
+              <div *ngFor="let alert of dashboardData.alerts; trackBy: trackByAlertId" 
+                   class="flex items-start space-x-3 p-4 rounded-lg border border-slate-200 dark:border-slate-600 
+                          hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer transition-all duration-200"
+                   (click)="onAlertClick(alert)">
+                <div [class]="getAlertColor(alert.type)" class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path *ngIf="getAlertIcon(alert.type) === 'alert-triangle'" 
+                          stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 15.5c-.77.833.192 2.5 1.732 2.5z">
+                    </path>
+                    <path *ngIf="getAlertIcon(alert.type) === 'alert-circle'" 
+                          stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                    </path>
+                    <path *ngIf="getAlertIcon(alert.type) === 'info'" 
+                          stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                    </path>
+                  </svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between">
+                    <p class="text-sm font-medium text-slate-800 dark:text-white">{{ alert.title }}</p>
+                    <span *ngIf="alert.count" 
+                          class="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-medium px-2 py-1 rounded-full">
+                      {{ alert.count }}
+                    </span>
+                  </div>
+                  <p class="text-sm text-slate-600 dark:text-slate-300 mt-1">{{ alert.message }}</p>
+                  <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">{{ formatRelativeTime(alert.timestamp) }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions Panel -->
+        <div class="lg:col-span-1">
+          <div class="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700">
+            <div class="p-6 border-b border-slate-200 dark:border-slate-700">
+              <h3 class="text-lg font-semibold text-slate-800 dark:text-white flex items-center">
+                <svg class="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+                Acciones Rápidas
+              </h3>
+            </div>
+            <div class="p-6 space-y-3">
+              <div *ngFor="let action of quickActions; trackBy: trackByActionId" 
+                   class="flex items-center space-x-3 p-3 rounded-lg border border-slate-200 dark:border-slate-600 
+                          hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer transition-all duration-200 group"
+                   (click)="onQuickActionClick(action)">
+                <div [class]="action.color" class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 
+                                                  group-hover:scale-110 transition-transform duration-200">
+                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path *ngIf="action.icon === 'clock'" 
+                          stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z">
+                    </path>
+                    <path *ngIf="action.icon === 'trending-up'" 
+                          stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6">
+                    </path>
+                    <path *ngIf="action.icon === 'alert-triangle'" 
+                          stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 15.5c-.77.833.192 2.5 1.732 2.5z">
+                    </path>
+                    <path *ngIf="action.icon === 'store'" 
+                          stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                    </path>
+                    <path *ngIf="action.icon === 'bar-chart-3'" 
+                          stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+                    </path>
+                    <path *ngIf="action.icon === 'settings'" 
+                          stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
+                    </path>
+                    <path *ngIf="action.icon === 'settings'" 
+                          stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z">
+                    </path>
+                  </svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between">
+                    <p class="text-sm font-medium text-slate-800 dark:text-white">{{ action.title }}</p>
+                    <span *ngIf="action.count" 
+                          class="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-medium px-2 py-1 rounded-full">
+                      {{ action.count }}
+                    </span>
+                  </div>
+                  <p class="text-xs text-slate-600 dark:text-slate-300 mt-1">{{ action.description }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts and Recent Activity Row -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Chart Panel -->
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700">
+          <div class="p-6 border-b border-slate-200 dark:border-slate-700">
+            <h3 class="text-lg font-semibold text-slate-800 dark:text-white flex items-center">
+              <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+              </svg>
+              Aprobaciones Diarias
+            </h3>
+          </div>
+          <div class="p-6">
+            <!-- Simple Chart with CSS -->
+            <div class="space-y-4">
+              <div *ngFor="let day of dashboardData.chartData.dailyApprovals; let i = index" 
+                   class="flex items-center space-x-4">
+                <div class="w-16 text-xs text-slate-600 dark:text-slate-300">
+                  {{ day.date.split('-')[2] }}/{{ day.date.split('-')[1] }}
+                </div>
+                <div class="flex-1 space-y-2">
+                  <!-- Approved Bar -->
+                  <div class="flex items-center space-x-2">
+                    <div class="w-20 h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                      <div class="h-full bg-green-500 rounded-full transition-all duration-1000" 
+                           [style.width.%]="(day.approved / 30) * 100"></div>
+                    </div>
+                    <span class="text-xs text-slate-600 dark:text-slate-300 w-8">{{ day.approved }}</span>
+                    <span class="text-xs text-green-600 dark:text-green-400">Aprobadas</span>
+                  </div>
+                  <!-- Rejected Bar -->
+                  <div class="flex items-center space-x-2">
+                    <div class="w-20 h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                      <div class="h-full bg-red-500 rounded-full transition-all duration-1000" 
+                           [style.width.%]="(day.rejected / 10) * 100"></div>
+                    </div>
+                    <span class="text-xs text-slate-600 dark:text-slate-300 w-8">{{ day.rejected }}</span>
+                    <span class="text-xs text-red-600 dark:text-red-400">Rechazadas</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Activity Panel -->
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700">
+          <div class="p-6 border-b border-slate-200 dark:border-slate-700">
+            <h3 class="text-lg font-semibold text-slate-800 dark:text-white flex items-center">
+              <svg class="w-5 h-5 text-purple-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+              </svg>
+              Actividad Reciente
+            </h3>
+          </div>
+          <div class="p-6 space-y-4 max-h-96 overflow-y-auto">
+            <div *ngFor="let activity of dashboardData.recentActivity; trackBy: trackByActivityId" 
+                 class="flex items-start space-x-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 
+                        transition-all duration-200">
+              <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                   [class]="activity.type === 'approval' ? 'bg-green-100 dark:bg-green-900/30' :
+                           activity.type === 'rejection' ? 'bg-red-100 dark:bg-red-900/30' :
+                           activity.type === 'new_proposal' ? 'bg-blue-100 dark:bg-blue-900/30' :
+                           'bg-slate-100 dark:bg-slate-700'">
+                <svg class="w-4 h-4" 
+                     [class]="activity.type === 'approval' ? 'text-green-600 dark:text-green-400' :
+                             activity.type === 'rejection' ? 'text-red-600 dark:text-red-400' :
+                             activity.type === 'new_proposal' ? 'text-blue-600 dark:text-blue-400' :
+                             'text-slate-600 dark:text-slate-300'"
+                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path *ngIf="getActivityIcon(activity.type) === 'check-circle'" 
+                        stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z">
+                  </path>
+                  <path *ngIf="getActivityIcon(activity.type) === 'x-circle'" 
+                        stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z">
+                  </path>
+                  <path *ngIf="getActivityIcon(activity.type) === 'file-plus'" 
+                        stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                  </path>
+                </svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between">
+                  <p class="text-sm font-medium text-slate-800 dark:text-white">{{ activity.title }}</p>
+                  <span class="text-xs text-slate-500 dark:text-slate-400">{{ formatRelativeTime(activity.timestamp) }}</span>
+                </div>
+                <p class="text-sm text-slate-600 dark:text-slate-300 mt-1">{{ activity.description }}</p>
+                <div class="flex items-center justify-between mt-2">
+                  <span class="text-xs text-slate-500 dark:text-slate-400">por {{ activity.userName }}</span>
+                  <span *ngIf="activity.amount" class="text-xs font-medium text-slate-700 dark:text-slate-300">
+                    {{ formatCurrency(activity.amount) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Stores Panel -->
+      <div class="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700">
+        <div class="p-6 border-b border-slate-200 dark:border-slate-700">
+          <h3 class="text-lg font-semibold text-slate-800 dark:text-white flex items-center">
+            <svg class="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+            </svg>
+            Tiendas con Mejor Rendimiento
+          </h3>
+        </div>
+        <div class="p-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div *ngFor="let store of dashboardData.topStores; trackBy: trackByStoreId" 
+                 class="p-4 border border-slate-200 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 
+                        transition-all duration-200 cursor-pointer"
+                 (click)="router.navigate(['/stores', store.storeId])">
+              <div class="flex items-center justify-between mb-3">
+                <h4 class="font-medium text-slate-800 dark:text-white truncate">{{ store.storeName }}</h4>
+                <span [class]="getStoreStatusColor(store.status)" 
+                      class="text-xs font-medium px-2 py-1 rounded-full">
+                  {{ store.status === 'excellent' ? 'Excelente' : 
+                     store.status === 'good' ? 'Bueno' : 
+                     store.status === 'warning' ? 'Atención' : 'Crítico' }}
+                </span>
+              </div>
+              <div class="space-y-2">
+                <div class="flex justify-between text-sm">
+                  <span class="text-slate-600 dark:text-slate-300">Propuestas:</span>
+                  <span class="font-medium text-slate-800 dark:text-white">{{ store.totalProposals }}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                  <span class="text-slate-600 dark:text-slate-300">Aprobadas:</span>
+                  <span class="font-medium text-green-600 dark:text-green-400">{{ store.approvedProposals }}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                  <span class="text-slate-600 dark:text-slate-300">Tasa de aprobación:</span>
+                  <span class="font-medium text-slate-800 dark:text-white">{{ store.approvalRate.toFixed(1) }}%</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                  <span class="text-slate-600 dark:text-slate-300">Monto total:</span>
+                  <span class="font-medium text-slate-800 dark:text-white">{{ formatCurrency(store.totalAmount) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Last Updated Info -->
+    <div class="mt-6 text-center">
+      <p class="text-sm text-slate-500 dark:text-slate-400">
+        Última actualización: {{ formatDate(lastUpdated) }} • 
+        Próxima actualización en {{ refreshInterval }}s
+      </p>
+    </div>
+  </main>
+</div>

@@ -1,0 +1,334 @@
+<!-- dashboard-clientes.component.html -->
+<div class="min-h-screen bg-gray-50 p-6">
+  <!-- Header -->
+  <div class="mb-8">
+    <div class="flex justify-between items-center mb-6">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900">Dashboard Clientes Web</h1>
+        <p class="text-gray-600 mt-1">Gestiona y asigna clientes potenciales a tus vendedores</p>
+      </div>
+      <div class="flex gap-3">
+        <button 
+          mat-raised-button 
+          color="accent"
+          (click)="exportarDatos()"
+          class="flex items-center gap-2">
+          <mat-icon>download</mat-icon>
+          Exportar
+        </button>
+        <button 
+          mat-raised-button 
+          color="primary"
+          (click)="cargarDatos()"
+          class="flex items-center gap-2">
+          <mat-icon>refresh</mat-icon>
+          Actualizar
+        </button>
+      </div>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="grid grid-cols-1 md:grid-cols-6 gap-4 mb-6">
+      <mat-card class="p-4 text-center">
+        <div class="text-2xl font-bold text-blue-600">{{ estadisticas.total || 0 }}</div>
+        <div class="text-sm text-gray-600">Total Clientes</div>
+      </mat-card>
+      
+      <mat-card class="p-4 text-center">
+        <div class="text-2xl font-bold text-green-600">{{ estadisticas.nuevos || 0 }}</div>
+        <div class="text-sm text-gray-600">Nuevos</div>
+      </mat-card>
+      
+      <mat-card class="p-4 text-center">
+        <div class="text-2xl font-bold text-yellow-600">{{ estadisticas.asignados || 0 }}</div>
+        <div class="text-sm text-gray-600">Asignados</div>
+      </mat-card>
+      
+      <mat-card class="p-4 text-center">
+        <div class="text-2xl font-bold text-orange-600">{{ estadisticas.contactados || 0 }}</div>
+        <div class="text-sm text-gray-600">Contactados</div>
+      </mat-card>
+      
+      <mat-card class="p-4 text-center">
+        <div class="text-2xl font-bold text-green-600">{{ estadisticas.convertidos || 0 }}</div>
+        <div class="text-sm text-gray-600">captados</div>
+      </mat-card>
+      
+      <mat-card class="p-4 text-center">
+        <div class="text-2xl font-bold text-purple-600">{{ estadisticas.porcentajeConversion || 0 }}%</div>
+        <div class="text-sm text-gray-600">Conversión</div>
+      </mat-card>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <mat-card class="p-6 mb-6">
+    <div class="flex flex-wrap gap-4 items-end">
+      <mat-form-field class="flex-1 min-w-64">
+        <mat-label>Buscar por nombre o email</mat-label>
+        <input matInput [formControl]="filtroNombre" placeholder="Escribe para buscar...">
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+
+      <mat-form-field class="w-48">
+        <mat-label>Estado</mat-label>
+        <mat-select [formControl]="filtroEstado">
+          <mat-option value="">Todos los estados</mat-option>
+          <mat-option *ngFor="let estado of estadosCliente" [value]="estado">
+            {{ estado }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field class="w-48">
+        <mat-label>Vendedor</mat-label>
+        <mat-select [formControl]="filtroVendedor">
+          <mat-option value="">Todos los vendedores</mat-option>
+          <mat-option value="sin-asignar">Sin asignar</mat-option>
+          <mat-option *ngFor="let vendedor of vendedores" [value]="vendedor.id">
+            {{ vendedor.nombre }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <button 
+        mat-stroked-button 
+        (click)="limpiarFiltros()"
+        class="h-14">
+        <mat-icon>clear</mat-icon>
+        Limpiar
+      </button>
+    </div>
+  </mat-card>
+
+  <!-- Tabla de Clientes -->
+  <div class="flex justify-end mb-4" *ngIf="!datosYaMigrados">
+  <button 
+    mat-raised-button 
+    color="warn"
+    (click)="migrarDatos()"
+    class="flex items-center gap-2">
+    <mat-icon>sync</mat-icon>
+    Inicializar Datos
+  </button>
+</div>
+
+<mat-card>
+  <div class="overflow-x-auto">
+    <table mat-table [dataSource]="dataSource" matSort class="w-full">
+
+      <!-- Columna Nombre MEJORADA -->
+      <ng-container matColumnDef="nombre">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header class="font-semibold">
+          Cliente
+        </th>
+        <td mat-cell *matCellDef="let cliente" class="py-4">
+          <div class="font-medium text-gray-900">{{ cliente.nombre }}</div>
+          <!-- ⭐ INFORMACIÓN ADICIONAL -->
+          <div class="text-xs text-gray-500" *ngIf="getClienteInfo(cliente)">
+            {{ getClienteInfo(cliente) }}
+          </div>
+          <!-- Documento si existe -->
+          <div class="text-xs text-blue-600" *ngIf="cliente.numeroDocumento">
+            {{ cliente.tipoDocumento }}: {{ cliente.numeroDocumento }}
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Columna Email -->
+      <ng-container matColumnDef="email">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header class="font-semibold">
+          Email
+        </th>
+        <td mat-cell *matCellDef="let cliente" class="py-4">
+          <div class="text-blue-600">{{ cliente.email }}</div>
+        </td>
+      </ng-container>
+
+      <!-- Columna Teléfono MEJORADA -->
+      <ng-container matColumnDef="telefono">
+        <th mat-header-cell *matHeaderCellDef class="font-semibold">
+          Contacto
+        </th>
+        <td mat-cell *matCellDef="let cliente" class="py-4">
+          <div class="text-gray-700">{{ cliente.telefono || 'No proporcionado' }}</div>
+          <!-- Preferencia de contacto -->
+          <div class="text-xs text-green-600" *ngIf="cliente.preferenciaContacto">
+            Prefiere: {{ cliente.preferenciaContacto }}
+          </div>
+          <!-- Horario si existe -->
+          <div class="text-xs text-gray-500" *ngIf="cliente.horarioContacto">
+            {{ cliente.horarioContacto }}
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- ⭐ NUEVA COLUMNA INTERÉS -->
+      <ng-container matColumnDef="interes">
+        <th mat-header-cell *matHeaderCellDef class="font-semibold">Interés</th>
+        <td mat-cell *matCellDef="let cliente" class="py-4 max-w-xs">
+          <div class="text-sm text-gray-700 truncate" [title]="getInteres(cliente)">
+            {{ getInteres(cliente) }}
+          </div>
+          <!-- Producto si existe -->
+          <div class="text-xs text-purple-600" *ngIf="cliente.producto">
+            Producto: {{ cliente.producto }}
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Columna Fecha Registro -->
+      <ng-container matColumnDef="fechaRegistro">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header class="font-semibold">
+          Fecha Registro
+        </th>
+        <td mat-cell *matCellDef="let cliente" class="py-4">
+          <div class="text-gray-600">
+            {{ formatearFecha(cliente.fechaRegistro) }}
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Columna Estado -->
+      <ng-container matColumnDef="estado">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header class="font-semibold">
+          Estado
+        </th>
+        <td mat-cell *matCellDef="let cliente" class="py-4">
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
+                [ngClass]="getColorEstado(cliente.estado)">
+            {{ cliente.estado }}
+          </span>
+        </td>
+      </ng-container>
+
+      <!-- Columna Vendedor -->
+      <ng-container matColumnDef="vendedorAsignado">
+        <th mat-header-cell *matHeaderCellDef class="font-semibold">
+          Vendedor
+        </th>
+        <td mat-cell *matCellDef="let cliente" class="py-4">
+          <div *ngIf="cliente.nombreVendedor; else sinVendedor" class="flex items-center">
+            <mat-icon class="text-green-500 mr-2" style="font-size: 16px;">person</mat-icon>
+            <div class="flex flex-col">
+              <span class="text-gray-900 text-sm">{{ cliente.nombreVendedor }}</span>
+              <span class="text-xs text-gray-500" *ngIf="cliente.fechaAsignacion">
+                {{ formatearFecha(cliente.fechaAsignacion) }}
+              </span>
+            </div>
+          </div>
+          <ng-template #sinVendedor>
+            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">
+              <mat-icon style="font-size: 14px;" class="mr-1">person_off</mat-icon>
+              Sin asignar
+            </span>
+          </ng-template>
+        </td>
+      </ng-container>
+
+      <!-- Columna Acciones MEJORADA -->
+      <ng-container matColumnDef="acciones">
+        <th mat-header-cell *matHeaderCellDef class="font-semibold">
+          Acciones
+        </th>
+        <td mat-cell *matCellDef="let cliente" class="py-4">
+          <div class="flex items-center gap-2">
+            <!-- Ver detalle -->
+            <button 
+              mat-icon-button 
+              (click)="verDetalle(cliente)"
+              matTooltip="Ver detalle completo"
+              class="text-blue-600 hover:bg-blue-50">
+              <mat-icon>visibility</mat-icon>
+            </button>
+
+            <!-- ⭐ CONTACTAR CLIENTE -->
+            <button 
+              mat-icon-button 
+              (click)="contactarCliente(cliente)"
+              matTooltip="Contactar cliente"
+              class="text-green-600 hover:bg-green-50">
+              <mat-icon>{{ cliente.preferenciaContacto === 'WhatsApp' ? 'chat' : 'email' }}</mat-icon>
+            </button>
+
+            <!-- Asignar vendedor -->
+            <button 
+              mat-icon-button 
+              *ngIf="!cliente.vendedorAsignado"
+              (click)="asignarVendedor(cliente)"
+              matTooltip="Asignar vendedor"
+              class="text-purple-600 hover:bg-purple-50">
+              <mat-icon>person_add</mat-icon>
+            </button>
+
+            <!-- Cambiar vendedor -->
+            <button 
+              mat-icon-button 
+              *ngIf="cliente.vendedorAsignado"
+              (click)="asignarVendedor(cliente)"
+              matTooltip="Cambiar vendedor"
+              class="text-orange-600 hover:bg-orange-50">
+              <mat-icon>swap_horiz</mat-icon>
+            </button>
+
+            <!-- Menú de estados -->
+            <button 
+              mat-icon-button 
+              [matMenuTriggerFor]="menuEstados"
+              matTooltip="Cambiar estado"
+              class="text-gray-600 hover:bg-gray-50">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            
+            <mat-menu #menuEstados="matMenu">
+              <button 
+                mat-menu-item 
+                *ngFor="let estado of estadosCliente"
+                (click)="cambiarEstado(cliente, estado)"
+                [disabled]="cliente.estado === estado">
+                <mat-icon>{{ cliente.estado === estado ? 'check' : 'radio_button_unchecked' }}</mat-icon>
+                <span>{{ estado }}</span>
+              </button>
+            </mat-menu>
+          </div>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;" 
+          class="hover:bg-gray-50 transition-colors duration-200"></tr>
+
+      <!-- Mensaje cuando no hay datos -->
+      <tr class="mat-row" *matNoDataRow>
+        <td class="mat-cell text-center py-8" [attr.colspan]="displayedColumns.length">
+          <div *ngIf="!cargando" class="flex flex-col items-center">
+            <mat-icon class="text-gray-400 text-5xl mb-4">inbox</mat-icon>
+            <p class="text-gray-500">No se encontraron clientes</p>
+            <button 
+              mat-raised-button 
+              color="primary" 
+              (click)="migrarDatos()" 
+              class="mt-4"
+              *ngIf="!datosYaMigrados">
+              Inicializar Datos
+            </button>
+          </div>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- Spinner de carga -->
+  <div *ngIf="cargando" class="flex justify-center py-8">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+
+  <!-- Paginador -->
+  <mat-paginator 
+    [pageSizeOptions]="[10, 25, 50, 100]"
+    [pageSize]="25"
+    showFirstLastButtons
+    class="border-t">
+  </mat-paginator>
+</mat-card>
+</div>

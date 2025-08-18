@@ -12,8 +12,6 @@ import {
   doc, 
   setDoc, 
   getDoc, 
-  updateDoc, 
-  deleteDoc,
   collection,
   query,
   where,
@@ -26,7 +24,6 @@ import { UserFactoryService, CreateUserRequest } from './user-factory.service';
 
 
 import { BaseProfile, UserProfile, UserProfileFirestore, UserType } from '../enums/user-type.types';
-import { FirestoreUserProfile } from '../models/firestore-user';
 import { FIREBASE_COLLECTIONS } from '../../../services/firebase-collection';
 import { DateUtils } from '../enums/date-utils';
 import { FirestoreUtils } from './firestore.utils.utils';
@@ -343,7 +340,9 @@ export class FirebaseUserService {
       [UserType.GERENCIA]: FIREBASE_COLLECTIONS.GERENCIA_PROFILES,
       [UserType.CONTABILIDAD]: FIREBASE_COLLECTIONS.CONTABILIDAD_PROFILES,
       [UserType.ADMINISTRACION]: FIREBASE_COLLECTIONS.ADMINISTRACION_PROFILES,
-      [UserType.RECURSOS_HUMANOS]: FIREBASE_COLLECTIONS.RECURSOS_HUMANOS_PROFILES
+      [UserType.RECURSOS_HUMANOS]: FIREBASE_COLLECTIONS.RECURSOS_HUMANOS_PROFILES,
+      [UserType.TIENDA]: FIREBASE_COLLECTIONS.TIENDA_PROFILES,
+      [UserType.VENDEDOR]: FIREBASE_COLLECTIONS.VENDEDOR_PROFILES
     };
     return collections[userType];
   }

@@ -5,6 +5,7 @@ import { BehaviorSubject } from 'rxjs';
 import { FIREBASE_COLLECTIONS } from '../../../services/firebase-collection';
 import { DateUtils } from '../enums/date-utils';
 export interface UserListOptions {
+  
   pageSize?: number;
   orderByField?: keyof BaseProfile;
   orderDirection?: 'asc' | 'desc';

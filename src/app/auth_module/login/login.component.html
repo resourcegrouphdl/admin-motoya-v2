@@ -1,6 +1,6 @@
 <!-- component -->
-<div class="text-white flex border flex-col items-center justify-center h-full ">
-    <div >
+<div class="text-white flex border flex-col items-center justify-center h-full">
+    <div>
         <div class="text-foreground font-semibold text-2xl tracking-tighter mx-auto flex items-center gap-2">
             <div>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -13,67 +13,144 @@
         </div>
     </div>
     <div class="relative mt-12 w-full max-w-lg sm:mt-10">
-        <div class="relative -mb-px h-px w-full bg-gradient-to-r from-transparent via-sky-300 to-transparent"
-            bis_skin_checked="1"></div>
-        <div
-            class="mx-5 border dark:border-b-white/50 dark:border-t-white/50 border-b-white/20 sm:border-t-white/20 shadow-[20px_0_20px_20px] shadow-slate-500/10 dark:shadow-white/20 rounded-lg border-white/20 border-l-white/20 border-r-white/20 sm:shadow-sm lg:rounded-xl lg:shadow-none">
+        <div class="relative -mb-px h-px w-full bg-gradient-to-r from-transparent via-sky-300 to-transparent"></div>
+        <div class="mx-5 border dark:border-b-white/50 dark:border-t-white/50 border-b-white/20 sm:border-t-white/20 shadow-[20px_0_20px_20px] shadow-slate-500/10 dark:shadow-white/20 rounded-lg border-white/20 border-l-white/20 border-r-white/20 sm:shadow-sm lg:rounded-xl lg:shadow-none">
             <div class="flex flex-col p-6">
                 <h3 class="text-xl font-semibold leading-6 tracking-tighter">Login</h3>
-                <p class="mt-1.5 text-sm font-medium text-white/50">Bienvenido de nuevo, ingrese sus credenciales para continuar.
+                <p class="mt-1.5 text-sm font-medium text-white/50">
+                    Bienvenido de nuevo, ingrese sus credenciales para continuar.
                 </p>
+                
+                <!-- Mensaje de error general -->
+                <div *ngIf="errorMessage" 
+                     class="mt-3 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm">
+                    {{ errorMessage }}
+                </div>
             </div>
+            
             <div class="p-6 pt-0">
-                <form (submit)="onSubmit()" [formGroup]="loginForm" >
+                <form (ngSubmit)="onSubmit()" [formGroup]="loginForm" novalidate>
+                    <!-- Campo Email -->
                     <div>
                         <div>
-                            <div
-                                class="group relative rounded-lg border focus-within:border-sky-200 px-3 pb-1.5 pt-2.5 duration-200 focus-within:ring focus-within:ring-sky-300/30">
+                            <div class="group relative rounded-lg border px-3 pb-1.5 pt-2.5 duration-200 focus-within:ring focus-within:ring-sky-300/30"
+                                 [class.border-red-500]="hasFieldError('email')"
+                                 [class.border-green-500]="isFieldValid('email')"
+                                 [class.focus-within:border-sky-200]="!hasFieldError('email')">
                                 <div class="flex justify-between">
-                                    <label
-                                        class="text-xs font-medium text-muted-foreground group-focus-within:text-white text-gray-400">Nombre de usuario</label>
-                                    <div class="absolute right-3 translate-y-2 text-green-200">
-                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                                                    fill="currentColor" class="w-6 h-6">
-                                                    <path fill-rule="evenodd"
-                                                        d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.14-.094l3.75-5.25Z"
-                                                        clip-rule="evenodd" />
-                                                </svg>
-                                            </div>
+                                    <label class="text-xs font-medium text-muted-foreground group-focus-within:text-white text-gray-400">
+                                        Email
+                                    </label>
+                                    <!-- Icono de validación -->
+                                    <div *ngIf="isFieldValid('email')" class="absolute right-3 translate-y-2 text-green-200">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                                            <path fill-rule="evenodd"
+                                                d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.14-.094l3.75-5.25Z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                    <div *ngIf="hasFieldError('email')" class="absolute right-3 translate-y-2 text-red-400">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                                            <path fill-rule="evenodd"
+                                                d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25ZM12.75 9a.75.75 0 0 0-1.5 0v2.25H9a.75.75 0 0 0 0 1.5h2.25V15a.75.75 0 0 0 1.5 0v-2.25H15a.75.75 0 0 0 0-1.5h-2.25V9Z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
                                 </div>
-                                <input type="text" name="username" placeholder="Nombre de usuario" formControlName="email"
-                                    autocomplete="off"
-                                    class="block w-full border-0 bg-transparent p-0 text-sm file:my-1 file:rounded-full file:border-0 file:bg-accent file:px-4 file:py-2 file:font-medium placeholder:text-muted-foreground/90 focus:outline-none focus:ring-0 sm:leading-7 text-foreground">
+                                <input 
+                                    type="email" 
+                                    name="email" 
+                                    placeholder="usuario@ejemplo.com"
+                                    formControlName="email"
+                                    autocomplete="email"
+                                    class="block w-full border-0 bg-transparent p-0 text-sm file:my-1 file:rounded-full file:border-0 file:bg-accent file:px-4 file:py-2 file:font-medium placeholder:text-muted-foreground/90 focus:outline-none focus:ring-0 sm:leading-7 text-foreground"
+                                    [class.text-red-400]="hasFieldError('email')">
+                            </div>
+                            <!-- Mensaje de error del campo -->
+                            <div *ngIf="hasFieldError('email')" class="mt-1 text-xs text-red-400">
+                                {{ getFieldError('email') }}
                             </div>
                         </div>
                     </div>
+
+                    <!-- Campo Password -->
                     <div class="mt-4">
                         <div>
-                            <div
-                                class="group relative rounded-lg border focus-within:border-sky-200 px-3 pb-1.5 pt-2.5 duration-200 focus-within:ring focus-within:ring-sky-300/30">
+                            <div class="group relative rounded-lg border px-3 pb-1.5 pt-2.5 duration-200 focus-within:ring focus-within:ring-sky-300/30"
+                                 [class.border-red-500]="hasFieldError('password')"
+                                 [class.border-green-500]="isFieldValid('password')"
+                                 [class.focus-within:border-sky-200]="!hasFieldError('password')">
                                 <div class="flex justify-between">
-                                    <label
-                                        class="text-xs font-medium text-muted-foreground group-focus-within:text-white text-gray-400">Password</label>
+                                    <label class="text-xs font-medium text-muted-foreground group-focus-within:text-white text-gray-400">
+                                        Contraseña
+                                    </label>
                                 </div>
                                 <div class="flex items-center">
-                                    <input type="password" name="password" formControlName="password" placeholder="Password"
-                                        class="block w-full border-0 bg-transparent p-0 text-sm file:my-1 placeholder:text-muted-foreground/90 focus:outline-none focus:ring-0 focus:ring-teal-500 sm:leading-7 text-foreground">
+                                    <input 
+                                        [type]="showPassword ? 'text' : 'password'" 
+                                        name="password" 
+                                        formControlName="password" 
+                                        placeholder="••••••••"
+                                        autocomplete="current-password"
+                                        class="block w-full border-0 bg-transparent p-0 text-sm file:my-1 placeholder:text-muted-foreground/90 focus:outline-none focus:ring-0 focus:ring-teal-500 sm:leading-7 text-foreground pr-10"
+                                        [class.text-red-400]="hasFieldError('password')">
+                                    <!-- Botón para mostrar/ocultar contraseña -->
+                                    <button 
+                                        type="button"
+                                        (click)="togglePasswordVisibility()"
+                                        class="absolute right-3 text-gray-400 hover:text-white transition-colors">
+                                        <svg *ngIf="!showPassword" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                        </svg>
+                                        <svg *ngIf="showPassword" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 1-4.243-4.243m4.242 4.242L9.88 9.88" />
+                                        </svg>
+                                    </button>
                                 </div>
+                            </div>
+                            <!-- Mensaje de error del campo -->
+                            <div *ngIf="hasFieldError('password')" class="mt-1 text-xs text-red-400">
+                                {{ getFieldError('password') }}
                             </div>
                         </div>
                     </div>
+
+                    <!-- Checkbox Remember me -->
                     <div class="mt-4 flex items-center justify-between">
-                        <label class="flex items-center gap-2">
-                            <input type="checkbox" name="remember"
-                                class="outline-none focus:outline focus:outline-sky-300">
-                            <span class="text-xs">Remember me</span>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input 
+                                type="checkbox" 
+                                name="remember"
+                                formControlName="remember"
+                                class="outline-none focus:outline focus:outline-sky-300 text-sky-500 bg-transparent border-gray-400 rounded focus:ring-sky-300">
+                            <span class="text-xs select-none">Recordarme</span>
                         </label>
-                        
+                        <a href="#" class="text-xs text-sky-400 hover:text-sky-300 transition-colors">
+                            ¿Olvidaste tu contraseña?
+                        </a>
                     </div>
-                    <div class="mt-4 flex items-center justify-end gap-x-2">
-                        
+
+                    <!-- Botón de submit -->
+                    <div class="mt-6 flex items-center justify-end gap-x-2">
                         <button 
-                            class="w-1/2 text-font-semibold hover:bg-black hover:text-white hover:ring hover:ring-white transition duration-300 inline-flex items-center justify-center rounded-md text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-white text-black h-10 px-4 py-2"
-                            type="submit">Log in</button>
+                            class="w-full text-font-semibold hover:bg-black hover:text-white hover:ring hover:ring-white transition duration-300 inline-flex items-center justify-center rounded-md text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-white text-black h-10 px-4 py-2 relative"
+                            type="submit"
+                            [disabled]="isLoading">
+                            
+                            <!-- Texto del botón -->
+                            <span [class.opacity-0]="isLoading">
+                                Iniciar Sesión
+                            </span>
+                            
+                            <!-- Spinner de carga -->
+                            <div *ngIf="isLoading" class="absolute inset-0 flex items-center justify-center">
+                                <svg class="animate-spin h-4 w-4 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            </div>
+                        </button>
                     </div>
                 </form>
             </div>

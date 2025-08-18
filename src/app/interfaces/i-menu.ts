@@ -20,7 +20,7 @@ export interface IMenu {
         },
 
         {
-            title : 'aliados',
+            title : ' gestion de aliados',
             name : 'aliado comercial',
             icon : 'group',
             route : '/dashboard/vendedores',
@@ -28,11 +28,18 @@ export interface IMenu {
         },
 
         {
-            title : 'tiendas',
+            title : 'precios tiendaas',
             name : 'gestion',
             icon : 'house',
             route : '/dashboard/tiendas',
             resumen: 'gestion de tiendas asociadas'
+        },
+        {
+            title : 'Leads Web',
+            name : 'leads web',
+            icon : 'web',
+            route : '/dashboard/leads-web',
+            resumen: 'gestion de leads web'
         },
         {
             title : 'Motocicletas',
@@ -42,14 +49,14 @@ export interface IMenu {
             resumen: 'gestion de productos en  inventario'
         },
         {
-            title : 'configuracion',
+            title : 'configuracion web',
             name : 'web front-end',
             icon : 'settings',
             route : '/dashboard/config-web',
             resumen: 'configuracion de la pagina web'
         },
         {
-            title : 'usuarios',
+            title : 'admin de usuarios',
             name : 'gestion de usuarios',
             icon : 'group',
             route : '/dashboard/gestion-usuarios',

@@ -1,0 +1,78 @@
+<div class="p-6">
+      <h2 mat-dialog-title class="text-xl font-semibold mb-4 flex items-center">
+        <mat-icon class="mr-3 text-blue-600">person_add</mat-icon>
+        Asignar Vendedor
+      </h2>
+      
+      <div mat-dialog-content>
+        <!-- Información del Cliente -->
+        <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+          <div class="font-medium text-gray-900 text-lg">{{ data.cliente.nombre || 'Cliente sin nombre' }}</div>
+          <div class="text-sm text-gray-600 mt-1">{{ data.cliente.email || 'Sin email' }}</div>
+          <div class="text-sm text-blue-600 mt-1" *ngIf="data.cliente.telefono">
+            📱 {{ data.cliente.telefono }}
+          </div>
+          <div class="text-sm text-gray-600 mt-2" *ngIf="data.cliente.mensaje">
+            <strong>Mensaje:</strong> {{ data.cliente.mensaje | slice:0:100 }}{{ data.cliente.mensaje && data.cliente.mensaje.length > 100 ? '...' : '' }}
+          </div>
+        </div>
+
+        <!-- Formulario -->
+        <form [formGroup]="form" class="space-y-4">
+          
+          <!-- Debug Info (temporal) -->
+          <div class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-sm">
+            <strong>Debug:</strong> {{ vendedores.length }} vendedores disponibles
+            <div *ngIf="vendedores.length === 0" class="text-red-600 mt-1">
+              ⚠️ No hay vendedores cargados
+            </div>
+          </div>
+
+          <mat-form-field class="w-full">
+            <mat-label>Seleccionar Vendedor</mat-label>
+            <mat-select formControlName="vendedorId" required>
+              <mat-option value="">-- Seleccionar Vendedor --</mat-option>
+              <mat-option 
+                *ngFor="let vendedor of vendedores" 
+                [value]="vendedor.id">
+                <div class="flex justify-between items-center w-full py-2">
+                  <div class="flex flex-col">
+                    <span class="font-medium">{{ vendedor.nombre || 'Sin nombre' }}</span>
+                    <span class="text-sm text-gray-500">{{ vendedor.email || 'Sin email' }}</span>
+                  </div>
+                  <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                    ID: {{ vendedor.id }}
+                  </span>
+                </div>
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="form.get('vendedorId')?.hasError('required')">
+              Debe seleccionar un vendedor
+            </mat-error>
+            <mat-hint>Total: {{ vendedores.length }} vendedores disponibles</mat-hint>
+          </mat-form-field>
+
+          <mat-form-field class="w-full">
+            <mat-label>Notas de asignación (opcional)</mat-label>
+            <textarea 
+              matInput 
+              formControlName="notas"
+              placeholder="Información importante para el vendedor..."
+              rows="3">
+            </textarea>
+            <mat-hint>Información adicional que puede ser útil para el vendedor</mat-hint>
+          </mat-form-field>
+        </form>
+      </div>
+
+      <div mat-dialog-actions class="flex justify-end gap-3 mt-6">
+        <button mat-button (click)="cancelar()">Cancelar</button>
+        <button 
+          mat-raised-button 
+          color="primary"
+          (click)="asignar()"
+          [disabled]="form.invalid || vendedores.length === 0">
+          Asignar Vendedor
+        </button>
+      </div>
+    </div>

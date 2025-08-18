@@ -1,76 +1,64 @@
-import { Component, OnInit, inject, ViewChild, OnDestroy } from '@angular/core';
+import { Component, OnInit, inject, ViewChild, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
-
+import { Timestamp } from 'firebase/firestore';
 // Angular Material Imports
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
-import { MatTableModule, MatTableDataSource } from '@angular/material/table';
-import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
-import { MatSortModule, MatSort } from '@angular/material/sort';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatMenuModule } from '@angular/material/menu';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
-import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
-
-import {MatDividerModule} from '@angular/material/divider';
-
-// Componentes e interfaces
 import { CrearComponent } from '../crear/crear.component';
+import { MatBadgeModule } from '@angular/material/badge';
+import {
+  BaseProfile,
+  TiendaStatus,
+  UserCategory,
+  DocumentType,
+  UserType,
+  VendedorStatus,
+} from '../enums/user-type.types';
+import { UserListOptions, UserListService } from '../services/user-list.service';
+import { UserFactoryService } from '../services/user-factory.service';
+import { ErrorHandlerService } from '../services/error-handler.service';
+import { combineLatest, Subject, takeUntil } from 'rxjs';
+import { ExternalUserService } from '../services/external-user.service';
 
-//import { UserService } from '../services/user.service';
-//import { StatisticService } from '../services/statistic.service';
-
-import { UserType } from '../enums/user-type.types';
+import { MatTabsModule } from '@angular/material/tabs';
+import { DateUtils } from '../enums/date-utils';
+import { FormsModule } from '@angular/forms';
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { MatSort, MatSortModule } from '@angular/material/sort';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { DataSource } from '@angular/cdk/collections';
 
 // Interfaces para el componente
-export interface UserTableData {
-  uid: string;
-  name: string;
-  email: string;
-  phone: string;
-  userType: UserType;
-  isActive: boolean;
-  lastLogin: Date | null;
-  avatar: string;
-  createdAt: Date;
-  storeIds?: string[];
-  specificData?: any;
- //
-}
-
-export interface UserStats {
+interface DashboardStats {
+recentUsers: any;
   totalUsers: number;
+  internalUsers: number;
+  externalUsers: number;
   activeUsers: number;
-  newUsersThisMonth: number;
-  pendingUsers: number;
-  usersByType: Record<UserType, number>;
-}
-
-export interface UserTypeConfig {
-  value: UserType;
-  label: string;
-  icon: string;
-  class: string;
-  description: string;
-}
-
-export interface FilterOptions {
-  search: string;
-  status: string;
-  userType: UserType | '';
-  storeId: string;
-  dateFrom: Date | null;
-  dateTo: Date | null;
+  inactiveUsers: number;
+  usersByType: { [key: string]: number };
+  tiendas: {
+    total: number;
+    active: number;
+    pending: number;
+    suspended: number;
+  };
+  vendedores: {
+    total: number;
+    active: number;
+    inactive: number;
+    suspended: number;
+  };
+  recentlyCreated: number;
 }
 
 @Component({
@@ -78,642 +66,498 @@ export interface FilterOptions {
   standalone: true,
   imports: [
     CommonModule,
-    ReactiveFormsModule,
-    MatDialogModule,
     MatButtonModule,
     MatIconModule,
     MatCardModule,
+    MatTabsModule,
+    MatBadgeModule,
+    MatProgressSpinnerModule,
+    MatMenuModule,
+    MatTooltipModule,
+    MatChipsModule,
+    CommonModule,
+    FormsModule,
     MatTableModule,
     MatPaginatorModule,
     MatSortModule,
-    MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
+    MatButtonModule,
+    MatIconModule,
     MatChipsModule,
-    MatMenuModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
-    MatSnackBarModule,
-    MatProgressSpinnerModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatBadgeModule,
     MatTooltipModule,
-    MatDividerModule
+    MatMenuModule
   ],
   templateUrl: './listar.component.html',
-  styleUrl: './listar.component.css'
+  styleUrl: './listar.component.css',
 })
-export class ListarComponent  {
-   private dialog = inject(MatDialog);
-  // private fb = inject(FormBuilder);
-  // private snackBar = inject(MatSnackBar);
-  // private userService = inject(UserService);
-  // private statisticsService = inject(StatisticService);
-  //
-  // private destroy$ = new Subject<void>();
-  //
-  // // ViewChild para tabla
-  // @ViewChild(MatPaginator) paginator!: MatPaginator;
-  // @ViewChild(MatSort) sort!: MatSort;
-  //
-  // // Propiedades del componente
-  // displayedColumns: string[] = ['user', 'type', 'status', 'stores', 'lastLogin', 'actions'];
-  // dataSource = new MatTableDataSource<UserTableData>([]);
-  // showFilters = false;
-   isLoading = false;
-  //
-  // // Datos
-  // allUsers: baseProfile[] = [];
-  // stores: StoreUser[] = [];
-  //
-  // // Formularios
-  // filterForm!: FormGroup ;
-  //
-  // // Estadísticas
-  // userStats: UserStats = {
-  //   totalUsers: 0,
-  //   activeUsers: 0,
-  //   newUsersThisMonth: 0,
-  //   pendingUsers: 0,
-  //   usersByType: {
-  //     [UserType.ADMIN]: 0,
-  //     [UserType.STORE]: 0,
-  //     [UserType.VENDOR]: 0,
-  //     [UserType.ACCOUNTANT]: 0,
-  //     [UserType.FINANCIAL]: 0
-  //   }
-  // };
-  //
-  // // Configuración de tipos de usuario
-  // userTypes: UserTypeConfig[] = [
-  //   {
-  //     value: UserType.ADMIN,
-  //     label: 'Administrador',
-  //     icon: 'admin_panel_settings',
-  //     class: 'admin-type',
-  //     description: 'Control total del sistema'
-  //   },
-  //   {
-  //     value: UserType.STORE,
-  //     label: 'Tienda',
-  //     icon: 'store',
-  //     class: 'store-type',
-  //     description: 'Gestión de inventario y ventas'
-  //   },
-  //   {
-  //     value: UserType.VENDOR,
-  //     label: 'Vendedor',
-  //     icon: 'person',
-  //     class: 'vendor-type',
-  //     description: 'Ventas y gestión de clientes'
-  //   },
-  //   {
-  //     value: UserType.ACCOUNTANT,
-  //     label: 'Contable',
-  //     icon: 'calculate',
-  //     class: 'accountant-type',
-  //     description: 'Gestión contable y financiera'
-  //   },
-  //   {
-  //     value: UserType.FINANCIAL,
-  //     label: 'Financiero',
-  //     icon: 'trending_up',
-  //     class: 'financial-type',
-  //     description: 'Evaluación y aprobación de créditos'
-  //   }
-  // ];
-  //
-  // constructor() {
-  //   this.initializeFilterForm();
-  // }
-  //
-  // ngOnInit(): void {
-  //   this.loadAllData();
-  //   this.setupFilterSubscription();
-  // }
-  //
-  // ngAfterViewInit(): void {
-  //   this.dataSource.paginator = this.paginator;
-  //   this.dataSource.sort = this.sort;
-  //   this.dataSource.filterPredicate = this.createFilterPredicate();
-  // }
-  //
-  // ngOnDestroy(): void {
-  //   this.destroy$.next();
-  //   this.destroy$.complete();
-  // }
-  //
-  // // ====================================================================
-  // // INICIALIZACIÓN
-  // // ====================================================================
-  //
-  // private initializeFilterForm(): void {
-  //   this.filterForm = this.fb.group({
-  //     search: [''],
-  //     status: [''],
-  //     userType: [''],
-  //     storeId: [''],
-  //     dateFrom: [null],
-  //     dateTo: [null]
-  //   });
-  // }
-  //
-  // private setupFilterSubscription(): void {
-  //   this.filterForm.valueChanges.pipe(
-  //     debounceTime(300),
-  //     distinctUntilChanged(),
-  //     takeUntil(this.destroy$)
-  //   ).subscribe(() => {
-  //     this.applyFilters();
-  //   });
-  // }
-  //
-  // // ====================================================================
-  // // CARGA DE DATOS
-  // // ====================================================================
-  //
-  // async loadAllData(): Promise<void> {
-  //   this.isLoading = true;
-  //
-  //   try {
-  //     // Cargar todos los tipos de usuarios en paralelo
-  //     const [adminUsers, storeUsers, vendorUsers, accountantUsers, financialUsers] =
-  //       await Promise.all([
-  //         this.userService.getUsersByType(UserType.ADMIN),
-  //         this.userService.getUsersByType(UserType.STORE),
-  //         this.userService.getUsersByType(UserType.VENDOR),
-  //         this.userService.getUsersByType(UserType.ACCOUNTANT),
-  //         this.userService.getUsersByType(UserType.FINANCIAL)
-  //       ]);
-  //
-  //     // Combinar todos los usuarios
-  //     this.allUsers = [
-  //       ...adminUsers,
-  //       ...storeUsers,
-  //       ...vendorUsers,
-  //       ...accountantUsers,
-  //       ...financialUsers
-  //     ];
-  //
-  //     // Guardar tiendas para los filtros
-  //     this.stores = storeUsers as StoreUser[];
-  //
-  //     // Convertir a formato de tabla
-  //     const tableData = this.convertUsersToTableData(this.allUsers);
-  //     this.dataSource.data = tableData;
-  //
-  //     // Actualizar estadísticas
-  //     this.updateStats();
-  //
-  //   } catch (error) {
-  //     console.error('Error loading users:', error);
-  //     this.snackBar.open('Error al cargar usuarios', 'Cerrar', {
-  //       duration: 5000
-  //     });
-  //   } finally {
-  //     this.isLoading = false;
-  //   }
-  // }
-  //
-  // private convertUsersToTableData(users: BaseProfile[]): UserTableData[] {
-  //   return users.map(user => ({
-  //     uid: user.uid,
-  //     name: user.getFullName(),
-  //     email: user.email,
-  //     phone: user.phone,
-  //     userType: user.userType,
-  //     isActive: user.isActive,
-  //     lastLogin: this.getLastLogin(user),
-  //     avatar: this.generateAvatar(user.firstName, user.lastName),
-  //     createdAt: user.createdAt,
-  //     storeIds: user.storeIds || [],
-  //     specificData: user.getSpecificData(),
-  //     originalUser: user
-  //   }));
-  // }
-  //
-  // private getLastLogin(user: BaseProfile): Date | null {
-  //   // TODO: Implementar sistema de tracking de último login
-  //   // Por ahora retornamos una fecha aleatoria para demo
-  //   const randomDays = Math.floor(Math.random() * 30);
-  //   const randomDate = new Date();
-  //   randomDate.setDate(randomDate.getDate() - randomDays);
-  //   return user.isActive ? randomDate : null;
-  // }
-  //
-  // private generateAvatar(firstName: string, lastName: string): string {
-  //   return (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
-  // }
-  //
-  // // ====================================================================
-  // // ESTADÍSTICAS
-  // // ====================================================================
-  //
-  // private updateStats(): void {
-  //   const users = this.dataSource.data;
-  //   const currentDate = new Date();
-  //   const currentMonth = currentDate.getMonth();
-  //   const currentYear = currentDate.getFullYear();
-  //
-  //   this.userStats = {
-  //     totalUsers: users.length,
-  //     activeUsers: users.filter(u => u.isActive).length,
-  //     newUsersThisMonth: users.filter(u =>
-  //       u.createdAt.getMonth() === currentMonth &&
-  //       u.createdAt.getFullYear() === currentYear
-  //     ).length,
-  //     pendingUsers: users.filter(u => !u.isActive).length,
-  //     usersByType: {
-  //       [UserType.ADMIN]: users.filter(u => u.userType === UserType.ADMIN).length,
-  //       [UserType.STORE]: users.filter(u => u.userType === UserType.STORE).length,
-  //       [UserType.VENDOR]: users.filter(u => u.userType === UserType.VENDOR).length,
-  //       [UserType.ACCOUNTANT]: users.filter(u => u.userType === UserType.ACCOUNTANT).length,
-  //       [UserType.FINANCIAL]: users.filter(u => u.userType === UserType.FINANCIAL).length
-  //     }
-  //   };
-  // }
-  //
-  // // ====================================================================
-  // // FILTROS
-  // // ====================================================================
-  //
-  // private createFilterPredicate() {
-  //   return (data: UserTableData, filter: string): boolean => {
-  //     if (!filter) return true;
-  //
-  //     const filterObject: FilterOptions = JSON.parse(filter);
-  //
-  //     // Filtro de búsqueda
-  //     if (filterObject.search) {
-  //       const searchTerm = filterObject.search.toLowerCase();
-  //       const matchesSearch =
-  //         data.name.toLowerCase().includes(searchTerm) ||
-  //         data.email.toLowerCase().includes(searchTerm) ||
-  //         data.phone.includes(searchTerm) ||
-  //         data.uid.toLowerCase().includes(searchTerm);
-  //       if (!matchesSearch) return false;
-  //     }
-  //
-  //     // Filtro de estado
-  //     if (filterObject.status) {
-  //       const isActive = filterObject.status === 'active';
-  //       if (data.isActive !== isActive) return false;
-  //     }
-  //
-  //     // Filtro de tipo de usuario
-  //     if (filterObject.userType && data.userType !== filterObject.userType) {
-  //       return false;
-  //     }
-  //
-  //     // Filtro de tienda
-  //     if (filterObject.storeId) {
-  //       if (!data.storeIds?.includes(filterObject.storeId)) {
-  //         return false;
-  //       }
-  //     }
-  //
-  //     // Filtro de fecha desde
-  //     if (filterObject.dateFrom && data.createdAt < filterObject.dateFrom) {
-  //       return false;
-  //     }
-  //
-  //     // Filtro de fecha hasta
-  //     if (filterObject.dateTo && data.createdAt > filterObject.dateTo) {
-  //       return false;
-  //     }
-  //
-  //     return true;
-  //   };
-  // }
-  //
-  // toggleFilters(): void {
-  //   this.showFilters = !this.showFilters;
-  // }
-  //
-  // clearFilters(): void {
-  //   this.filterForm.reset();
-  //   this.dataSource.filter = '';
-  // }
-  //
-  // applyFilters(): void {
-  //   const filterValue = JSON.stringify(this.filterForm.value);
-  //   this.dataSource.filter = filterValue;
-  // }
-  //
-  // // ====================================================================
-  // // ACCIONES DE USUARIO
-  // // ====================================================================
-  //
-   openCreateUserDialog(): void {
-     const dialogRef = this.dialog.open(CrearComponent, {
-       width: '900px',
-      maxWidth: '95vw',
-       maxHeight: '95vh',
-       disableClose: true,
-       //data: { userTypes: this.userTypes }
-     });
-     // dialogRef.afterClosed().subscribe(result => {
-     //   if (result) {
-     //     this.handleUserCreated(result);
-     //   }
-     // }
-     //);
-   }
-  //
-  // private async handleUserCreated(newUser: baseProfile): Promise<void> {
-  //   try {
-  //     // Agregar el nuevo usuario a la lista
-  //     this.allUsers.push(newUser);
-  //
-  //     // Si es una tienda, agregarla a la lista de tiendas
-  //     if (newUser.userType === UserType.STORE) {
-  //       this.stores.push(newUser as StoreUser);
-  //     }
-  //
-  //     // Actualizar la tabla
-  //     const tableData = this.convertUsersToTableData(this.allUsers);
-  //     this.dataSource.data = tableData;
-  //
-  //     // Actualizar estadísticas
-  //     this.updateStats();
-  //
-  //     this.snackBar.open(
-  //       `Usuario ${newUser.getFullName()} creado exitosamente`,
-  //       'Cerrar',
-  //       { duration: 5000 }
-  //     );
-  //
-  //   } catch (error) {
-  //     console.error('Error handling user creation:', error);
-  //     this.snackBar.open('Error al procesar el nuevo usuario', 'Cerrar', {
-  //       duration: 5000
-  //     });
-  //   }
-  // }
-  //
-  // async viewUser(user: UserTableData): Promise<void> {
-  //   try {
-  //     // Obtener datos completos del usuario desde Firebase
-  //     const fullUser = await this.userService.getUserByUid(user.uid);
-  //
-  //     if (fullUser) {
-  //       // TODO: Abrir modal de detalles del usuario
-  //       console.log('Full user data:', fullUser);
-  //       this.snackBar.open(`Viendo detalles de ${user.name}`, 'Cerrar', {
-  //         duration: 3000
-  //       });
-  //     }
-  //   } catch (error) {
-  //     console.error('Error viewing user:', error);
-  //     this.snackBar.open('Error al cargar detalles del usuario', 'Cerrar', {
-  //       duration: 3000
-  //     });
-  //   }
-  // }
-  //
-  // async editUser(user: UserTableData): Promise<void> {
-  //   // TODO: Implementar modal de edición
-  //   this.snackBar.open(`Editando usuario ${user.name}`, 'Cerrar', {
-  //     duration: 3000
-  //   });
-  // }
-  //
-  // async toggleUserStatus(user: UserTableData): Promise<void> {
-  //   try {
-  //     if (user.isActive) {
-  //       await this.userService.deactivateUser(user.uid);
-  //       user.isActive = false;
-  //       this.snackBar.open(`Usuario ${user.name} desactivado`, 'Cerrar', {
-  //         duration: 3000
-  //       });
-  //     } else {
-  //       // TODO: Implementar reactivación de usuario
-  //       this.snackBar.open('Función de reactivación en desarrollo', 'Cerrar', {
-  //         duration: 3000
-  //       });
-  //     }
-  //
-  //     this.updateStats();
-  //   } catch (error) {
-  //     console.error('Error toggling user status:', error);
-  //     this.snackBar.open('Error al cambiar estado del usuario', 'Cerrar', {
-  //       duration: 3000
-  //     });
-  //   }
-  // }
-  //
-  // async resetUserPassword(user: UserTableData): Promise<void> {
-  //   try {
-  //     await this.userService.resetUserPassword(user.email);
-  //     this.snackBar.open(
-  //       `Email de restablecimiento enviado a ${user.email}`,
-  //       'Cerrar',
-  //       { duration: 5000 }
-  //     );
-  //   } catch (error) {
-  //     console.error('Error resetting password:', error);
-  //     this.snackBar.open('Error al enviar email de restablecimiento', 'Cerrar', {
-  //       duration: 3000
-  //     });
-  //   }
-  // }
-  //
-  // async deleteUser(user: UserTableData): Promise<void> {
-  //   // TODO: Implementar modal de confirmación
-  //   const confirmed = confirm(`¿Está seguro de eliminar al usuario ${user.name}?`);
-  //
-  //   if (confirmed) {
-  //     try {
-  //       await this.userService.deactivateUser(user.uid);
-  //
-  //       // Remover de la lista local
-  //       this.allUsers = this.allUsers.filter(u => u.uid !== user.uid);
-  //       const tableData = this.convertUsersToTableData(this.allUsers);
-  //       this.dataSource.data = tableData;
-  //
-  //       this.updateStats();
-  //
-  //       this.snackBar.open(`Usuario ${user.name} eliminado`, 'Cerrar', {
-  //         duration: 3000
-  //       });
-  //     } catch (error) {
-  //       console.error('Error deleting user:', error);
-  //       this.snackBar.open('Error al eliminar usuario', 'Cerrar', {
-  //         duration: 3000
-  //       });
-  //     }
-  //   }
-  // }
-  //
-  // // ====================================================================
-  // // MÉTODOS HELPER
-  // // ====================================================================
-  //
-  // getUserTypeIcon(type: UserType): string {
-  //   const userType = this.userTypes.find(ut => ut.value === type);
-  //   return userType?.icon || 'person';
-  // }
-  //
-  // getUserTypeLabel(type: UserType): string {
-  //   const userType = this.userTypes.find(ut => ut.value === type);
-  //   return userType?.label || type;
-  // }
-  //
-  // getUserTypeClass(type: UserType): string {
-  //   const userType = this.userTypes.find(ut => ut.value === type);
-  //   return userType?.class || '';
-  // }
-  //
-  // getStatusLabel(isActive: boolean): string {
-  //   return isActive ? 'Activo' : 'Inactivo';
-  // }
-  //
-  // getStatusClass(isActive: boolean): string {
-  //   return isActive ? 'status-active' : 'status-inactive';
-  // }
-  //
-  // getStoreNames(storeIds: string[] = []): string {
-  //   if (!storeIds.length) return 'Sin asignar';
-  //
-  //   const storeNames = storeIds.map(storeId => {
-  //     const store = this.stores.find(s => s.storeInfo.storeId === storeId);
-  //     return store?.storeInfo.storeName || `Tienda ${storeId}`;
-  //   });
-  //
-  //   return storeNames.join(', ');
-  // }
-  //
-  // getStoreName(storeId: string): string {
-  //   const store = this.stores.find(s => s.storeInfo.storeId === storeId);
-  //   return store?.storeInfo.storeName || `Tienda ${storeId}`;
-  // }
-  //
-  // getRelativeTime(date: Date): string {
-  //   const now = new Date();
-  //   const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-  //
-  //   if (diffInHours < 1) return 'Hace menos de 1 hora';
-  //   if (diffInHours < 24) return `Hace ${diffInHours} hora${diffInHours > 1 ? 's' : ''}`;
-  //
-  //   const diffInDays = Math.floor(diffInHours / 24);
-  //   if (diffInDays < 7) return `Hace ${diffInDays} día${diffInDays > 1 ? 's' : ''}`;
-  //
-  //   const diffInWeeks = Math.floor(diffInDays / 7);
-  //   if (diffInWeeks < 4) return `Hace ${diffInWeeks} semana${diffInWeeks > 1 ? 's' : ''}`;
-  //
-  //   const diffInMonths = Math.floor(diffInDays / 30);
-  //   return `Hace ${diffInMonths} mes${diffInMonths > 1 ? 'es' : ''}`;
-  // }
-  //
-  // trackByStoreId(index: number, storeId: string): string {
-  //   return storeId;
-  // }
-  //
-  // getUserSpecificInfo(user: UserTableData): string {
-  //   switch (user.userType) {
-  //     case UserType.VENDOR:
-  //       const vendorData = user.specificData?.vendorInfo;
-  //       return vendorData ? `ID: ${vendorData.employeeId} | Comisión: ${(vendorData.commissionRate * 100).toFixed(1)}%` : '';
-  //
-  //     case UserType.FINANCIAL:
-  //       const financialData = user.specificData?.financialInfo;
-  //       return financialData ? `Límite: $${financialData.approvalLimit?.toLocaleString()} | Riesgo: ${financialData.riskLevel}` : '';
-  //
-  //     case UserType.ACCOUNTANT:
-  //       const accountantData = user.specificData?.accountantInfo;
-  //       return accountantData ? `Nivel: ${accountantData.accessLevel} | Dpto: ${accountantData.department}` : '';
-  //
-  //     case UserType.STORE:
-  //       const storeData = user.specificData?.storeInfo;
-  //       return storeData ? `Código: ${storeData.storeCode} | Max Inv: ${storeData.maxInventory}` : '';
-  //
-  //     default:
-  //       return '';
-  //   }
-  // }
-  //
-  // // ====================================================================
-  // // EXPORTACIÓN
-  // // ====================================================================
-  //
-  // exportToCSV(): void {
-  //   try {
-  //     const headers = ['UID', 'Nombre', 'Email', 'Teléfono', 'Tipo', 'Estado', 'Tiendas', 'Fecha Creación'];
-  //     const csvData = this.dataSource.filteredData.map(user => [
-  //       user.uid,
-  //       user.name,
-  //       user.email,
-  //       user.phone,
-  //       this.getUserTypeLabel(user.userType),
-  //       this.getStatusLabel(user.isActive),
-  //       this.getStoreNames(user.storeIds),
-  //       user.createdAt.toLocaleDateString()
-  //     ]);
-  //
-  //     const csvContent = [headers, ...csvData]
-  //       .map(row => row.map(field => `"${field}"`).join(','))
-  //       .join('\n');
-  //
-  //     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  //     const link = document.createElement('a');
-  //     link.href = URL.createObjectURL(blob);
-  //     link.download = `usuarios_${new Date().toISOString().split('T')[0]}.csv`;
-  //     link.click();
-  //
-  //     this.snackBar.open('CSV exportado exitosamente', 'Cerrar', {
-  //       duration: 3000
-  //     });
-  //   } catch (error) {
-  //     console.error('Error exporting CSV:', error);
-  //     this.snackBar.open('Error al exportar CSV', 'Cerrar', {
-  //       duration: 3000
-  //     });
-  //   }
-  // }
-  //
-  // printTable(): void {
-  //   // TODO: Implementar función de impresión
-  //   this.snackBar.open('Función de impresión en desarrollo', 'Cerrar', {
-  //     duration: 3000
-  //   });
-  // }
-  //
-  // // ====================================================================
-  // // ESTADÍSTICAS AVANZADAS
-  // // ====================================================================
-  //
-  // async viewStoreStatistics(): Promise<void> {
-  //   // try {
-  //   //   const stats = await this.statisticsService.getAllStoresStatistics();
-  //   //   console.log('Store statistics:', stats);
-  //   //
-  //   //   // TODO: Abrir modal con estadísticas por tienda
-  //   //   this.snackBar.open('Cargando estadísticas por tienda...', 'Cerrar', {
-  //   //     duration: 3000
-  //   //   });
-  //   // } catch (error) {
-  //   //   console.error('Error loading store statistics:', error);
-  //   //   this.snackBar.open('Error al cargar estadísticas', 'Cerrar', {
-  //   //     duration: 3000
-  //   //   });
-  //   // }
-  // }
-  //
-  // async getUsersByStore(storeId: string): Promise<void> {
-  //   try {
-  //     const users = await this.userService.getUsersByStore(storeId);
-  //     const tableData = this.convertUsersToTableData(users);
-  //
-  //     // Aplicar filtro temporal por tienda
-  //     this.filterForm.patchValue({ storeId });
-  //     this.applyFilters();
-  //
-  //     this.snackBar.open(`Mostrando ${users.length} usuarios de la tienda`, 'Cerrar', {
-  //       duration: 3000
-  //     });
-  //   } catch (error) {
-  //     console.error('Error filtering by store:', error);
-  //     this.snackBar.open('Error al filtrar por tienda', 'Cerrar', {
-  //       duration: 3000
-  //     });
-  //   }
-  // }
+export class ListarComponent implements OnInit, OnDestroy {
+
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  @ViewChild(MatSort) sort!: MatSort;
+
+  _userList = inject(UserListService);
+
+  // Signals para estadísticas reactivas
+  private users = signal<BaseProfile[]>([]);
+  totalUsers = computed(() => this.users().length);
+  activeUsers = computed(() => this.users().filter(u => u.isActive).length);
+  inactiveUsers = computed(() => this.users().filter(u => !u.isActive).length);
+  firstLoginUsers = computed(() => this.users().filter(u => u.isFirstLogin).length);
+
+  // Propiedades del componente
+  dataSource = new MatTableDataSource<BaseProfile>([]);
+  displayedColumns: string[] = ['user', 'contact', 'document', 'type', 'status', 'created', 'actions'];
+  
+  searchTerm = '';
+  selectedUserType = '';
+  selectedStatus = '';
+  snackBar: any;
+
+  
+
+  ngAfterViewInit() {
+    this.dataSource.paginator = this.paginator;
+    this.dataSource.sort = this.sort;
+  }
+
+  
+manageUsers() {
+throw new Error('Method not implemented.');
 }
+viewReports() {
+throw new Error('Method not implemented.');
+}
+systemSettings() {
+throw new Error('Method not implemented.');
+}
+  
+  private dialog = inject(MatDialog);
+  private userListService = inject(UserListService);
+  private externalUsersService = inject(ExternalUserService);
+  private errorHandler = inject(ErrorHandlerService);
+  private userFactory = inject(UserFactoryService);
+  private destroy$ = new Subject<void>();
+
+  // State
+  isLoading = false;
+  stats: DashboardStats = {
+    totalUsers: 0,
+    internalUsers: 0,
+    externalUsers: 0,
+    activeUsers: 0,
+    inactiveUsers: 0,
+    usersByType: {},
+    tiendas: { total: 0, active: 0, pending: 0, suspended: 0 },
+    vendedores: { total: 0, active: 0, inactive: 0, suspended: 0 },
+    recentlyCreated: 0,
+    recentUsers: undefined
+  };
+
+  // Data for quick stats
+  allUsers: BaseProfile[] = [];
+  selectedTabIndex = 0;
+
+  // Quick actions data
+  quickActions = [
+    {
+      icon: 'person_add',
+      title: 'Crear Usuario Interno',
+      description: 'Agregar usuario de la organización',
+      action: () => this.openCreateUserDialog(),
+      color: 'primary'
+    },
+    {
+      icon: 'store_mall_directory',
+      title: 'Gestionar Tiendas',
+      description: 'Administrar tiendas afiliadas',
+      action: () => this.goToExternalUsers(),
+      color: 'accent'
+    },
+    {
+      icon: 'people_outline',
+      title: 'Ver Todos los Usuarios',
+      description: 'Lista completa con filtros',
+      action: () => this.goToUserList(),
+      color: 'warn'
+    },
+    {
+      icon: 'analytics',
+      title: 'Estadísticas Avanzadas',
+      description: 'Métricas y reportes detallados',
+      action: () => this.showAdvancedStats(),
+      color: 'primary'
+    }
+  ];
+
+  async ngOnInit(): Promise<void> {
+    this.loadDashboardData();
+    this.setupSubscriptions();
+    this.loadUsers();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private async loadDashboardData(): Promise<void> {
+    this.isLoading = true;
+    
+    try {
+      // Cargar datos en paralelo
+      await Promise.all([
+        this.userListService.loadUsers({ pageSize: 100 }),
+        this.externalUsersService.loadTiendas(),
+        this.loadAllVendedores()
+      ]);
+
+    } catch (error) {
+      this.errorHandler.handleError(error, 'LoadDashboardData');
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  private async loadAllVendedores(): Promise<void> {
+    // Cargar vendedores a través del servicio
+    const tiendas = this.externalUsersService.currentTiendas;
+    if (tiendas.length > 0) {
+      // Cargar vendedores de la primera tienda para activar el servicio
+      await this.externalUsersService.getVendedoresByTienda(tiendas[0].uid);
+    }
+  }
+
+  private setupSubscriptions(): void {
+    // Combinar observables para calcular estadísticas
+    combineLatest([
+      this.userListService.users$,
+      this.externalUsersService.tiendas$,
+      this.externalUsersService.vendedores$
+    ]).pipe(takeUntil(this.destroy$))
+      .subscribe(([users, tiendas, vendedores]) => {
+        this.allUsers = users;
+        this.calculateStats(users, tiendas, vendedores);
+      });
+
+    // Loading states
+    combineLatest([
+      this.userListService.loading$,
+      this.externalUsersService.loading$
+    ]).pipe(takeUntil(this.destroy$))
+      .subscribe(([userLoading, externalLoading]) => {
+        this.isLoading = userLoading || externalLoading;
+      });
+  }
+
+  private calculateStats(users: BaseProfile[], tiendas: any[], vendedores: any[]): void {
+    const now = new Date();
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    // Stats básicas de usuarios
+    this.stats.totalUsers = users.length;
+    this.stats.internalUsers = users.filter(u => u.userCategory === UserCategory.INTERNO || !u.userCategory).length;
+    this.stats.externalUsers = users.filter(u => u.userCategory === UserCategory.EXTERNO).length;
+    this.stats.activeUsers = users.filter(u => u.isActive).length;
+    this.stats.inactiveUsers = users.filter(u => !u.isActive).length;
+
+    // Stats por tipo de usuario
+    this.stats.usersByType = {};
+    Object.values(UserType).forEach(type => {
+      this.stats.usersByType[type] = users.filter(u => u.userType === type).length;
+    });
+
+    // Stats de tiendas
+    this.stats.tiendas = {
+      total: tiendas.length,
+      active: tiendas.filter(t => t.tiendaStatus === TiendaStatus.ACTIVA).length,
+      pending: tiendas.filter(t => t.tiendaStatus === TiendaStatus.PENDIENTE_APROBACION).length,
+      suspended: tiendas.filter(t => t.tiendaStatus === TiendaStatus.SUSPENDIDA).length
+    };
+
+    // Stats de vendedores
+    this.stats.vendedores = {
+      total: vendedores.length,
+      active: vendedores.filter(v => v.vendedorStatus === VendedorStatus.ACTIVO).length,
+      inactive: vendedores.filter(v => v.vendedorStatus === VendedorStatus.INACTIVO).length,
+      suspended: vendedores.filter(v => v.vendedorStatus === VendedorStatus.SUSPENDIDO).length
+    };
+
+    // Usuarios creados recientemente
+    this.stats.recentlyCreated = users.filter(u => {
+      const createdDate = DateUtils.toDate(u.createdAt);
+      return createdDate.getTime() > sevenDaysAgo.getTime();
+    }).length;
+  }
+
+  // Métodos de navegación
+  openCreateUserDialog(): void {
+    const dialogRef = this.dialog.open(CrearComponent, {
+      width: '1000px',
+      maxWidth: '98vw',
+      maxHeight: '95vh',
+      disableClose: true,
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result?.success) {
+        this.errorHandler.showSuccess('Usuario creado exitosamente');
+        this.refreshUsers();
+      }
+    });
+  }
+
+  goToUserList(): void {
+    this.selectedTabIndex = 1;
+  }
+
+  goToExternalUsers(): void {
+    this.selectedTabIndex = 2;
+  }
+
+  goToDebug(): void {
+    this.selectedTabIndex = 3;
+  }
+
+  showAdvancedStats(): void {
+    // TODO: Implementar modal de estadísticas avanzadas
+    this.errorHandler.showInfo('Próximamente: Estadísticas avanzadas');
+  }
+
+  // Métodos de datos
+
+
+  exportUsers(): void {
+    try {
+      const csvData = this.generateUsersCSV(this.allUsers);
+      this.downloadCSV(csvData, 'usuarios_completo.csv');
+      this.errorHandler.showSuccess('Usuarios exportados exitosamente');
+    } catch (error) {
+      this.errorHandler.handleError(error, 'ExportUsers');
+    }
+  }
+
+  private generateUsersCSV(users: BaseProfile[]): string {
+    const headers = [
+      'UID',
+      'Nombres',
+      'Apellidos', 
+      'Email',
+      'Teléfono',
+      'Tipo Documento',
+      'Número Documento',
+      'Tipo Usuario',
+      'Categoría',
+      'Estado',
+      'Fecha Creación',
+      'Creado Por'
+    ];
+
+    const csvData = users.map(user => [
+      user.uid,
+      user.firstName,
+      user.lastName,
+      user.email,
+      user.phone,
+      user.documentType,
+      user.documentNumber,
+      this.getUserTypeLabel(user.userType),
+      user.userCategory || 'interno',
+      user.isActive ? 'Activo' : 'Inactivo',
+      DateUtils.formatForDisplay(user.createdAt),
+      user.createdBy || ''
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...csvData.map(row => row.map(field => `"${field}"`).join(','))
+    ].join('\n');
+
+    return csvContent;
+  }
+
+  private downloadCSV(csvData: string, filename: string): void {
+    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', filename);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  }
+
+  // Métodos de utilidad
+  
+
+  getRecentUsersPercentage(): number {
+    if (this.stats.totalUsers === 0) return 0;
+    return (this.stats.recentlyCreated / this.stats.totalUsers) * 100;
+  }
+
+
+
+  getTiendasActivePercentage(): number {
+    if (this.stats.tiendas.total === 0) return 0;
+    return (this.stats.tiendas.active / this.stats.tiendas.total) * 100;
+  }
+
+  getVendedoresActivePercentage(): number {
+    if (this.stats.vendedores.total === 0) return 0;
+    return (this.stats.vendedores.active / this.stats.vendedores.total) * 100;
+  }
+
+  getMostPopularUserType(): string {
+    let maxCount = 0;
+    let popularType = '';
+    
+    Object.entries(this.stats.usersByType).forEach(([type, count]) => {
+      if (count > maxCount) {
+        maxCount = count;
+        popularType = type;
+      }
+    });
+    
+    return popularType ? this.getUserTypeLabel(popularType as UserType) : 'N/A';
+  }
+
+  
+
+   userType = UserType;
+
+   private async loadUsers(): Promise<void> {
+    try {
+      const options: UserListOptions = {
+        pageSize: 100,
+        orderByField: 'createdAt',
+        orderDirection: 'desc'
+      };
+      
+      const result = await this.userListService.loadUsers(options);
+      console.log('✅ Usuarios cargados:', result.users.length);
+      this.dataSource.data = result.users;
+
+    } catch (error) {
+      console.error('❌ Error loading users:', error);
+      this.errorHandler.handleError(error, 'LoadUsers');
+    }
+  }
+
+  async refreshUsers(): Promise<void> {
+    try {
+      this.userListService.clearUsers();
+      await this.loadUsers();
+      this.snackBar.open('✅ Usuarios actualizados', 'Cerrar', { duration: 2000 });
+    } catch (error) {
+      this.snackBar.open('❌ Error al actualizar', 'Cerrar', { duration: 3000 });
+    }
+  }
+
+  // Datos de ejemplo actualizados
+  
+
+  applyFilter() {
+    const filterValue = this.searchTerm.toLowerCase();
+    
+    this.dataSource.filterPredicate = (data: BaseProfile, filter: string) => {
+      const searchMatch = data.firstName.toLowerCase().includes(filter) ||
+                         data.lastName.toLowerCase().includes(filter) ||
+                         data.email.toLowerCase().includes(filter) ||
+                         data.documentNumber.includes(filter);
+      
+      const typeMatch = !this.selectedUserType || data.userType === this.selectedUserType;
+      
+      const statusMatch = !this.selectedStatus || 
+                         (this.selectedStatus === 'active' && data.isActive) ||
+                         (this.selectedStatus === 'inactive' && !data.isActive);
+      
+      return searchMatch && typeMatch && statusMatch;
+    };
+
+    this.dataSource.filter = filterValue;
+
+    if (this.dataSource.paginator) {
+      this.dataSource.paginator.firstPage();
+    }
+  }
+
+  formatDate(date: Date): string {
+    return new Intl.DateTimeFormat('es-PE', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(new Date(date));
+  }
+
+  getUserTypeClass(userType: UserType): string {
+    const classes = {
+      [UserType.GERENCIA]: 'bg-purple-100 text-purple-800',
+      [UserType.COMERCIAL]: 'bg-blue-100 text-blue-800',
+      [UserType.LOGISTICA]: 'bg-green-100 text-green-800',
+      [UserType.FINANZAS]: 'bg-yellow-100 text-yellow-800',
+      [UserType.CONTABILIDAD]: 'bg-orange-100 text-orange-800',
+      [UserType.ADMINISTRACION]: 'bg-red-100 text-red-800',
+      [UserType.RECURSOS_HUMANOS]: 'bg-pink-100 text-pink-800',
+      [UserType.TIENDA]: 'bg-indigo-100 text-indigo-800'
+      , [UserType.VENDEDOR]: 'Vendedor'
+    } as const;
+    return classes[userType] || 'bg-gray-100 text-gray-800';
+  }
+
+  getUserTypeLabel(userType: UserType): string {
+    const labels = {
+      [UserType.GERENCIA]: 'Gerencia',
+      [UserType.COMERCIAL]: 'Comercial',
+      [UserType.LOGISTICA]: 'Logística',
+      [UserType.FINANZAS]: 'Finanzas',
+      [UserType.CONTABILIDAD]: 'Contabilidad',
+      [UserType.ADMINISTRACION]: 'Administración',
+      [UserType.RECURSOS_HUMANOS]: 'RR.HH.',
+      [UserType.TIENDA]: 'Tienda'
+      , [UserType.VENDEDOR]: 'Vendedor'
+    } as const; // Add VENDEDOR to the labels object
+    return labels[userType] || userType;
+  }
+
+
+
+  viewUser(user: BaseProfile) {
+    console.log('Ver usuario:', user);
+    // Implementar navegación o modal para ver detalles
+  }
+
+  editUser(user: BaseProfile) {
+    console.log('Editar usuario:', user);
+    // Implementar navegación o modal para editar
+  }
+
+  deleteUser(user: BaseProfile) {
+    console.log('Eliminar usuario:', user);
+    // Implementar confirmación y eliminación
+  }
+
+  resetPassword(user: BaseProfile) {
+    console.log('Resetear contraseña:', user);
+    // Implementar reset de contraseña
+  }
+
+  toggleUserStatus(user: BaseProfile) {
+    console.log('Cambiar estado:', user);
+    // Implementar cambio de estado activo/inactivo
+  }
+
+  sendWelcomeEmail(user: BaseProfile) {
+    console.log('Enviar email de bienvenida:', user);
+    // Implementar envío de email
+  }
+}
+

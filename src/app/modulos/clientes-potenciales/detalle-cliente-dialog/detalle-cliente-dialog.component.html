@@ -1,0 +1,119 @@
+<div class="p-6 max-w-4xl">
+  <h2 mat-dialog-title class="text-2xl font-semibold mb-6 flex items-center">
+    <mat-icon class="mr-3 text-blue-600">person</mat-icon>
+    Detalle Completo del Cliente
+  </h2>
+
+  <div mat-dialog-content class="space-y-6 max-h-96 overflow-y-auto">
+
+    <!-- Información Personal -->
+    <div class="bg-gray-50 p-4 rounded-lg">
+      <h3 class="font-semibold text-lg mb-3 text-gray-800 flex items-center">
+        <mat-icon class="mr-2 text-blue-500">account_circle</mat-icon>
+        Información Personal
+      </h3>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="text-sm font-medium text-gray-600">Nombre Completo:</label>
+          <p class="text-gray-900 font-medium">{{ cliente.nombre || (cliente.nombres + ' ' + cliente.apellidos) || 'Sin nombre' }}</p>
+        </div>
+        <div *ngIf="cliente.edad">
+          <label class="text-sm font-medium text-gray-600">Edad:</label>
+          <p class="text-gray-900">{{ cliente.edad }} años</p>
+        </div>
+        <div *ngIf="cliente.genero">
+          <label class="text-sm font-medium text-gray-600">Género:</label>
+          <p class="text-gray-900">{{ cliente.genero }}</p>
+        </div>
+        <div *ngIf="cliente.numeroDocumento">
+          <label class="text-sm font-medium text-gray-600">Documento:</label>
+          <p class="text-gray-900">{{ cliente.tipoDocumento || 'DOC' }}: {{ cliente.numeroDocumento }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estado y Asignación CORREGIDO -->
+    <div class="bg-blue-50 p-4 rounded-lg">
+      <h3 class="font-semibold text-lg mb-3 text-gray-800">Estado y Asignación</h3>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="text-sm font-medium text-gray-600">Estado Actual:</label>
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium mt-1"
+                [ngClass]="getColorEstado(cliente.estado)">
+            {{ cliente.estado || 'NUEVO' }}
+          </span>
+        </div>
+        <div>
+          <label class="text-sm font-medium text-gray-600">Vendedor Asignado:</label>
+          <p class="text-gray-900 mt-1">
+            {{ cliente.nombreVendedor || 'Sin asignar' }}
+          </p>
+        </div>
+        <div *ngIf="cliente.fechaAsignacion">
+          <label class="text-sm font-medium text-gray-600">Fecha de Asignación:</label>
+          <p class="text-gray-900">{{ formatearFecha(cliente.fechaAsignacion) }}</p>
+        </div>
+        <div *ngIf="cliente.ultimoContacto">
+          <label class="text-sm font-medium text-gray-600">Último Contacto:</label>
+          <p class="text-gray-900">{{ formatearFecha(cliente.ultimoContacto) }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Producto de Interés -->
+    <div class="bg-green-50 p-4 rounded-lg">
+      <h3 class="font-semibold text-lg mb-3 text-gray-800 flex items-center">
+        <mat-icon class="mr-2 text-green-600">motorcycle</mat-icon>
+        Producto de Interés
+      </h3>
+      
+      <div class="grid grid-cols-1 lg:grid-cols-6 gap-4">
+        <!-- Información del producto -->
+        <div class="lg:col-span-2">
+          <div class="grid grid-cols-1 gap-3">
+            <div>
+              <label class="text-sm font-medium text-gray-600">Marca:</label>
+              <p class="text-gray-900 font-medium">{{ producto.marca  }}</p>
+            </div>
+            <div>
+              <label class="text-sm font-medium text-gray-600">Modelo:</label>
+              <p class="text-gray-900">{{ producto.modelo}}</p>
+            </div>
+            <div>
+              <label class="text-sm font-medium text-gray-600">Precio:</label>
+              <p class="text-gray-900 text-xl font-bold">
+                {{ producto.precioWeb || 'Precio no disponible' }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Imagen del producto -->
+        <div class="lg:col-span-4 flex justify-center">
+          <div class="w-full ">
+            <img 
+              [src]="producto.imagen_principal || 'assets/images/no-image.png'" 
+              [alt]="producto.marca + ' ' + producto.modelo"
+              class="w-full h-48 object-cover rounded-lg shadow-md"
+              >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Más secciones... -->
+
+  </div>
+
+  <div mat-dialog-actions class="flex justify-end gap-3 mt-6">
+    <button mat-button (click)="cerrar()">Cerrar</button>
+    <button 
+      mat-raised-button 
+      color="primary"
+      (click)="abrirWhatsApp()"
+      *ngIf="cliente.telefono">
+      <mat-icon class="mr-2">chat</mat-icon>
+      WhatsApp
+    </button>
+  </div>
+</div>

@@ -1,0 +1,409 @@
+<div class="external-users-container">
+      
+      <!-- Header -->
+      <div class="page-header">
+        <h1>🏪 Gestión de Usuarios Externos</h1>
+        <p>Administra tiendas afiliadas y sus vendedores</p>
+      </div>
+
+      <mat-tab-group class="main-tabs" animationDuration="300ms">
+        
+        <!-- Tab Tiendas -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon>store</mat-icon>
+            Tiendas Afiliadas
+            <span matBadge="{{tiendas.length}}" matBadgeOverlap="false" matBadgeColor="primary" 
+                  *ngIf="tiendas.length > 0" class="badge-spacing"></span>
+          </ng-template>
+          
+          <div class="tab-content">
+            
+            <!-- Actions Bar -->
+            <div class="actions-bar">
+              <button mat-raised-button color="primary" (click)="openCreateTiendaDialog()">
+                <mat-icon>add_business</mat-icon>
+                Nueva Tienda
+              </button>
+              
+              <div class="filters">
+                <mat-form-field appearance="fill">
+                  <mat-label>Filtrar por estado</mat-label>
+                  <mat-select [(value)]="selectedTiendaStatus" (selectionChange)="filterTiendas()">
+                    <mat-option value="">Todos</mat-option>
+                    <mat-option value="activa">Activas</mat-option>
+                    <mat-option value="pendiente_aprobacion">Pendientes</mat-option>
+                    <mat-option value="suspendida">Suspendidas</mat-option>
+                    <mat-option value="rechazada">Rechazadas</mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+            </div>
+
+           
+
+
+               <!-- Loading -->
+            <div *ngIf="isLoading" class="loading-section">
+              <mat-spinner diameter="40"></mat-spinner>
+              <p>Cargando tiendas...</p>
+            </div>
+
+            <!-- Lista de Tiendas -->
+            <div *ngIf="!isLoading" class="tiendas-grid">
+              <mat-card *ngFor="let tienda of filteredTiendas" class="tienda-card">
+                
+                <!-- Header de la tienda -->
+                <mat-card-header>
+                  <div mat-card-avatar class="tienda-avatar">
+                    <mat-icon>store</mat-icon>
+                  </div>
+                  <mat-card-title>{{ tienda.businessName }}</mat-card-title>
+                  <mat-card-subtitle>
+                    {{ tienda.firstName }} {{ tienda.lastName }} - {{ tienda.city }}
+                  </mat-card-subtitle>
+                  
+                  <!-- Estado de la tienda -->
+                  <div class="tienda-status">
+                    <mat-chip [ngClass]="'status-' + tienda.tiendaStatus">
+                      {{ getTiendaStatusLabel(tienda.tiendaStatus) }}
+                    </mat-chip>
+                  </div>
+                </mat-card-header>
+
+                <!-- Contenido -->
+                <mat-card-content>
+                  <div class="tienda-info">
+                    <div class="info-row">
+                      <mat-icon>business</mat-icon>
+                      <span>{{ tienda.businessCategory }}</span>
+                    </div>
+                    <div class="info-row">
+                      <mat-icon>location_on</mat-icon>
+                      <span>{{ tienda.address }}, {{ tienda.district }}</span>
+                    </div>
+                    <div class="info-row">
+                      <mat-icon>email</mat-icon>
+                      <span>{{ tienda.email }}</span>
+                    </div>
+                    <div class="info-row">
+                      <mat-icon>phone</mat-icon>
+                      <span>{{ tienda.phone }}</span>
+                    </div>
+                    
+                  </div>
+
+                  <!-- Vendedores count -->
+                  <div class="vendedores-info" (click)="loadVendedoresByTienda(tienda.uid)">
+                    <mat-icon>people</mat-icon>
+                    <span>{{ getVendedoresCount(tienda.uid) }} vendedores</span>
+                    <mat-icon>keyboard_arrow_right</mat-icon>
+                  </div>
+                </mat-card-content>
+
+                <!-- Acciones -->
+                <mat-card-actions>
+                  <button mat-button (click)="viewTiendaDetails(tienda)">
+                    <mat-icon>visibility</mat-icon>
+                    Ver Detalles
+                  </button>
+                  
+                  <button mat-button [matMenuTriggerFor]="tiendaMenu">
+                    <mat-icon>more_vert</mat-icon>
+                  </button>
+                  
+                  <mat-menu #tiendaMenu="matMenu">
+                    <button mat-menu-item (click)="editTienda(tienda)">
+                      <mat-icon>edit</mat-icon>
+                      Editar
+                    </button>
+                    <button mat-menu-item (click)="changeTiendaStatus(tienda, 'activa')" 
+                            *ngIf="tienda.tiendaStatus !== 'activa'">
+                      <mat-icon>check_circle</mat-icon>
+                      Activar
+                    </button>
+                    <button mat-menu-item (click)="changeTiendaStatus(tienda, 'suspendida')"
+                            *ngIf="tienda.tiendaStatus === 'activa'">
+                      <mat-icon>block</mat-icon>
+                      Suspender
+                    </button>
+                    <button mat-menu-item (click)="addVendedorToTienda(tienda)">
+                      <mat-icon>person_add</mat-icon>
+                      Agregar Vendedor
+                    </button>
+                  </mat-menu>
+                </mat-card-actions>
+              </mat-card>
+            </div>
+
+            <!-- Sin tiendas -->
+            <div *ngIf="!isLoading && filteredTiendas.length === 0" class="no-data">
+              <mat-icon>store_mall_directory</mat-icon>
+              <h3>No hay tiendas registradas</h3>
+              <p>Crea la primera tienda afiliada para comenzar</p>
+              <button mat-raised-button color="primary" (click)="openCreateTiendaDialog()">
+                <mat-icon>add_business</mat-icon>
+                Crear Primera Tienda
+              </button>
+            </div>
+
+          </div>
+        </mat-tab>
+
+        <!-- Tab Vendedores -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon>people</mat-icon>
+            Vendedores
+            <span [matBadge]="vendedores.length" matBadgeOverlap="false" matBadgeColor="accent" 
+                  *ngIf="vendedores.length > 0" class="badge-spacing"></span>
+          </ng-template>
+          
+          <div class="tab-content">
+            
+            <!-- Actions Bar -->
+            <div class="actions-bar">
+              <button mat-raised-button color="primary" 
+                      (click)="openCreateVendedorDialog()"
+                      [disabled]="availableTiendas.length === 0">
+                <mat-icon>person_add</mat-icon>
+                Nuevo Vendedor
+              </button>
+              
+              <div class="filters">
+                <mat-form-field appearance="fill">
+                  <mat-label>Filtrar por tienda</mat-label>
+                  <mat-select [(value)]="selectedTiendaFilter" (selectionChange)="filterVendedores()">
+                    <mat-option value="">Todas las tiendas</mat-option>
+                    <mat-option *ngFor="let tienda of availableTiendas" [value]="tienda.value">
+                      {{ tienda.label }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+                
+                <mat-form-field appearance="fill">
+                  <mat-label>Estado</mat-label>
+                  <mat-select [(value)]="selectedVendedorStatus" (selectionChange)="filterVendedores()">
+                    <mat-option value="">Todos</mat-option>
+                    <mat-option value="activo">Activos</mat-option>
+                    <mat-option value="inactivo">Inactivos</mat-option>
+                    <mat-option value="suspendido">Suspendidos</mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+            </div>
+
+            <!-- Tabla de Vendedores -->
+            <div *ngIf="!isLoading" class="vendedores-table-container">
+              <table mat-table [dataSource]="filteredVendedores" class="vendedores-table" matSort>
+                
+                <!-- Columna Avatar -->
+                <ng-container matColumnDef="avatar">
+                  <th mat-header-cell *matHeaderCellDef>Vendedor</th>
+                  <td mat-cell *matCellDef="let vendedor">
+                    <div class="vendedor-avatar">
+                      {{ getVendedorInitials(vendedor) }}
+                    </div>
+                  </td>
+                </ng-container>
+
+                <!-- Columna Información -->
+                <ng-container matColumnDef="info">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header="firstName">Información</th>
+                  <td mat-cell *matCellDef="let vendedor">
+                    <div class="vendedor-info">
+                      <div class="vendedor-name">{{ vendedor.firstName }} {{ vendedor.lastName }}</div>
+                      <div class="vendedor-position">{{ vendedor.position }}</div>
+                      <div class="vendedor-contact">{{ vendedor.email }} | {{ vendedor.phone }}</div>
+                    </div>
+                  </td>
+                </ng-container>
+
+                <!-- Columna Tienda -->
+                <ng-container matColumnDef="tienda">
+                  <th mat-header-cell *matHeaderCellDef>Tienda</th>
+                  <td mat-cell *matCellDef="let vendedor">
+                    <div class="tienda-info">
+                      <div class="tienda-name">{{ getTiendaName(vendedor.tiendaId) }}</div>
+                      <div class="tienda-location">{{ getTiendaLocation(vendedor.tiendaId) }}</div>
+                    </div>
+                  </td>
+                </ng-container>
+
+                <!-- Columna Estado -->
+                <ng-container matColumnDef="status">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header="vendedorStatus">Estado</th>
+                  <td mat-cell *matCellDef="let vendedor">
+                    <mat-chip [ngClass]="'status-' + vendedor.vendedorStatus">
+                      {{ getVendedorStatusLabel(vendedor.vendedorStatus) }}
+                    </mat-chip>
+                  </td>
+                </ng-container>
+
+                <!-- Columna Comisión -->
+                <ng-container matColumnDef="commission">
+                  <th mat-header-cell *matHeaderCellDef>Comisión</th>
+                  <td mat-cell *matCellDef="let vendedor">
+                    {{ vendedor.commissionRate }}%
+                  </td>
+                </ng-container>
+
+                <!-- Columna Fecha -->
+                <ng-container matColumnDef="hireDate">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header="hireDate">Fecha Ingreso</th>
+                  <td mat-cell *matCellDef="let vendedor">
+                    {{ formatDate(vendedor.hireDate) }}
+                  </td>
+                </ng-container>
+
+                <!-- Columna Acciones -->
+                <ng-container matColumnDef="actions">
+                  <th mat-header-cell *matHeaderCellDef>Acciones</th>
+                  <td mat-cell *matCellDef="let vendedor">
+                    <button mat-icon-button [matMenuTriggerFor]="vendedorMenu">
+                      <mat-icon>more_vert</mat-icon>
+                    </button>
+                    
+                    <mat-menu #vendedorMenu="matMenu">
+                      <button mat-menu-item (click)="viewVendedorDetails(vendedor)">
+                        <mat-icon>visibility</mat-icon>
+                        Ver Detalles
+                      </button>
+                      <button mat-menu-item (click)="editVendedor(vendedor)">
+                        <mat-icon>edit</mat-icon>
+                        Editar
+                      </button>
+                      <button mat-menu-item (click)="changeVendedorStatus(vendedor, 'activo')"
+                              *ngIf="vendedor.vendedorStatus !== 'activo'">
+                        <mat-icon>check_circle</mat-icon>
+                        Activar
+                      </button>
+                      <button mat-menu-item (click)="changeVendedorStatus(vendedor, 'suspendido')"
+                              *ngIf="vendedor.vendedorStatus === 'activo'">
+                        <mat-icon>block</mat-icon>
+                        Suspender
+                      </button>
+                    </mat-menu>
+                  </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="vendedoresDisplayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: vendedoresDisplayedColumns;"></tr>
+              </table>
+
+              <!-- Sin vendedores -->
+              <div *ngIf="filteredVendedores.length === 0" class="no-data">
+                <mat-icon>people_fill</mat-icon>
+                <h3>No hay vendedores registrados</h3>
+                <p *ngIf="availableTiendas.length === 0">Primero debes crear una tienda activa</p>
+                <p *ngIf="availableTiendas.length > 0">Agrega vendedores a las tiendas existentes</p>
+                <button mat-raised-button color="primary" 
+                        (click)="openCreateVendedorDialog()"
+                        [disabled]="availableTiendas.length === 0">
+                  <mat-icon>person_add</mat-icon>
+                  Agregar Primer Vendedor
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </mat-tab>
+
+        <!-- Tab Estadísticas -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon>analytics</mat-icon>
+            Estadísticas
+          </ng-template>
+          
+          <div class="tab-content">
+            <div class="stats-grid">
+              
+              <!-- Stats Cards -->
+              <mat-card class="stat-card">
+                <mat-card-content>
+                  <div class="stat-icon">
+                    <mat-icon>store</mat-icon>
+                  </div>
+                  <div class="stat-info">
+                    <div class="stat-number">{{ tiendas.length }}</div>
+                    <div class="stat-label">Tiendas Totales</div>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+
+              <mat-card class="stat-card">
+                <mat-card-content>
+                  <div class="stat-icon">
+                    <mat-icon>check_circle</mat-icon>
+                  </div>
+                  <div class="stat-info">
+                    <div class="stat-number">{{ getTiendasByStatus('activa').length }}</div>
+                    <div class="stat-label">Tiendas Activas</div>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+
+              <mat-card class="stat-card">
+                <mat-card-content>
+                  <div class="stat-icon">
+                    <mat-icon>people</mat-icon>
+                  </div>
+                  <div class="stat-info">
+                    <div class="stat-number">{{ vendedores.length }}</div>
+                    <div class="stat-label">Vendedores Totales</div>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+
+              <mat-card class="stat-card">
+                <mat-card-content>
+                  <div class="stat-icon">
+                    <mat-icon>trending_up</mat-icon>
+                  </div>
+                  <div class="stat-info">
+                    <div class="stat-number">{{ getVendedoresByStatus('activo').length }}</div>
+                    <div class="stat-label">Vendedores Activos</div>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+
+            </div>
+
+            <!-- Distribución por estado -->
+            <div class="status-distribution">
+              <mat-card>
+                <mat-card-header>
+                  <mat-card-title>Distribución por Estado</mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                  <div class="distribution-grid">
+                    <div class="distribution-section">
+                      <h4>Tiendas</h4>
+                      <div class="distribution-items">
+                        <div class="distribution-item" *ngFor="let status of tiendaStatusList">
+                          <span class="status-label">{{ status.label }}:</span>
+                          <span class="status-count">{{ getTiendasByStatus(status.value).length }}</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div class="distribution-section">
+                      <h4>Vendedores</h4>
+                      <div class="distribution-items">
+                        <div class="distribution-item" *ngFor="let status of vendedorStatusList">
+                          <span class="status-label">{{ status.label }}:</span>
+                          <span class="status-count">{{ getVendedoresByStatus(status.value).length }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+            </div>
+
+          </div>
+        </mat-tab>
+
+      </mat-tab-group>
+    </div>

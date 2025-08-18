@@ -8,11 +8,8 @@ import { CrearFichaTecnicaComponent } from './inventario_module/crear-ficha-tecn
 import { ReportesHomeComponent } from './reportes/reportes-home/reportes-home.component';
 import { ReportesClientesComponent } from './reportes/reportes-clientes/reportes-clientes.component';
 import { ColaboradoresHomeComponent } from './colaboradores/colaboradores-home/colaboradores-home.component';
-import { TiendasComponent } from './colaboradores/tiendas/tiendas.component';
-import { CrearColaboradoresComponent } from './colaboradores/crear-colaboradores/crear-colaboradores.component';
 import { ListaVendedoresComponent } from './colaboradores/lista-vendedores/lista-vendedores.component';
 import { CrearVendedorComponent } from './colaboradores/crear-vendedor/crear-vendedor.component';
-import { ListaDePreciosWebComponent } from './web_config_module/lista-de-precios-web/lista-de-precios-web.component';
 import { FrontConfigComponent } from './web_config_module/front-config/front-config.component';
 import { LoadingComponent } from './common/loading/loading.component';
 import { LoginComponent } from './auth_module/login/login.component';
@@ -23,6 +20,12 @@ import { ChatComponent } from './common/chat/chat.component';
 import { MainadminComponent } from './modulos/adminusuarios/mainadmin/mainadmin.component';
 import { ListarComponent } from './modulos/adminusuarios/listar/listar.component';
 import { CrearComponent } from './modulos/adminusuarios/crear/crear.component';
+import { ExternalUsersComponent } from './modulos/adminusuarios/external-users/external-users.component';
+import { ProposalDashboarComponent } from './modulos/proposal-management/components/proposal-dashboar/proposal-dashboar.component';
+
+import { PropuestasListComponent } from './modulos/proposal-management/components/propuestas-list/propuestas-list.component';
+import { LeadsWebComponent } from './modulos/clientes-potenciales/leads-web/leads-web.component';
+import { DashboardClientesComponent } from './modulos/clientes-potenciales/dashboard-clientes/dashboard-clientes.component';
 
 export const routes: Routes = [
   {
@@ -67,7 +70,7 @@ export const routes: Routes = [
       },
       {
         path: 'vendedores',
-        component: ListaVendedoresComponent,
+        component: ExternalUsersComponent,
         data: {
           title: 'Vendedores',
         },
@@ -86,18 +89,24 @@ export const routes: Routes = [
           },
           {
             path: 'list-tiendas',
-            component: TiendasComponent,
+            component: ProposalDashboarComponent,
           },
-
           {
-            path: 'crear-tienda',
-            component: CrearColaboradoresComponent,
+            path: 'evaluar-propuesta',
+            component: PropuestasListComponent,  
           },
           {
             path: 'info-tienda',
             component: DetallesAsociadosATiendaComponent,
           },
         ],
+      },
+      {
+        path: 'leads-web',
+        component:DashboardClientesComponent,
+        data: {
+          title: 'Leads Web',
+        }
       },
       {
         path: 'motocicletas',
@@ -200,7 +209,7 @@ export const routes: Routes = [
       },
       {
         path: 'list-colaboradores',
-        component: TiendasComponent,
+        component: ProposalDashboarComponent,
       },
 
       {

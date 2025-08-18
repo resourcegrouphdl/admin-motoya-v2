@@ -111,7 +111,7 @@ export class CrearComponent  {
       phone: ['', Validators.required],
       documentType: ['', Validators.required],
       documentNumber: ['', Validators.required],
-      password: ['', [Validators.required, Validators.minLength(6)]]
+      password: ['' ]
     });
 
     this.specificDataForm = this.fb.group({});

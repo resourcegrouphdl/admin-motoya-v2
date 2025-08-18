@@ -1,4 +1,5 @@
-import {DocumentType, UserType} from "../models/user-type.type";
+
+import { UserType } from "../enums/user-type.types";
 import {SpecificFormData} from "./specific-form-data";
 
 export interface UserFormData {
