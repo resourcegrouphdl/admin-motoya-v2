@@ -55,6 +55,7 @@ export interface BaseProfile {
   storeIds?: string[];
   isFirstLogin?: boolean;
   lastPasswordChange?: Date | Timestamp;
+  password: string;
 }
 
 // Interface para Firestore (con Timestamps)
@@ -75,6 +76,7 @@ export interface BaseProfileFirestore {
   storeIds?: string[];
   isFirstLogin?: boolean;
   lastPasswordChange?: Timestamp;
+  password: string;
 }
 
 // Interfaces específicas para cada tipo de usuario

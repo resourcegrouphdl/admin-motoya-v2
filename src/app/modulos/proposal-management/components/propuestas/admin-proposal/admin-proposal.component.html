@@ -1,0 +1,291 @@
+   <div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
+      <!-- Header -->
+      <div class="mb-8">
+        <h1 class="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+          🛡️ Panel Administrativo
+        </h1>
+        <p class="text-gray-600 text-lg">Evaluación y gestión de propuestas de financiamiento</p>
+        
+        <!-- Estadísticas -->
+        <div class="flex gap-4 mt-4">
+          <div class="bg-white rounded-xl p-4 shadow-lg border border-gray-200">
+            <div class="text-2xl font-bold text-yellow-600">{{ adminService.pendingProposals().length }}</div>
+            <div class="text-sm text-gray-600">Pendientes</div>
+          </div>
+          <div class="bg-white rounded-xl p-4 shadow-lg border border-gray-200">
+            <div class="text-2xl font-bold text-green-600">{{ adminService.approvedProposals().length }}</div>
+            <div class="text-sm text-gray-600">Aprobadas</div>
+          </div>
+          <div class="bg-white rounded-xl p-4 shadow-lg border border-gray-200">
+            <div class="text-2xl font-bold text-red-600">{{ adminService.rejectedProposals().length }}</div>
+            <div class="text-sm text-gray-600">Rechazadas</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <div class="bg-white rounded-xl shadow-lg p-6 mb-6 border border-gray-200">
+        <h2 class="text-xl font-semibold mb-4">Filtros</h2>
+        <div class="grid md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Estado</label>
+            <select 
+              [(ngModel)]="filters.estado" 
+              (ngModelChange)="applyFilters()"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="todos">Todos</option>
+              <option value="pendiente">Pendientes</option>
+              <option value="aprobado">Aprobadas</option>
+              <option value="rechazado">Rechazadas</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">UID Tienda</label>
+            <input 
+              type="text" 
+              [(ngModel)]="filters.uidTienda"
+              (ngModelChange)="applyFilters()"
+              placeholder="ID de la tienda"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Marca</label>
+            <input 
+              type="text" 
+              [(ngModel)]="filters.marca"
+              (ngModelChange)="applyFilters()"
+              placeholder="Honda, Yamaha..."
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      @if (adminService.isLoading) {
+        <div class="flex justify-center items-center py-12">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <span class="ml-3 text-gray-600">Cargando propuestas...</span>
+        </div>
+      }
+
+      <!-- Error -->
+      @if (adminService.hasError) {
+        <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
+          <div class="flex items-center justify-between">
+            <p class="text-red-700">{{ adminService.errorMessage }}</p>
+            <button (click)="adminService.clearErrors()" class="text-red-600 hover:text-red-800">✕</button>
+          </div>
+        </div>
+      }
+
+      <!-- Lista de Propuestas -->
+      <div class="space-y-6">
+        @if (filteredProposals().length === 0 && !adminService.isLoading) {
+          <div class="bg-white rounded-xl shadow-lg p-12 text-center border border-gray-200">
+            <p class="text-gray-500 text-lg">No hay propuestas que coincidan con los filtros</p>
+          </div>
+        } @else {
+          @for (proposal of filteredProposals(); track proposal.id) {
+            <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 hover:shadow-xl transition-shadow"
+                 [class]="getBorderClass(proposal.estado)">
+              
+              <!-- Header -->
+              <div class="flex justify-between items-start mb-4">
+                <div>
+                  <h3 class="text-2xl font-bold text-gray-900 mb-2">
+                    {{ proposal.marca }} {{ proposal.modelo }}
+                  </h3>
+                  <p class="text-3xl font-bold text-blue-600">
+                    {{ adminService.formatPrice(proposal.precio) }}
+                  </p>
+                </div>
+                <div [class]="getStatusClass(proposal.estado)">
+                  {{ proposal.estado | titlecase }}
+                </div>
+              </div>
+
+              <!-- Info de la tienda MEJORADA -->
+              <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                <div class="grid md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span class="font-medium text-gray-600">Tienda:</span>
+                    <div class="flex items-center space-x-2 mt-1">
+                      <!-- Nombre de la tienda con botón para abrir diálogo -->
+                      <button 
+                        (click)="openStoreDialog(proposal.uidTienda)"
+                        class="bg-blue-100 hover:bg-blue-200 text-blue-800 px-3 py-1 rounded-lg text-sm font-medium transition-colors flex items-center space-x-1"
+                      >
+                        <span>🏪</span>
+                        <span>{{ getStoreName(proposal.uidTienda) }}</span>
+                        <span class="text-blue-600">👁️</span>
+                      </button>
+                    </div>
+                    <!-- UID como información secundaria -->
+                    <p class="font-mono text-xs text-gray-500 mt-1">ID: {{ proposal.uidTienda }}</p>
+                  </div>
+                  <div>
+                    <span class="font-medium text-gray-600">Fecha:</span>
+                    <p>{{ adminService.formatDate(proposal.fechaCreacion) }}</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Motivo de rechazo -->
+              @if (proposal.estado === 'rechazado' && proposal.motivoRechazo) {
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                  <h4 class="font-bold text-red-800 mb-2">Motivo del rechazo:</h4>
+                  <p class="text-red-700">{{ proposal.motivoRechazo }}</p>
+                </div>
+              }
+
+              <!-- Negociaciones -->
+              @if (proposal.negociaciones.length > 0) {
+                <div class="border-t pt-4 mb-4">
+                  <h4 class="font-bold text-gray-800 mb-3">
+                    Negociaciones ({{ proposal.negociaciones.length }})
+                  </h4>
+                  <div class="space-y-3 max-h-60 overflow-y-auto">
+                    @for (negotiation of proposal.negociaciones; track negotiation.id) {
+                      <div [class]="getNegotiationClass(negotiation.autor)">
+                        <div class="flex justify-between items-start mb-2">
+                          <span class="font-semibold">
+                            {{ negotiation.autor === 'tienda' ? '🏪 Tienda' : '🏦 Financiera' }}
+                          </span>
+                          <span class="text-sm opacity-75">{{ negotiation.fecha }}</span>
+                        </div>
+                        <p>{{ negotiation.mensaje }}</p>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+
+              <!-- Panel de evaluación -->
+              @if (proposal.estado === 'pendiente' || (proposal.estado === 'rechazado' && proposal.negociaciones.length > 0)) {
+                <div class="border-t pt-4">
+                  
+                  <!-- Formulario de respuesta -->
+                  @if (showResponseId === proposal.id) {
+                    <div class="bg-blue-50 rounded-lg p-4 mb-4">
+                      <label class="block text-sm font-medium text-blue-800 mb-2">
+                        Respuesta de la financiera:
+                      </label>
+                      <textarea
+                        [(ngModel)]="responseMessage"
+                        class="w-full px-3 py-2 border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        rows="3"
+                        placeholder="Escribe una respuesta..."
+                      ></textarea>
+                      <div class="flex gap-2 mt-3">
+                        <button
+                          (click)="sendResponse(proposal.id)"
+                          class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+                        >
+                          Enviar
+                        </button>
+                        <button
+                          (click)="showResponseId = null"
+                          class="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    </div>
+                  }
+
+                  <!-- Formulario de rechazo -->
+                  @if (showRejectId === proposal.id) {
+                    <div class="bg-red-50 rounded-lg p-4 mb-4">
+                      <label class="block text-sm font-medium text-red-800 mb-2">
+                        Motivo del rechazo:
+                      </label>
+                      <textarea
+                        [(ngModel)]="rejectReason"
+                        class="w-full px-3 py-2 border border-red-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                        rows="3"
+                        placeholder="Explica el motivo del rechazo..."
+                      ></textarea>
+                      <div class="flex gap-2 mt-3">
+                        <button
+                          (click)="rejectProposal(proposal.id)"
+                          class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
+                        >
+                          Rechazar
+                        </button>
+                        <button
+                          (click)="showRejectId = null"
+                          class="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    </div>
+                  }
+
+                  <!-- Botones de acción -->
+                  @if (showResponseId !== proposal.id && showRejectId !== proposal.id) {
+                    <div class="flex gap-3">
+                      <button
+                        (click)="approveProposal(proposal.id)"
+                        class="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-all font-medium"
+                      >
+                        ✅ Aprobar
+                      </button>
+                      
+                      <button
+                        (click)="showRejectId = proposal.id"
+                        class="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition-all font-medium"
+                      >
+                        ❌ Rechazar
+                      </button>
+                      
+                      @if (proposal.negociaciones.length > 0) {
+                        <button
+                          (click)="showResponseId = proposal.id"
+                          class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-all font-medium"
+                        >
+                          💬 Responder
+                        </button>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+
+              <!-- Estado para aprobadas -->
+              @if (proposal.estado === 'aprobado') {
+                <div class="border-t pt-4">
+                  <div class="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+                    <p class="text-green-700 font-bold">
+                      ✅ Propuesta Aprobada - En Lista Oficial
+                    </p>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        }
+      </div>
+
+      <!-- Botón flotante para recargar -->
+      <button
+        (click)="reloadData()"
+        class="fixed bottom-6 right-6 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition-all"
+      >
+        🔄
+      </button>
+
+      <!-- Diálogo de detalles de tienda -->
+      @if (showStoreDialog()) {
+        <app-store-details-dialog
+          [uid]="selectedStoreUid()"
+          [onClose]="closeStoreDialog"
+        ></app-store-details-dialog>
+      }
+
+    </div>
+
+   

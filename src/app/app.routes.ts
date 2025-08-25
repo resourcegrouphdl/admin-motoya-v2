@@ -26,6 +26,7 @@ import { ProposalDashboarComponent } from './modulos/proposal-management/compone
 import { PropuestasListComponent } from './modulos/proposal-management/components/propuestas-list/propuestas-list.component';
 import { LeadsWebComponent } from './modulos/clientes-potenciales/leads-web/leads-web.component';
 import { DashboardClientesComponent } from './modulos/clientes-potenciales/dashboard-clientes/dashboard-clientes.component';
+import { AdminProposalComponent } from './modulos/proposal-management/components/propuestas/admin-proposal/admin-proposal.component';
 
 export const routes: Routes = [
   {
@@ -93,7 +94,7 @@ export const routes: Routes = [
           },
           {
             path: 'evaluar-propuesta',
-            component: PropuestasListComponent,  
+            component: AdminProposalComponent,
           },
           {
             path: 'info-tienda',

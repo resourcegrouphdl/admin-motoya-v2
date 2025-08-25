@@ -19,7 +19,11 @@ export interface TiendaWithVendedores extends TiendaProfile {
 })
 export class ExternalUserService {
 
-  constructor() { }
+
+
+
+
+constructor() { }
 
   private auth = inject(Auth);
   private firestore = inject(Firestore);
@@ -36,6 +40,43 @@ export class ExternalUserService {
 
   private loadingSubject = new BehaviorSubject<boolean>(false);
   public loading$ = this.loadingSubject.asObservable();
+
+  // Cache para evitar cargas innecesarias
+  private tiendasLoaded = false;
+  private vendedoresLoaded = false;
+
+  /**
+   * Inicializar datos - método público para el componente
+   */
+  async initializeData(): Promise<void> {
+    console.log('🚀 Iniciando carga de datos del servicio...');
+    this.loadingSubject.next(true);
+    
+    try {
+      // Cargar ambas colecciones en paralelo
+      await Promise.all([
+        this.loadTiendas(),
+        this.loadVendedores()
+      ]);
+      
+      console.log('✅ Datos inicializados correctamente');
+    } catch (error) {
+      console.error('❌ Error inicializando datos:', error);
+      this.errorHandler.handleError(error, 'InitializeData');
+    } finally {
+      this.loadingSubject.next(false);
+    }
+  }
+
+  /**
+   * Refrescar todos los datos
+   */
+  async refreshAllData(): Promise<void> {
+    console.log('🔄 Refrescando todos los datos...');
+    this.tiendasLoaded = false;
+    this.vendedoresLoaded = false;
+    await this.initializeData();
+  }
 
   /**
    * Crear nueva tienda afiliada
@@ -89,7 +130,7 @@ export class ExternalUserService {
 
       console.log('✅ Tienda creada exitosamente:', createdUserUid);
       
-      // 8. Actualizar lista local
+      // 8. Recargar solo las tiendas
       await this.loadTiendas();
 
       return { success: true, uid: createdUserUid };
@@ -161,7 +202,7 @@ export class ExternalUserService {
 
       console.log('✅ Vendedor creado exitosamente:', createdUserUid);
       
-      // 8. Actualizar listas locales
+      // 8. Recargar solo los vendedores
       await this.loadVendedores();
 
       return { success: true, uid: createdUserUid };
@@ -181,45 +222,94 @@ export class ExternalUserService {
   }
 
   /**
-   * Obtener todas las tiendas
+   * Obtener tiendas con filtro opcional (PRIVADO - uso interno)
    */
-  async loadTiendas(status?: TiendaStatus): Promise<TiendaProfile[]> {
-    this.loadingSubject.next(true);
+   async loadTiendas(status?: TiendaStatus): Promise<TiendaProfile[]> {
+    console.log('🏪 Cargando tiendas con status:', status);
     
     try {
       const tiendasCollection = collection(this.firestore, FIREBASE_COLLECTIONS.TIENDA_PROFILES);
       let q;
-
+      
       if (status) {
-        // Consulta con filtro por estado solamente
+        console.log('📋 Aplicando filtro por estado:', status);
         q = query(tiendasCollection, where('tiendaStatus', '==', status));
       } else {
-        // Consulta simple sin ordenamiento compuesto
+        console.log('📋 Cargando todas las tiendas');
         q = query(tiendasCollection);
       }
-
+      
+      console.log('⏳ Ejecutando consulta a Firestore...');
       const querySnapshot = await getDocs(q);
+      console.log('📊 Documentos obtenidos:', querySnapshot.size);
+      
       const tiendas: TiendaProfile[] = [];
-
+      
       querySnapshot.forEach(doc => {
+        console.log('📄 Procesando documento:', doc.id);
         const tiendaData = FirestoreUtils.convertTimestampsToDates(doc.data());
+        console.log('✅ Datos convertidos para:', tiendaData?.businessName || 'Sin nombre');
         tiendas.push(tiendaData as TiendaProfile);
       });
-
+      
+      console.log('📈 Total tiendas procesadas:', tiendas.length);
+      
       // Ordenar en el cliente para evitar índices complejos
       tiendas.sort((a, b) => {
         return a.businessName.localeCompare(b.businessName);
       });
-
+      
+      console.log('🔤 Tiendas ordenadas alfabéticamente');
+      console.log('🔄 Actualizando tiendasSubject...');
       this.tiendasSubject.next(tiendas);
+      this.tiendasLoaded = true;
+      console.log('✅ loadTiendas completado exitosamente');
+      
       return tiendas;
-
+      
     } catch (error) {
-      console.error('Error loading tiendas:', error);
+      console.error('❌ Error loading tiendas:', error);
       this.errorHandler.handleError(error, 'LoadTiendas');
       return [];
-    } finally {
-      this.loadingSubject.next(false);
+    }
+  }
+
+  /**
+   * Cargar vendedores (PRIVADO - uso interno)
+   */
+  private async loadVendedores(): Promise<VendedorProfile[]> {
+    console.log('👥 Cargando vendedores...');
+    
+    try {
+      const vendedoresCollection = collection(this.firestore, FIREBASE_COLLECTIONS.VENDEDOR_PROFILES);
+      const q = query(vendedoresCollection, orderBy('firstName'));
+      
+      console.log('⏳ Ejecutando consulta vendedores a Firestore...');
+      const querySnapshot = await getDocs(q);
+      console.log('📊 Documentos vendedores obtenidos:', querySnapshot.size);
+      
+      const vendedores: VendedorProfile[] = [];
+      
+      querySnapshot.forEach(doc => {
+        console.log('📄 Procesando vendedor:', doc.id);
+        const vendedorData = FirestoreUtils.convertTimestampsToDates(doc.data());
+        console.log('✅ Datos convertidos para:', vendedorData?.firstName || 'Sin nombre');
+        vendedores.push(vendedorData as VendedorProfile);
+      });
+      
+      console.log('📈 Total vendedores procesados:', vendedores.length);
+      
+      console.log('🔄 Actualizando vendedoresSubject...');
+      this.vendedoresSubject.next(vendedores);
+      this.vendedoresLoaded = true;
+      console.log('✅ loadVendedores completado exitosamente');
+      
+      return vendedores;
+      
+    } catch (error) {
+      console.error('❌ Error loading vendedores:', error);
+      this.errorHandler.handleError(error, 'LoadVendedores');
+      return [];
     }
   }
 
@@ -309,7 +399,12 @@ export class ExternalUserService {
         await this.suspendVendedoresByTienda(tiendaId, currentUserUid);
       }
 
-      await this.loadTiendas();
+      // Recargar ambas listas ya que los vendedores pueden haber cambiado también
+      await Promise.all([
+        this.loadTiendas(),
+        this.loadVendedores()
+      ]);
+      
       return { success: true, uid: tiendaId };
 
     } catch (error: any) {
@@ -340,6 +435,7 @@ export class ExternalUserService {
         changedAt: new Date() 
       });
 
+      // Recargar solo vendedores
       await this.loadVendedores();
       return { success: true, uid: vendedorId };
 
@@ -357,8 +453,15 @@ export class ExternalUserService {
    */
   async getTiendasForSelector(): Promise<Array<{value: string, label: string, status: TiendaStatus}>> {
     try {
-      const tiendas = await this.loadTiendas(TiendaStatus.ACTIVA);
-      return tiendas.map(tienda => ({
+      // Si las tiendas no están cargadas, cargar solo las activas
+      if (!this.tiendasLoaded) {
+        await this.loadTiendas(TiendaStatus.ACTIVA);
+      }
+      
+      // Usar las tiendas del state, filtrar solo activas
+      const tiendasActivas = this.currentTiendas.filter(tienda => tienda.tiendaStatus === TiendaStatus.ACTIVA);
+      
+      return tiendasActivas.map(tienda => ({
         value: tienda.uid,
         label: `${tienda.businessName} - ${tienda.city}`,
         status: tienda.tiendaStatus
@@ -369,7 +472,7 @@ export class ExternalUserService {
     }
   }
 
-  // Métodos privados auxiliares
+  // Métodos privados auxiliares (sin cambios significativos)
 
   private async saveTiendaData(uid: string, tiendaProfile: TiendaProfile, currentUserUid: string): Promise<void> {
     console.log('💾 Guardando datos de tienda en Firestore...');
@@ -454,28 +557,6 @@ export class ExternalUserService {
     await batch.commit();
   }
 
-  private async loadVendedores(): Promise<VendedorProfile[]> {
-    try {
-      const vendedoresCollection = collection(this.firestore, FIREBASE_COLLECTIONS.VENDEDOR_PROFILES);
-      const q = query(vendedoresCollection, orderBy('firstName'));
-
-      const querySnapshot = await getDocs(q);
-      const vendedores: VendedorProfile[] = [];
-
-      querySnapshot.forEach(doc => {
-        const vendedorData = FirestoreUtils.convertTimestampsToDates(doc.data());
-        vendedores.push(vendedorData as VendedorProfile);
-      });
-
-      this.vendedoresSubject.next(vendedores);
-      return vendedores;
-
-    } catch (error) {
-      console.error('Error loading vendedores:', error);
-      return [];
-    }
-  }
-
   private async checkEmailExists(email: string): Promise<boolean> {
     try {
       const q = query(
@@ -534,13 +615,13 @@ export class ExternalUserService {
   private extractBaseProfileData(profile: TiendaProfile | VendedorProfile): BaseProfile {
     const { 
       uid, firstName, lastName, email, phone, documentType, documentNumber,
-      userType, userCategory, isActive, createdAt, updatedAt, createdBy,
+      userType, userCategory, isActive, createdAt, updatedAt, createdBy, password,
       storeIds, isFirstLogin, lastPasswordChange
     } = profile;
 
     return {
       uid, firstName, lastName, email, phone, documentType, documentNumber,
-      userType, userCategory, isActive, createdAt, updatedAt, createdBy,
+      userType, userCategory, isActive, createdAt, updatedAt, createdBy, password,
       storeIds, isFirstLogin, lastPasswordChange
     };
   }
@@ -597,5 +678,9 @@ export class ExternalUserService {
 
   get isLoading(): boolean {
     return this.loadingSubject.value;
+  }
+
+  get isDataLoaded(): boolean {
+    return this.tiendasLoaded && this.vendedoresLoaded;
   }
 }

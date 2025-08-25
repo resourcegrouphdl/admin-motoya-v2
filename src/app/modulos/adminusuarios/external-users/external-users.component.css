@@ -1,346 +1,264 @@
-.external-users-container {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 1rem;
-    }
+/* External Users Component Styles */
 
-    .page-header {
-      text-align: center;
-      margin-bottom: 2rem;
-      padding: 2rem;
-      background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-      color: white;
-      border-radius: 12px;
-    }
+/* Custom mat-tab styling */
+.mat-mdc-tab-group {
+  @apply bg-white;
+}
 
-    .page-header h1 {
-      margin: 0 0 0.5rem 0;
-      font-size: 2.5rem;
-      font-weight: 300;
-    }
+.mat-mdc-tab-header {
+  @apply border-b border-gray-200;
+}
 
-    .main-tabs {
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
+.mat-mdc-tab {
+  @apply text-gray-600;
+}
 
-    .tab-content {
-      padding: 1.5rem;
-      min-height: 500px;
-    }
+.mat-mdc-tab.mdc-tab--active {
+  @apply text-blue-600;
+}
 
-    .badge-spacing {
-      margin-left: 8px;
-    }
+.mat-mdc-tab-header-pagination-chevron {
+  @apply text-gray-400;
+}
 
-    /* Actions Bar */
-    .actions-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
+/* Table customizations */
+.mat-mdc-table {
+  @apply bg-white;
+}
 
-    .filters {
-      display: flex;
-      gap: 1rem;
-      align-items: center;
-    }
+.mat-mdc-header-row {
+  @apply bg-gray-50;
+}
 
-    .filters mat-form-field {
-      min-width: 200px;
-    }
+.mat-mdc-header-cell {
+  @apply text-gray-700 font-semibold border-b border-gray-200;
+}
 
-    /* Loading */
-    .loading-section {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 3rem;
-      color: #666;
-    }
+.mat-mdc-row {
+  @apply border-b border-gray-100;
+}
 
-    /* Tiendas Grid */
-    .tiendas-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-      gap: 1.5rem;
-    }
+.mat-mdc-row:hover {
+  @apply bg-gray-50;
+}
 
-    .tienda-card {
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
+.mat-mdc-cell {
+  @apply text-gray-700 border-b border-gray-100;
+}
 
-    .tienda-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-    }
+/* Card hover effects */
+.mat-mdc-card {
+  @apply transition-all duration-300;
+}
 
-    .tienda-avatar {
-      background: #ff6b6b;
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+.mat-mdc-card:hover {
+  @apply shadow-lg transform translate-y-[-2px];
+}
 
-    .tienda-status {
-      margin-left: auto;
-    }
+/* Chip styling overrides */
+.mat-mdc-chip {
+  @apply font-medium;
+}
 
-    .tienda-info {
-      margin: 1rem 0;
-    }
+.mat-mdc-chip.bg-green-100 {
+  @apply text-green-800;
+}
 
-    .info-row {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin: 0.5rem 0;
-      font-size: 0.9rem;
-    }
+.mat-mdc-chip.bg-yellow-100 {
+  @apply text-yellow-800;
+}
 
-    .info-row mat-icon {
-      color: #666;
-      font-size: 1.2rem;
-      width: 1.2rem;
-      height: 1.2rem;
-    }
+.mat-mdc-chip.bg-red-100 {
+  @apply text-red-800;
+}
 
-    .vendedores-info {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.5rem;
-      background: #f5f5f5;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
+.mat-mdc-chip.bg-gray-100 {
+  @apply text-gray-800;
+}
 
-    .vendedores-info:hover {
-      background: #e0e0e0;
-    }
+.mat-mdc-chip.bg-purple-100 {
+  @apply text-purple-800;
+}
 
-    /* Status Chips */
-    .status-activa, .status-activo {
-      background: #e8f5e8 !important;
-      color: #2e7d32 !important;
-    }
+/* Form field styling */
+.mat-mdc-form-field {
+  @apply w-full;
+}
 
-    .status-pendiente_aprobacion {
-      background: #fff3e0 !important;
-      color: #f57c00 !important;
-    }
+.mat-mdc-form-field-outline {
+  @apply border-gray-300;
+}
 
-    .status-suspendida, .status-suspendido {
-      background: #ffebee !important;
-      color: #c62828 !important;
-    }
+.mat-mdc-form-field.mat-focused .mat-mdc-form-field-outline {
+  @apply border-blue-500;
+}
 
-    .status-rechazada, .status-inactivo {
-      background: #f3e5f5 !important;
-      color: #7b1fa2 !important;
-    }
+/* Button styling */
+.mat-mdc-raised-button {
+  @apply shadow-md;
+}
 
-    /* Vendedores Table */
-    .vendedores-table-container {
-      width: 100%;
-      overflow-x: auto;
-    }
+.mat-mdc-raised-button:hover {
+  @apply shadow-lg;
+}
 
-    .vendedores-table {
-      width: 100%;
-      min-width: 800px;
-    }
+/* Menu styling */
+.mat-mdc-menu-panel {
+  @apply shadow-lg border border-gray-200;
+}
 
-    .vendedor-avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: #2196f3;
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-    }
+.mat-mdc-menu-item {
+  @apply text-gray-700;
+}
 
-    .vendedor-info {
-      display: flex;
-      flex-direction: column;
-      gap: 0.2rem;
-    }
+.mat-mdc-menu-item:hover {
+  @apply bg-gray-50;
+}
 
-    .vendedor-name {
-      font-weight: 500;
-      color: #333;
-    }
+.mat-mdc-menu-item.text-red-600:hover {
+  @apply bg-red-50;
+}
 
-    .vendedor-position {
-      font-size: 0.85rem;
-      color: #666;
-      font-style: italic;
-    }
+.mat-mdc-menu-item.text-green-600:hover {
+  @apply bg-green-50;
+}
 
-    .vendedor-contact {
-      font-size: 0.8rem;
-      color: #888;
-    }
+/* Loading overlay */
+.loading-overlay {
+  @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50;
+}
 
-    .tienda-info {
-      display: flex;
-      flex-direction: column;
-      gap: 0.2rem;
-    }
+/* Statistics cards */
+.stat-card {
+  @apply rounded-lg p-4 text-white shadow-md;
+}
 
-    .tienda-name {
-      font-weight: 500;
-      color: #333;
-    }
+.stat-content {
+  @apply flex items-center justify-between;
+}
 
-    .tienda-location {
-      font-size: 0.85rem;
-      color: #666;
-    }
+.stat-icon {
+  @apply text-2xl opacity-80;
+}
 
-    /* Stats */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 2rem;
-    }
+.stat-info {
+  @apply flex flex-col;
+}
 
-    .stat-card {
-      text-align: center;
-    }
+.stat-label {
+  @apply text-sm opacity-90;
+}
 
-    .stat-card mat-card-content {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      padding: 1.5rem !important;
-    }
+.stat-value {
+  @apply text-2xl font-bold;
+}
 
-    .stat-icon {
-      background: #f5f5f5;
-      border-radius: 50%;
-      width: 60px;
-      height: 60px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .mat-mdc-card {
+    @apply mx-2;
+  }
+  
+  .mat-mdc-table {
+    @apply text-sm;
+  }
+  
+  .mat-mdc-header-cell,
+  .mat-mdc-cell {
+    @apply px-2 py-3;
+  }
+  
+  .stat-value {
+    @apply text-xl;
+  }
+}
 
-    .stat-icon mat-icon {
-      font-size: 2rem;
-      width: 2rem;
-      height: 2rem;
-      color: #666;
-    }
+/* Line clamp utility for long text */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 
-    .stat-number {
-      font-size: 2rem;
-      font-weight: bold;
-      color: #333;
-    }
+/* Custom scrollbar for tables */
+.table-container {
+  @apply overflow-x-auto;
+}
 
-    .stat-label {
-      font-size: 0.9rem;
-      color: #666;
-    }
+.table-container::-webkit-scrollbar {
+  @apply h-2;
+}
 
-    .status-distribution {
-      margin-top: 2rem;
-    }
+.table-container::-webkit-scrollbar-track {
+  @apply bg-gray-100;
+}
 
-    .distribution-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 2rem;
-    }
+.table-container::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded;
+}
 
-    .distribution-section h4 {
-      margin: 0 0 1rem 0;
-      color: #333;
-    }
+.table-container::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400;
+}
 
-    .distribution-items {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
+/* Status indicators */
+.status-indicator {
+  @apply inline-block w-3 h-3 rounded-full mr-2;
+}
 
-    .distribution-item {
-      display: flex;
-      justify-content: space-between;
-      padding: 0.5rem;
-      background: #f9f9f9;
-      border-radius: 4px;
-    }
+.status-indicator.active {
+  @apply bg-green-500;
+}
 
-    .status-label {
-      color: #666;
-    }
+.status-indicator.inactive {
+  @apply bg-gray-400;
+}
 
-    .status-count {
-      font-weight: bold;
-      color: #333;
-    }
+.status-indicator.suspended {
+  @apply bg-red-500;
+}
 
-    /* No Data */
-    .no-data {
-      text-align: center;
-      padding: 3rem;
-      color: #666;
-    }
+.status-indicator.pending {
+  @apply bg-yellow-500;
+}
 
-    .no-data mat-icon {
-      font-size: 4rem;
-      width: 4rem;
-      height: 4rem;
-      color: #ccc;
-      margin-bottom: 1rem;
-    }
+/* Animation classes */
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
 
-    /* Responsive */
-    @media (max-width: 768px) {
-      .page-header {
-        padding: 1rem;
-      }
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
-      .page-header h1 {
-        font-size: 2rem;
-      }
+/* Custom focus styles */
+.mat-mdc-button:focus,
+.mat-mdc-icon-button:focus {
+  @apply outline-none ring-2 ring-blue-500 ring-opacity-50;
+}
 
-      .actions-bar {
-        flex-direction: column;
-        align-items: stretch;
-      }
+/* Empty state styling */
+.empty-state {
+  @apply text-center py-12;
+}
 
-      .filters {
-        flex-direction: column;
-        width: 100%;
-      }
+.empty-icon {
+  @apply text-gray-400 mx-auto mb-4;
+  font-size: 4rem;
+}
 
-      .filters mat-form-field {
-        min-width: unset;
-        width: 100%;
-      }
+.empty-title {
+  @apply text-xl font-medium text-gray-900 mb-2;
+}
 
-      .tiendas-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .distribution-grid {
-        grid-template-columns: 1fr;
-      }
-    }
+.empty-description {
+  @apply text-gray-500 mb-6;
+}

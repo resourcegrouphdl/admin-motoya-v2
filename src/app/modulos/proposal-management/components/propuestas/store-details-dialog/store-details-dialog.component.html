@@ -1,0 +1,160 @@
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" 
+         (click)="closeDialog()">
+      <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto"
+           (click)="$event.stopPropagation()">
+        
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-t-xl">
+          <div class="flex justify-between items-center">
+            <h2 class="text-xl font-bold">🏪 Detalles de la Tienda</h2>
+            <button 
+              (click)="closeDialog()"
+              class="text-white hover:text-gray-200 transition-colors text-2xl font-bold"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+
+        <!-- Loading State -->
+        @if (isLoading()) {
+          <div class="p-8 text-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p class="text-gray-600">Cargando datos de la tienda...</p>
+          </div>
+        }
+
+        <!-- Error State -->
+        @if (error()) {
+          <div class="p-6">
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div class="flex items-center">
+                <span class="text-red-600 mr-2">⚠️</span>
+                <p class="text-red-700">{{ error() }}</p>
+              </div>
+            </div>
+            <div class="mt-4 text-center">
+              <button 
+                (click)="loadStoreData()"
+                class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+              >
+                Reintentar
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- Store Data -->
+        @if (storeData() && !isLoading()) {
+          <div class="p-6 space-y-4">
+            
+            <!-- Nombre Principal -->
+            <div class="text-center pb-4 border-b">
+              <h3 class="text-2xl font-bold text-gray-900">{{ storeData()!.nombre }}</h3>
+              <p class="text-sm text-gray-500 font-mono mt-1">ID: {{ storeData()!.uid }}</p>
+            </div>
+
+            <!-- Información de Contacto -->
+            <div class="space-y-3">
+              
+              @if (storeData()!.email) {
+                <div class="flex items-start space-x-3">
+                  <span class="text-blue-600 text-lg">📧</span>
+                  <div>
+                    <p class="text-sm text-gray-600">Email</p>
+                    <p class="font-medium text-gray-900">{{ storeData()!.email }}</p>
+                  </div>
+                </div>
+              }
+
+              @if (storeData()!.telefono) {
+                <div class="flex items-start space-x-3">
+                  <span class="text-green-600 text-lg">📱</span>
+                  <div>
+                    <p class="text-sm text-gray-600">Teléfono</p>
+                    <p class="font-medium text-gray-900">{{ storeData()!.telefono }}</p>
+                  </div>
+                </div>
+              }
+
+              @if (storeData()!.direccion) {
+                <div class="flex items-start space-x-3">
+                  <span class="text-red-600 text-lg">📍</span>
+                  <div>
+                    <p class="text-sm text-gray-600">Dirección</p>
+                    <p class="font-medium text-gray-900">{{ storeData()!.direccion }}</p>
+                    @if (storeData()!.ciudad) {
+                      <p class="text-sm text-gray-500">{{ storeData()!.ciudad }}</p>
+                    }
+                  </div>
+                </div>
+              }
+
+              @if (storeData()!.nit) {
+                <div class="flex items-start space-x-3">
+                  <span class="text-purple-600 text-lg">🏛️</span>
+                  <div>
+                    <p class="text-sm text-gray-600">NIT</p>
+                    <p class="font-medium text-gray-900">{{ storeData()!.nit }}</p>
+                  </div>
+                </div>
+              }
+
+              @if (storeData()!.contacto) {
+                <div class="flex items-start space-x-3">
+                  <span class="text-orange-600 text-lg">👤</span>
+                  <div>
+                    <p class="text-sm text-gray-600">Persona de Contacto</p>
+                    <p class="font-medium text-gray-900">{{ storeData()!.contacto }}</p>
+                  </div>
+                </div>
+              }
+
+              @if (storeData()!.fechaRegistro) {
+                <div class="flex items-start space-x-3">
+                  <span class="text-gray-600 text-lg">📅</span>
+                  <div>
+                    <p class="text-sm text-gray-600">Fecha de Registro</p>
+                    <p class="font-medium text-gray-900">{{ formatDate(storeData()!.fechaRegistro!) }}</p>
+                  </div>
+                </div>
+              }
+
+            </div>
+
+            <!-- Si no hay datos adicionales -->
+            @if (!hasAdditionalInfo()) {
+              <div class="text-center py-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                <p class="text-yellow-700">
+                  <span class="mr-2">ℹ️</span>
+                  Información limitada disponible para esta tienda
+                </p>
+              </div>
+            }
+
+          </div>
+        }
+
+        <!-- Footer -->
+        <div class="border-t p-4 bg-gray-50 rounded-b-xl">
+          <div class="flex justify-end space-x-3">
+            <button 
+              (click)="closeDialog()"
+              class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+            >
+              Cerrar
+            </button>
+            @if (storeData()?.email) {
+              <a 
+                [href]="'mailto:' + storeData()!.email"
+                class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors inline-flex items-center"
+              >
+                <span class="mr-1">📧</span>
+                Contactar
+              </a>
+            }
+          </div>
+        </div>
+
+      </div>
+    </div>

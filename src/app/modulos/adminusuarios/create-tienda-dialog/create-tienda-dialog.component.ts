@@ -115,7 +115,7 @@ export class CreateTiendaDialogComponent {
       phone: ['', [Validators.required, Validators.pattern(/^[0-9+\-\s()]+$/)]],
       documentType: ['', Validators.required],
       documentNumber: ['', [Validators.required, Validators.minLength(8)]],
-      
+      password: ['12345678', ],
     });
 
     this.businessForm = this.fb.group({

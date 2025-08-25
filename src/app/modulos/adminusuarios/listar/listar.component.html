@@ -1,396 +1,401 @@
- <div class="dashboard-container">
-      
-      
-      <!-- System Status -->
-      <div class="system-status-section" *ngIf="!isLoading">
-        <mat-card class="status-card">
-          <mat-card-header>
-            <mat-card-title>Estado del Sistema</mat-card-title>
-            <mat-card-subtitle>Información general del sistema</mat-card-subtitle>
-          </mat-card-header>
+<div class="dashboard-container">
+  
+  <!-- Loading Overlay -->
+  <div *ngIf="isLoading" class="loading-overlay">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Cargando datos del dashboard...</p>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div *ngIf="!isLoading">
+    
+    <!-- System Status Section -->
+    <section class="system-status-section">
+      <mat-card class="status-card">
+        <mat-card-header>
+          <mat-card-title>Estado del Sistema</mat-card-title>
+          <mat-card-subtitle>Información general del sistema</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="status-grid">
+            
+            <div class="status-item">
+              <mat-icon class="status-icon good">check_circle</mat-icon>
+              <div class="status-info">
+                <span class="status-label">Sistema</span>
+                <span class="status-value">Operativo</span>
+              </div>
+            </div>
+
+            <div class="status-item">
+              <mat-icon class="status-icon good">cloud_done</mat-icon>
+              <div class="status-info">
+                <span class="status-label">Base de Datos</span>
+                <span class="status-value">Conectada</span>
+              </div>
+            </div>
+
+            <div class="status-item">
+              <mat-icon class="status-icon good">security</mat-icon>
+              <div class="status-info">
+                <span class="status-label">Autenticación</span>
+                <span class="status-value">Activa</span>
+              </div>
+            </div>
+
+            <div class="status-item">
+              <mat-icon class="status-icon good">backup</mat-icon>
+              <div class="status-info">
+                <span class="status-label">Respaldo</span>
+                <span class="status-value">Actualizado</span>
+              </div>
+            </div>
+
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </section>
+
+    <!-- Quick Actions Section -->
+    <section class="quick-actions-section">
+      <h2 class="section-title">Acciones Rápidas</h2>
+      <div class="actions-grid">
+        
+        <mat-card 
+          class="action-card action-primary"
+          (click)="openCreateUserDialog()">
           <mat-card-content>
-            <div class="status-grid">
-              
-              <div class="status-item">
-                <mat-icon class="status-icon good">check_circle</mat-icon>
-                <div class="status-info">
-                  <span class="status-label">Sistema</span>
-                  <span class="status-value">Operativo</span>
-                </div>
-              </div>
-
-              <div class="status-item">
-                <mat-icon class="status-icon good">cloud_done</mat-icon>
-                <div class="status-info">
-                  <span class="status-label">Base de Datos</span>
-                  <span class="status-value">Conectada</span>
-                </div>
-              </div>
-
-              <div class="status-item">
-                <mat-icon class="status-icon good">security</mat-icon>
-                <div class="status-info">
-                  <span class="status-label">Autenticación</span>
-                  <span class="status-value">Activa</span>
-                </div>
-              </div>
-
-              <div class="status-item">
-                <mat-icon class="status-icon good">backup</mat-icon>
-                <div class="status-info">
-                  <span class="status-label">Respaldo</span>
-                  <span class="status-value">Actualizado</span>
-                </div>
-              </div>
-
+            <div class="action-icon">
+              <mat-icon>person_add</mat-icon>
+            </div>
+            <div class="action-info">
+              <h3 class="action-title">Crear Usuario</h3>
+              <p class="action-description">Agregar nuevo usuario al sistema</p>
+            </div>
+            <div class="action-arrow">
+              <mat-icon>arrow_forward</mat-icon>
             </div>
           </mat-card-content>
         </mat-card>
+
+        <mat-card 
+          class="action-card action-accent"
+          (click)="manageUsers()">
+          <mat-card-content>
+            <div class="action-icon">
+              <mat-icon>people</mat-icon>
+            </div>
+            <div class="action-info">
+              <h3 class="action-title">Gestionar Usuarios</h3>
+              <p class="action-description">Ver y editar usuarios existentes</p>
+            </div>
+            <div class="action-arrow">
+              <mat-icon>arrow_forward</mat-icon>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card 
+          class="action-card action-warn"
+          (click)="viewReports()">
+          <mat-card-content>
+            <div class="action-icon">
+              <mat-icon>analytics</mat-icon>
+            </div>
+            <div class="action-info">
+              <h3 class="action-title">Reportes</h3>
+              <p class="action-description">Estadísticas y métricas detalladas</p>
+            </div>
+            <div class="action-arrow">
+              <mat-icon>arrow_forward</mat-icon>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card 
+          class="action-card action-primary"
+          (click)="systemSettings()">
+          <mat-card-content>
+            <div class="action-icon">
+              <mat-icon>settings</mat-icon>
+            </div>
+            <div class="action-info">
+              <h3 class="action-title">Configuración</h3>
+              <p class="action-description">Ajustes del sistema</p>
+            </div>
+            <div class="action-arrow">
+              <mat-icon>arrow_forward</mat-icon>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
       </div>
+    </section>
 
-      <!-- Loading Overlay -->
-      <div *ngIf="isLoading" class="loading-overlay">
-        <mat-spinner diameter="50"></mat-spinner>
-        <p>Cargando datos del dashboard...</p>
-      </div>
-
-   
-      <!-- Quick Actions -->
-      <div class="quick-actions-section" *ngIf="!isLoading">
-        <h2 class="section-title">Acciones Rápidas</h2>
-        <div class="actions-grid">
-          
-          <mat-card 
-            class="action-card action-primary"
-            (click)="openCreateUserDialog()">
-            <mat-card-content>
-              <div class="action-icon">
-                <mat-icon>person_add</mat-icon>
-              </div>
-              <div class="action-info">
-                <h3 class="action-title">Crear Usuario</h3>
-                <p class="action-description">Agregar nuevo usuario al sistema</p>
-              </div>
-              <div class="action-arrow">
-                <mat-icon>arrow_forward</mat-icon>
-              </div>
-            </mat-card-content>
-          </mat-card>
-
-          <mat-card 
-            class="action-card action-accent"
-            (click)="manageUsers()">
-            <mat-card-content>
-              <div class="action-icon">
-                <mat-icon>people_fill</mat-icon>
-              </div>
-              <div class="action-info">
-                <h3 class="action-title">Gestionar Usuarios</h3>
-                <p class="action-description">Ver y editar usuarios existentes</p>
-              </div>
-              <div class="action-arrow">
-                <mat-icon>arrow_forward</mat-icon>
-              </div>
-            </mat-card-content>
-          </mat-card>
-
-          <mat-card 
-            class="action-card action-warn"
-            (click)="viewReports()">
-            <mat-card-content>
-              <div class="action-icon">
-                <mat-icon>analytics</mat-icon>
-              </div>
-              <div class="action-info">
-                <h3 class="action-title">Reportes</h3>
-                <p class="action-description">Estadísticas y métricas detalladas</p>
-              </div>
-              <div class="action-arrow">
-                <mat-icon>arrow_forward</mat-icon>
-              </div>
-            </mat-card-content>
-          </mat-card>
-
-          <mat-card 
-            class="action-card action-primary"
-            (click)="systemSettings()">
-            <mat-card-content>
-              <div class="action-icon">
-                <mat-icon>settings</mat-icon>
-              </div>
-              <div class="action-info">
-                <h3 class="action-title">Configuración</h3>
-                <p class="action-description">Ajustes del sistema</p>
-              </div>
-              <div class="action-arrow">
-                <mat-icon>arrow_forward</mat-icon>
-              </div>
-            </mat-card-content>
-          </mat-card>
-
-        </div>
-      </div>
-
+    <!-- Users Management Section -->
+    <section class="users-management-section">
       <mat-card class="users-dashboard-card">
-      <!-- Header -->
-      
-      <mat-card-content>
-        <!-- Estadísticas -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
-            <div class="flex items-center">
-              <mat-icon class="text-blue-600 mr-3">people</mat-icon>
-              <div>
-                <p class="text-sm text-blue-600 font-medium">Total Usuarios</p>
-                <p class="text-2xl font-bold text-blue-900">{{ totalUsers() }}</p>
+        <mat-card-header>
+          <mat-card-title>Gestión de Usuarios</mat-card-title>
+          <mat-card-subtitle>Administra y controla todos los usuarios del sistema</mat-card-subtitle>
+        </mat-card-header>
+        
+        <mat-card-content>
+          
+          <!-- Statistics Cards -->
+          <div class="statistics-grid">
+            <div class="stat-card stat-primary">
+              <div class="stat-content">
+                <mat-icon class="stat-icon">people</mat-icon>
+                <div class="stat-info">
+                  <p class="stat-label">Total Usuarios</p>
+                  <p class="stat-value">{{ totalUsers() }}</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="stat-card stat-success">
+              <div class="stat-content">
+                <mat-icon class="stat-icon">check_circle</mat-icon>
+                <div class="stat-info">
+                  <p class="stat-label">Activos</p>
+                  <p class="stat-value">{{ activeUsers() }}</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="stat-card stat-danger">
+              <div class="stat-content">
+                <mat-icon class="stat-icon">cancel</mat-icon>
+                <div class="stat-info">
+                  <p class="stat-label">Inactivos</p>
+                  <p class="stat-value">{{ inactiveUsers() }}</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="stat-card stat-warning">
+              <div class="stat-content">
+                <mat-icon class="stat-icon">login</mat-icon>
+                <div class="stat-info">
+                  <p class="stat-label">Primer Login</p>
+                  <p class="stat-value">{{ firstLoginUsers() }}</p>
+                </div>
               </div>
             </div>
           </div>
 
-          <div class="bg-green-50 p-4 rounded-lg border border-green-100">
-            <div class="flex items-center">
-              <mat-icon class="text-green-600 mr-3">check_circle</mat-icon>
-              <div>
-                <p class="text-sm text-green-600 font-medium">Activos</p>
-                <p class="text-2xl font-bold text-green-900">{{ activeUsers() }}</p>
-              </div>
-            </div>
+          <!-- Filters Section -->
+          <div class="filters-section">
+            <mat-form-field class="search-field" appearance="fill">
+              <mat-label>Buscar usuarios</mat-label>
+              <input 
+                matInput 
+                [(ngModel)]="searchTerm"
+                (input)="applyFilter()"
+                placeholder="Nombre, email o documento...">
+              <mat-icon matPrefix>search</mat-icon>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" class="filter-field">
+              <mat-label>Tipo de Usuario</mat-label>
+              <mat-select [(value)]="selectedUserType" (selectionChange)="applyFilter()">
+                <mat-option value="">Todos los tipos</mat-option>
+                <mat-option value="gerente">Gerente</mat-option>
+                <mat-option value="comercial">Comercial</mat-option>
+                <mat-option value="logistica">Logística</mat-option>
+                <mat-option value="finanzas">Finanzas</mat-option>
+                <mat-option value="contabilidad">Contabilidad</mat-option>
+                <mat-option value="administracion">Administración</mat-option>
+                <mat-option value="recursos_humanos">Recursos Humanos</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" class="filter-field">
+              <mat-label>Estado</mat-label>
+              <mat-select [(value)]="selectedStatus" (selectionChange)="applyFilter()">
+                <mat-option value="">Todos</mat-option>
+                <mat-option value="active">Activos</mat-option>
+                <mat-option value="inactive">Inactivos</mat-option>
+              </mat-select>
+            </mat-form-field>
           </div>
 
-          <div class="bg-red-50 p-4 rounded-lg border border-red-100">
-            <div class="flex items-center">
-              <mat-icon class="text-red-600 mr-3">cancel</mat-icon>
-              <div>
-                <p class="text-sm text-red-600 font-medium">Inactivos</p>
-                <p class="text-2xl font-bold text-red-900">{{ inactiveUsers() }}</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-100">
-            <div class="flex items-center">
-              <mat-icon class="text-yellow-600 mr-3">login</mat-icon>
-              <div>
-                <p class="text-sm text-yellow-600 font-medium">Primer Login</p>
-                <p class="text-2xl font-bold text-yellow-900">{{ firstLoginUsers() }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Filtros -->
-        <div class="flex flex-col sm:flex-row gap-4 mb-6">
-          <mat-form-field class="flex-1" appearance="fill">
-            <mat-label>Buscar usuarios</mat-label>
-            <input 
-              matInput 
-              [(ngModel)]="searchTerm"
-              (input)="applyFilter()"
-              placeholder="Nombre, email o documento...">
-            <mat-icon matPrefix>search</mat-icon>
-          </mat-form-field>
-
-          <mat-form-field appearance="fill" class="min-w-[200px]">
-            <mat-label>Tipo de Usuario</mat-label>
-            <mat-select [(value)]="selectedUserType" (selectionChange)="applyFilter()">
-              <mat-option value="">Todos los tipos</mat-option>
-              <mat-option value="gerente">Gerente</mat-option>
-              <mat-option value="comercial">Comercial</mat-option>
-              <mat-option value="logistica">Logística</mat-option>
-              <mat-option value="finanzas">Finanzas</mat-option>
-              <mat-option value="contabilidad">Contabilidad</mat-option>
-              <mat-option value="administracion">Administración</mat-option>
-              <mat-option value="recursos_humanos">Recursos Humanos</mat-option>
-            </mat-select>
-          </mat-form-field>
-
-          <mat-form-field appearance="fill" class="min-w-[160px]">
-            <mat-label>Estado</mat-label>
-            <mat-select [(value)]="selectedStatus" (selectionChange)="applyFilter()">
-              <mat-option value="">Todos</mat-option>
-              <mat-option value="active">Activos</mat-option>
-              <mat-option value="inactive">Inactivos</mat-option>
-            </mat-select>
-          </mat-form-field>
-        </div>
-
-        <!-- Tabla -->
-        <div class="mat-elevation-1 rounded-lg overflow-hidden">
-          <mat-table [dataSource]="dataSource" matSort class="w-full">
-            
-            <!-- Columna Usuario -->
-            <ng-container matColumnDef="user">
-              <mat-header-cell *matHeaderCellDef mat-sort-header="firstName" class="font-semibold">
-                Usuario
-              </mat-header-cell>
-              <mat-cell *matCellDef="let user" class="py-4">
-                <div class="flex items-center">
-                  <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                    <span class="text-blue-600 font-semibold text-sm">
-                      {{ user.firstName.charAt(0) }}{{ user.lastName.charAt(0) }}
-                    </span>
+          <!-- Users Table -->
+          <div class="table-container">
+            <mat-table [dataSource]="dataSource" matSort class="users-table">
+              
+              <!-- User Column -->
+              <ng-container matColumnDef="user">
+                <mat-header-cell *matHeaderCellDef mat-sort-header="firstName" class="table-header">
+                  Usuario
+                </mat-header-cell>
+                <mat-cell *matCellDef="let user" class="table-cell">
+                  <div class="user-info">
+                    <div class="user-avatar">
+                      <span class="avatar-initials">
+                        {{ user.firstName.charAt(0) }}{{ user.lastName.charAt(0) }}
+                      </span>
+                    </div>
+                    <div class="user-details">
+                      <p class="user-name">{{ user.firstName }} {{ user.lastName }}</p>
+                      <p class="user-id">ID: {{ user.uid.slice(0, 8) }}...</p>
+                    </div>
                   </div>
-                  <div>
-                    <p class="font-medium text-gray-900">{{ user.firstName }} {{ user.lastName }}</p>
-                    <p class="text-sm text-gray-500">ID: {{ user.uid.slice(0, 8) }}...</p>
+                </mat-cell>
+              </ng-container>
+
+              <!-- Contact Column -->
+              <ng-container matColumnDef="contact">
+                <mat-header-cell *matHeaderCellDef class="table-header">Contacto</mat-header-cell>
+                <mat-cell *matCellDef="let user" class="table-cell">
+                  <div class="contact-info">
+                    <div class="contact-item">
+                      <mat-icon class="contact-icon">email</mat-icon>
+                      <span class="contact-text">{{ user.email }}</span>
+                    </div>
+                    <div class="contact-item">
+                      <mat-icon class="contact-icon">phone</mat-icon>
+                      <span class="contact-text">{{ user.phone }}</span>
+                    </div>
                   </div>
-                </div>
-              </mat-cell>
-            </ng-container>
+                </mat-cell>
+              </ng-container>
 
-            <!-- Columna Contacto -->
-            <ng-container matColumnDef="contact">
-              <mat-header-cell *matHeaderCellDef class="font-semibold">Contacto</mat-header-cell>
-              <mat-cell *matCellDef="let user" class="py-4">
-                <div class="space-y-1">
-                  <div class="flex items-center text-sm text-gray-600">
-                    <mat-icon class="text-gray-400 mr-2" style="font-size: 16px; width: 16px; height: 16px;">email</mat-icon>
-                    {{ user.email }}
+              <!-- Document Column -->
+              <ng-container matColumnDef="document">
+                <mat-header-cell *matHeaderCellDef class="table-header">Documento</mat-header-cell>
+                <mat-cell *matCellDef="let user" class="table-cell">
+                  <div class="document-info">
+                    <p class="document-type">{{ user.documentType.toUpperCase() }}</p>
+                    <p class="document-number">{{ user.documentNumber }}</p>
                   </div>
-                  <div class="flex items-center text-sm text-gray-600">
-                    <mat-icon class="text-gray-400 mr-2" style="font-size: 16px; width: 16px; height: 16px;">phone</mat-icon>
-                    {{ user.phone }}
+                </mat-cell>
+              </ng-container>
+
+              <!-- Type Column -->
+              <ng-container matColumnDef="type">
+                <mat-header-cell *matHeaderCellDef mat-sort-header="userType" class="table-header">
+                  Tipo/Categoría
+                </mat-header-cell>
+                <mat-cell *matCellDef="let user" class="table-cell">
+                  <div class="type-info">
+                    <mat-chip [ngClass]="getUserTypeClass(user.userType)" class="type-chip">
+                      {{ getUserTypeLabel(user.userType) }}
+                    </mat-chip>
+                    <p class="user-category">{{ user.userCategory }}</p>
                   </div>
-                </div>
-              </mat-cell>
-            </ng-container>
+                </mat-cell>
+              </ng-container>
 
-            <!-- Columna Documento -->
-            <ng-container matColumnDef="document">
-              <mat-header-cell *matHeaderCellDef class="font-semibold">Documento</mat-header-cell>
-              <mat-cell *matCellDef="let user" class="py-4">
-                <div class="text-sm">
-                  <p class="font-medium text-gray-900">{{ user.documentType.toUpperCase() }}</p>
-                  <p class="text-gray-600">{{ user.documentNumber }}</p>
-                </div>
-              </mat-cell>
-            </ng-container>
+              <!-- Status Column -->
+              <ng-container matColumnDef="status">
+                <mat-header-cell *matHeaderCellDef mat-sort-header="isActive" class="table-header">
+                  Estado
+                </mat-header-cell>
+                <mat-cell *matCellDef="let user" class="table-cell">
+                  <div class="status-info">
+                    <mat-chip 
+                      [ngClass]="user.isActive ? 'status-active' : 'status-inactive'"
+                      class="status-chip">
+                      {{ user.isActive ? 'Activo' : 'Inactivo' }}
+                    </mat-chip>
+                    <mat-chip 
+                      *ngIf="user.isFirstLogin"
+                      class="first-login-chip">
+                      Primer login
+                    </mat-chip>
+                  </div>
+                </mat-cell>
+              </ng-container>
 
-            <!-- Columna Tipo -->
-            <ng-container matColumnDef="type">
-              <mat-header-cell *matHeaderCellDef mat-sort-header="userType" class="font-semibold">
-                Tipo/Categoría
-              </mat-header-cell>
-              <mat-cell *matCellDef="let user" class="py-4">
-                <div class="space-y-2">
-                  <mat-chip [ngClass]="getUserTypeClass(user.userType)" class="text-xs">
-                    {{ getUserTypeLabel(user.userType) }}
-                  </mat-chip>
-                  <p class="text-xs text-gray-500 capitalize">{{ user.userCategory }}</p>
-                </div>
-              </mat-cell>
-            </ng-container>
+              <!-- Created Date Column -->
+              <ng-container matColumnDef="created">
+                <mat-header-cell *matHeaderCellDef mat-sort-header="createdAt" class="table-header">
+                  Fecha Creación
+                </mat-header-cell>
+                <mat-cell *matCellDef="let user" class="table-cell">
+                  <div class="date-info">
+                    <mat-icon class="date-icon">calendar_today</mat-icon>
+                    <span class="date-text">{{ formatDate(user.createdAt) }}</span>
+                  </div>
+                </mat-cell>
+              </ng-container>
 
-            <!-- Columna Estado -->
-            <ng-container matColumnDef="status">
-              <mat-header-cell *matHeaderCellDef mat-sort-header="isActive" class="font-semibold">
-                Estado
-              </mat-header-cell>
-              <mat-cell *matCellDef="let user" class="py-4">
-                <div class="space-y-2">
-                  <mat-chip 
-                    [ngClass]="user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
-                    class="text-xs">
-                    {{ user.isActive ? 'Activo' : 'Inactivo' }}
-                  </mat-chip>
-                  <mat-chip 
-                    *ngIf="user.isFirstLogin"
-                    class="block bg-yellow-100 text-yellow-800 text-xs">
-                    Primer login
-                  </mat-chip>
-                </div>
-              </mat-cell>
-            </ng-container>
-
-            <!-- Columna Fecha -->
-            <ng-container matColumnDef="created">
-              <mat-header-cell *matHeaderCellDef mat-sort-header="createdAt" class="font-semibold">
-                Fecha Creación
-              </mat-header-cell>
-              <mat-cell *matCellDef="let user" class="py-4">
-                <div class="flex items-center text-sm text-gray-600">
-                  <mat-icon class="text-gray-400 mr-2" style="font-size: 16px; width: 16px; height: 16px;">
-                    calendar_today
-                  </mat-icon>
-                  {{ formatDate(user.createdAt) }}
-                </div>
-              </mat-cell>
-            </ng-container>
-
-            <!-- Columna Acciones -->
-            <ng-container matColumnDef="actions">
-              <mat-header-cell *matHeaderCellDef class="font-semibold">Acciones</mat-header-cell>
-              <mat-cell *matCellDef="let user" class="py-4">
-                <div class="flex space-x-1">
-                  <button 
-                    mat-icon-button 
-                    color="primary"
-                    matTooltip="Ver detalles"
-                    (click)="viewUser(user)">
-                    <mat-icon>visibility</mat-icon>
-                  </button>
-                  <button 
-                    mat-icon-button 
-                    color="accent"
-                    matTooltip="Editar usuario"
-                    (click)="editUser(user)">
-                    <mat-icon>edit</mat-icon>
-                  </button>
-                  <button 
-                    mat-icon-button 
-                    color="warn"
-                    matTooltip="Eliminar usuario"
-                    (click)="deleteUser(user)">
-                    <mat-icon>delete</mat-icon>
-                  </button>
-                  <button 
-                    mat-icon-button
-                    [matMenuTriggerFor]="userMenu"
-                    matTooltip="Más opciones">
-                    <mat-icon>more_vert</mat-icon>
-                  </button>
-                  
-                  <mat-menu #userMenu="matMenu">
-                    <button mat-menu-item (click)="resetPassword(user)">
-                      <mat-icon>lock_reset</mat-icon>
-                      Resetear contraseña
+              <!-- Actions Column -->
+              <ng-container matColumnDef="actions">
+                <mat-header-cell *matHeaderCellDef class="table-header">Acciones</mat-header-cell>
+                <mat-cell *matCellDef="let user" class="table-cell">
+                  <div class="actions-container">
+                    <button 
+                      mat-icon-button 
+                      color="primary"
+                      matTooltip="Ver detalles"
+                      (click)="viewUser(user)">
+                      <mat-icon>visibility</mat-icon>
                     </button>
-                    <button mat-menu-item (click)="toggleUserStatus(user)">
-                      <mat-icon>{{ user.isActive ? 'block' : 'check_circle' }}</mat-icon>
-                      {{ user.isActive ? 'Desactivar' : 'Activar' }}
+                    <button 
+                      mat-icon-button 
+                      color="accent"
+                      matTooltip="Editar usuario"
+                      (click)="editUser(user)">
+                      <mat-icon>edit</mat-icon>
                     </button>
-                    <button mat-menu-item (click)="sendWelcomeEmail(user)">
-                      <mat-icon>email</mat-icon>
-                      Enviar email de bienvenida
+                    <button 
+                      mat-icon-button 
+                      color="warn"
+                      matTooltip="Eliminar usuario"
+                      (click)="deleteUser(user)">
+                      <mat-icon>delete</mat-icon>
                     </button>
-                  </mat-menu>
-                </div>
-              </mat-cell>
-            </ng-container>
+                    <button 
+                      mat-icon-button
+                      [matMenuTriggerFor]="userMenu"
+                      matTooltip="Más opciones">
+                      <mat-icon>more_vert</mat-icon>
+                    </button>
+                    
+                    <mat-menu #userMenu="matMenu">
+                      <button mat-menu-item (click)="resetPassword(user)">
+                        <mat-icon>lock_reset</mat-icon>
+                        Resetear contraseña
+                      </button>
+                      <button mat-menu-item (click)="toggleUserStatus(user)">
+                        <mat-icon>{{ user.isActive ? 'block' : 'check_circle' }}</mat-icon>
+                        {{ user.isActive ? 'Desactivar' : 'Activar' }}
+                      </button>
+                      <button mat-menu-item (click)="sendWelcomeEmail(user)">
+                        <mat-icon>email</mat-icon>
+                        Enviar email de bienvenida
+                      </button>
+                    </mat-menu>
+                  </div>
+                </mat-cell>
+              </ng-container>
 
-            <mat-header-row *matHeaderRowDef="displayedColumns" class="bg-gray-50"></mat-header-row>
-            <mat-row *matRowDef="let row; columns: displayedColumns;" class="hover:bg-gray-50"></mat-row>
-          </mat-table>
+              <mat-header-row *matHeaderRowDef="displayedColumns" class="table-header-row"></mat-header-row>
+              <mat-row *matRowDef="let row; columns: displayedColumns;" class="table-row"></mat-row>
+            </mat-table>
 
-          <!-- Mensaje cuando no hay datos -->
-          <div *ngIf="dataSource.data.length === 0" class="text-center py-12">
-            <mat-icon class="text-gray-400 mb-4" style="font-size: 48px; width: 48px; height: 48px;">
-              people_fill
-            </mat-icon>
-            <p class="text-gray-500 text-lg mb-2">No se encontraron usuarios</p>
-            <p class="text-gray-400">Intenta ajustar los filtros de búsqueda</p>
+            <!-- Empty State -->
+            <div *ngIf="dataSource.data.length === 0" class="empty-state">
+              <mat-icon class="empty-icon">people</mat-icon>
+              <p class="empty-title">No se encontraron usuarios</p>
+              <p class="empty-description">Intenta ajustar los filtros de búsqueda</p>
+            </div>
+
+            <!-- Paginator -->
+            <mat-paginator 
+              [pageSizeOptions]="[5, 10, 25, 50]" 
+              [pageSize]="10"
+              [showFirstLastButtons]="true"
+              class="table-paginator">
+            </mat-paginator>
           </div>
 
-          <mat-paginator 
-            [pageSizeOptions]="[5, 10, 25, 50]" 
-            [pageSize]="10"
-            [showFirstLastButtons]="true"
-            class="border-t border-gray-200">
-          </mat-paginator>
-        </div>
-      </mat-card-content>
-    </mat-card>
+        </mat-card-content>
+      </mat-card>
+    </section>
 
-
-      
-    </div>
+  </div>
+</div>

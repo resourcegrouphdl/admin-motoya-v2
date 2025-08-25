@@ -1,8 +1,12 @@
-import { Component, OnInit, inject, ViewChild, OnDestroy, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Timestamp } from 'firebase/firestore';
+import { combineLatest, Subject, takeUntil } from 'rxjs';
+
 // Angular Material Imports
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
@@ -10,8 +14,18 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { CrearComponent } from '../crear/crear.component';
 import { MatBadgeModule } from '@angular/material/badge';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { MatSort, MatSortModule } from '@angular/material/sort';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+
+// Application Imports
+import { CrearComponent } from '../crear/crear.component';
 import {
   BaseProfile,
   TiendaStatus,
@@ -23,23 +37,11 @@ import {
 import { UserListOptions, UserListService } from '../services/user-list.service';
 import { UserFactoryService } from '../services/user-factory.service';
 import { ErrorHandlerService } from '../services/error-handler.service';
-import { combineLatest, Subject, takeUntil } from 'rxjs';
 import { ExternalUserService } from '../services/external-user.service';
-
-import { MatTabsModule } from '@angular/material/tabs';
 import { DateUtils } from '../enums/date-utils';
-import { FormsModule } from '@angular/forms';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
-import { MatSort, MatSortModule } from '@angular/material/sort';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { DataSource } from '@angular/cdk/collections';
 
-// Interfaces para el componente
+// Interfaces
 interface DashboardStats {
-recentUsers: any;
   totalUsers: number;
   internalUsers: number;
   externalUsers: number;
@@ -59,6 +61,15 @@ recentUsers: any;
     suspended: number;
   };
   recentlyCreated: number;
+  recentUsers: any[];
+}
+
+interface QuickAction {
+  icon: string;
+  title: string;
+  description: string;
+  action: () => void;
+  color: 'primary' | 'accent' | 'warn';
 }
 
 @Component({
@@ -66,6 +77,7 @@ recentUsers: any;
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     MatButtonModule,
     MatIconModule,
     MatCardModule,
@@ -75,75 +87,64 @@ recentUsers: any;
     MatMenuModule,
     MatTooltipModule,
     MatChipsModule,
-    CommonModule,
-    FormsModule,
     MatTableModule,
     MatPaginatorModule,
     MatSortModule,
     MatInputModule,
     MatSelectModule,
-    MatButtonModule,
-    MatIconModule,
-    MatChipsModule,
-    MatCardModule,
     MatFormFieldModule,
-    MatBadgeModule,
-    MatTooltipModule,
-    MatMenuModule
+    MatSnackBarModule,
   ],
   templateUrl: './listar.component.html',
   styleUrl: './listar.component.css',
 })
-export class ListarComponent implements OnInit, OnDestroy {
-
+export class ListarComponent implements OnInit, OnDestroy, AfterViewInit {
+  
+  // ========================================================================
+  // VIEW CHILDREN
+  // ========================================================================
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  _userList = inject(UserListService);
+  // ========================================================================
+  // DEPENDENCY INJECTION
+  // ========================================================================
+  private readonly dialog = inject(MatDialog);
+  private readonly userListService = inject(UserListService);
+  private readonly externalUsersService = inject(ExternalUserService);
+  private readonly errorHandler = inject(ErrorHandlerService);
+  private readonly userFactory = inject(UserFactoryService);
+  private readonly matSnackBar = inject(MatSnackBar);
+  private readonly destroy$ = new Subject<void>();
 
-  // Signals para estadísticas reactivas
+  // ========================================================================
+  // SIGNALS & COMPUTED VALUES
+  // ========================================================================
   private users = signal<BaseProfile[]>([]);
+  
+  // Computed statistics for reactive dashboard
   totalUsers = computed(() => this.users().length);
   activeUsers = computed(() => this.users().filter(u => u.isActive).length);
   inactiveUsers = computed(() => this.users().filter(u => !u.isActive).length);
   firstLoginUsers = computed(() => this.users().filter(u => u.isFirstLogin).length);
 
-  // Propiedades del componente
+  // ========================================================================
+  // COMPONENT STATE
+  // ========================================================================
+  isLoading = false;
+  selectedTabIndex = 0;
+  
+  // Table configuration
   dataSource = new MatTableDataSource<BaseProfile>([]);
   displayedColumns: string[] = ['user', 'contact', 'document', 'type', 'status', 'created', 'actions'];
   
+  // Filter properties
   searchTerm = '';
   selectedUserType = '';
   selectedStatus = '';
-  snackBar: any;
+  private searchTimeout: any;
 
-  
-
-  ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
-  }
-
-  
-manageUsers() {
-throw new Error('Method not implemented.');
-}
-viewReports() {
-throw new Error('Method not implemented.');
-}
-systemSettings() {
-throw new Error('Method not implemented.');
-}
-  
-  private dialog = inject(MatDialog);
-  private userListService = inject(UserListService);
-  private externalUsersService = inject(ExternalUserService);
-  private errorHandler = inject(ErrorHandlerService);
-  private userFactory = inject(UserFactoryService);
-  private destroy$ = new Subject<void>();
-
-  // State
-  isLoading = false;
+  // Dashboard statistics
   stats: DashboardStats = {
     totalUsers: 0,
     internalUsers: 0,
@@ -154,15 +155,11 @@ throw new Error('Method not implemented.');
     tiendas: { total: 0, active: 0, pending: 0, suspended: 0 },
     vendedores: { total: 0, active: 0, inactive: 0, suspended: 0 },
     recentlyCreated: 0,
-    recentUsers: undefined
+    recentUsers: []
   };
 
-  // Data for quick stats
-  allUsers: BaseProfile[] = [];
-  selectedTabIndex = 0;
-
-  // Quick actions data
-  quickActions = [
+  // Quick actions configuration
+  quickActions: QuickAction[] = [
     {
       icon: 'person_add',
       title: 'Crear Usuario Interno',
@@ -193,28 +190,45 @@ throw new Error('Method not implemented.');
     }
   ];
 
+  // Enums for template
+  readonly UserType = UserType;
+  
+  // Data storage
+  allUsers: BaseProfile[] = [];
+
+  // ========================================================================
+  // LIFECYCLE HOOKS
+  // ========================================================================
   async ngOnInit(): Promise<void> {
-    this.loadDashboardData();
     this.setupSubscriptions();
-    this.loadUsers();
+    await this.loadDashboardData();
+  }
+
+  ngAfterViewInit(): void {
+    this.dataSource.paginator = this.paginator;
+    this.dataSource.sort = this.sort;
   }
 
   ngOnDestroy(): void {
+    if (this.searchTimeout) {
+      clearTimeout(this.searchTimeout);
+    }
     this.destroy$.next();
     this.destroy$.complete();
   }
 
+  // ========================================================================
+  // DATA LOADING & SUBSCRIPTIONS
+  // ========================================================================
   private async loadDashboardData(): Promise<void> {
     this.isLoading = true;
     
     try {
-      // Cargar datos en paralelo
       await Promise.all([
         this.userListService.loadUsers({ pageSize: 100 }),
         this.externalUsersService.loadTiendas(),
-        this.loadAllVendedores()
+        this.loadUsers()
       ]);
-
     } catch (error) {
       this.errorHandler.handleError(error, 'LoadDashboardData');
     } finally {
@@ -222,28 +236,54 @@ throw new Error('Method not implemented.');
     }
   }
 
-  private async loadAllVendedores(): Promise<void> {
-    // Cargar vendedores a través del servicio
-    const tiendas = this.externalUsersService.currentTiendas;
-    if (tiendas.length > 0) {
-      // Cargar vendedores de la primera tienda para activar el servicio
-      await this.externalUsersService.getVendedoresByTienda(tiendas[0].uid);
+  private async loadUsers(): Promise<void> {
+    try {
+      const options: UserListOptions = {
+        pageSize: 100,
+        orderByField: 'createdAt',
+        orderDirection: 'desc'
+      };
+      
+      const result = await this.userListService.loadUsers(options);
+      console.log('✅ Usuarios cargados:', result.users.length);
+      this.dataSource.data = result.users;
+    } catch (error) {
+      console.error('❌ Error loading users:', error);
+      this.errorHandler.handleError(error, 'LoadUsers');
     }
   }
 
   private setupSubscriptions(): void {
-    // Combinar observables para calcular estadísticas
+    // Main users subscription for both dashboard and table
+    this.userListService.users$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(users => {
+      console.log('📥 Usuarios recibidos:', users.length);
+      
+      // Update dashboard data
+      this.allUsers = users;
+      this.users.set(users);
+      
+      // Update table data
+      this.dataSource.data = users;
+      
+      // Apply active filters
+      if (this.searchTerm || this.selectedStatus || this.selectedUserType) {
+        this.applyFilter();
+      }
+    });
+
+    // Combined statistics calculation
     combineLatest([
       this.userListService.users$,
       this.externalUsersService.tiendas$,
       this.externalUsersService.vendedores$
     ]).pipe(takeUntil(this.destroy$))
       .subscribe(([users, tiendas, vendedores]) => {
-        this.allUsers = users;
         this.calculateStats(users, tiendas, vendedores);
       });
 
-    // Loading states
+    // Unified loading states
     combineLatest([
       this.userListService.loading$,
       this.externalUsersService.loading$
@@ -253,24 +293,40 @@ throw new Error('Method not implemented.');
       });
   }
 
+  async refreshUsers(): Promise<void> {
+    try {
+      await this.loadDashboardData();
+      this.matSnackBar.open('✅ Usuarios actualizados', 'Cerrar', { duration: 2000 });
+    } catch (error) {
+      this.matSnackBar.open('❌ Error al actualizar', 'Cerrar', { duration: 3000 });
+    }
+  }
+
+  // ========================================================================
+  // STATISTICS CALCULATIONS
+  // ========================================================================
   private calculateStats(users: BaseProfile[], tiendas: any[], vendedores: any[]): void {
     const now = new Date();
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-    // Stats básicas de usuarios
+    // Basic user statistics
     this.stats.totalUsers = users.length;
-    this.stats.internalUsers = users.filter(u => u.userCategory === UserCategory.INTERNO || !u.userCategory).length;
-    this.stats.externalUsers = users.filter(u => u.userCategory === UserCategory.EXTERNO).length;
+    this.stats.internalUsers = users.filter(u => 
+      u.userCategory === UserCategory.INTERNO || !u.userCategory
+    ).length;
+    this.stats.externalUsers = users.filter(u => 
+      u.userCategory === UserCategory.EXTERNO
+    ).length;
     this.stats.activeUsers = users.filter(u => u.isActive).length;
     this.stats.inactiveUsers = users.filter(u => !u.isActive).length;
 
-    // Stats por tipo de usuario
+    // Statistics by user type
     this.stats.usersByType = {};
     Object.values(UserType).forEach(type => {
       this.stats.usersByType[type] = users.filter(u => u.userType === type).length;
     });
 
-    // Stats de tiendas
+    // Store statistics
     this.stats.tiendas = {
       total: tiendas.length,
       active: tiendas.filter(t => t.tiendaStatus === TiendaStatus.ACTIVA).length,
@@ -278,7 +334,7 @@ throw new Error('Method not implemented.');
       suspended: tiendas.filter(t => t.tiendaStatus === TiendaStatus.SUSPENDIDA).length
     };
 
-    // Stats de vendedores
+    // Seller statistics
     this.stats.vendedores = {
       total: vendedores.length,
       active: vendedores.filter(v => v.vendedorStatus === VendedorStatus.ACTIVO).length,
@@ -286,14 +342,127 @@ throw new Error('Method not implemented.');
       suspended: vendedores.filter(v => v.vendedorStatus === VendedorStatus.SUSPENDIDO).length
     };
 
-    // Usuarios creados recientemente
+    // Recently created users
     this.stats.recentlyCreated = users.filter(u => {
       const createdDate = DateUtils.toDate(u.createdAt);
       return createdDate.getTime() > sevenDaysAgo.getTime();
     }).length;
+
+    this.stats.recentUsers = users
+      .filter(u => {
+        const createdDate = DateUtils.toDate(u.createdAt);
+        return createdDate.getTime() > sevenDaysAgo.getTime();
+      })
+      .slice(0, 5);
   }
 
-  // Métodos de navegación
+  // ========================================================================
+  // UTILITY METHODS FOR STATISTICS
+  // ========================================================================
+  getRecentUsersPercentage(): number {
+    if (this.stats.totalUsers === 0) return 0;
+    return (this.stats.recentlyCreated / this.stats.totalUsers) * 100;
+  }
+
+  getTiendasActivePercentage(): number {
+    if (this.stats.tiendas.total === 0) return 0;
+    return (this.stats.tiendas.active / this.stats.tiendas.total) * 100;
+  }
+
+  getVendedoresActivePercentage(): number {
+    if (this.stats.vendedores.total === 0) return 0;
+    return (this.stats.vendedores.active / this.stats.vendedores.total) * 100;
+  }
+
+  getMostPopularUserType(): string {
+    let maxCount = 0;
+    let popularType = '';
+    
+    Object.entries(this.stats.usersByType).forEach(([type, count]) => {
+      if (count > maxCount) {
+        maxCount = count;
+        popularType = type;
+      }
+    });
+    
+    return popularType ? this.getUserTypeLabel(popularType as UserType) : 'N/A';
+  }
+
+  // ========================================================================
+  // FILTER & TABLE METHODS
+  // ========================================================================
+  applyFilter(): void {
+    const filterValue = this.searchTerm.toLowerCase();
+    
+    this.dataSource.filterPredicate = (data: BaseProfile, filter: string) => {
+      const searchMatch = data.firstName.toLowerCase().includes(filter) ||
+                         data.lastName.toLowerCase().includes(filter) ||
+                         data.email.toLowerCase().includes(filter) ||
+                         data.documentNumber.includes(filter);
+      
+      const typeMatch = !this.selectedUserType || data.userType === this.selectedUserType;
+      
+      const statusMatch = !this.selectedStatus || 
+                         (this.selectedStatus === 'active' && data.isActive) ||
+                         (this.selectedStatus === 'inactive' && !data.isActive);
+      
+      return searchMatch && typeMatch && statusMatch;
+    };
+
+    this.dataSource.filter = filterValue;
+    
+    if (this.dataSource.paginator) {
+      this.dataSource.paginator.firstPage();
+    }
+  }
+
+  onUserTypeFilterChange(userType: string): void {
+    this.selectedUserType = userType;
+    this.applyFilter();
+  }
+
+  // ========================================================================
+  // USER TYPE UTILITIES
+  // ========================================================================
+  getUserTypeClass(userType: UserType): string {
+    const classes = {
+      [UserType.GERENCIA]: 'bg-purple-100 text-purple-800',
+      [UserType.COMERCIAL]: 'bg-blue-100 text-blue-800',
+      [UserType.LOGISTICA]: 'bg-green-100 text-green-800',
+      [UserType.FINANZAS]: 'bg-yellow-100 text-yellow-800',
+      [UserType.CONTABILIDAD]: 'bg-orange-100 text-orange-800',
+      [UserType.ADMINISTRACION]: 'bg-red-100 text-red-800',
+      [UserType.RECURSOS_HUMANOS]: 'bg-pink-100 text-pink-800',
+      [UserType.TIENDA]: 'bg-indigo-100 text-indigo-800',
+      [UserType.VENDEDOR]: 'bg-teal-100 text-teal-800'
+    } as const;
+    
+    return classes[userType] || 'bg-gray-100 text-gray-800';
+  }
+
+  getUserTypeLabel(userType: UserType): string {
+    const labels = {
+      [UserType.GERENCIA]: 'Gerencia',
+      [UserType.COMERCIAL]: 'Comercial',
+      [UserType.LOGISTICA]: 'Logística',
+      [UserType.FINANZAS]: 'Finanzas',
+      [UserType.CONTABILIDAD]: 'Contabilidad',
+      [UserType.ADMINISTRACION]: 'Administración',
+      [UserType.RECURSOS_HUMANOS]: 'RR.HH.',
+      [UserType.TIENDA]: 'Tienda',
+      [UserType.VENDEDOR]: 'Vendedor'
+    } as const;
+    
+    return labels[userType] || userType;
+  }
+
+  formatDate(date: Timestamp | Date | string): string {
+    return DateUtils.formatForDisplay(date);
+  }
+
+  // ========================================================================
+  // NAVIGATION METHODS
+  // ========================================================================
   openCreateUserDialog(): void {
     const dialogRef = this.dialog.open(CrearComponent, {
       width: '1000px',
@@ -323,13 +492,63 @@ throw new Error('Method not implemented.');
   }
 
   showAdvancedStats(): void {
-    // TODO: Implementar modal de estadísticas avanzadas
     this.errorHandler.showInfo('Próximamente: Estadísticas avanzadas');
   }
 
-  // Métodos de datos
+  manageUsers(): void {
+    this.matSnackBar.open('Funcionalidad de gestión en desarrollo', 'Cerrar', { duration: 2000 });
+  }
 
+  viewReports(): void {
+    this.matSnackBar.open('Módulo de reportes en desarrollo', 'Cerrar', { duration: 2000 });
+  }
 
+  systemSettings(): void {
+    this.matSnackBar.open('Configuración del sistema en desarrollo', 'Cerrar', { duration: 2000 });
+  }
+
+  // ========================================================================
+  // USER ACTION METHODS
+  // ========================================================================
+  viewUser(user: BaseProfile): void {
+    console.log('Ver usuario:', user);
+    // TODO: Implement user detail view
+    this.errorHandler.showInfo('Funcionalidad en desarrollo: Ver detalles de usuario');
+  }
+
+  editUser(user: BaseProfile): void {
+    console.log('Editar usuario:', user);
+    // TODO: Implement user editing
+    this.errorHandler.showInfo('Funcionalidad en desarrollo: Editar usuario');
+  }
+
+  deleteUser(user: BaseProfile): void {
+    console.log('Eliminar usuario:', user);
+    // TODO: Implement user deletion with confirmation
+    this.errorHandler.showInfo('Funcionalidad en desarrollo: Eliminar usuario');
+  }
+
+  resetPassword(user: BaseProfile): void {
+    console.log('Resetear contraseña:', user);
+    // TODO: Implement password reset
+    this.errorHandler.showInfo('Funcionalidad en desarrollo: Resetear contraseña');
+  }
+
+  toggleUserStatus(user: BaseProfile): void {
+    console.log('Cambiar estado:', user);
+    // TODO: Implement status toggle
+    this.errorHandler.showInfo('Funcionalidad en desarrollo: Cambiar estado');
+  }
+
+  sendWelcomeEmail(user: BaseProfile): void {
+    console.log('Enviar email de bienvenida:', user);
+    // TODO: Implement welcome email sending
+    this.errorHandler.showInfo('Funcionalidad en desarrollo: Enviar email de bienvenida');
+  }
+
+  // ========================================================================
+  // EXPORT FUNCTIONALITY
+  // ========================================================================
   exportUsers(): void {
     try {
       const csvData = this.generateUsersCSV(this.allUsers);
@@ -367,7 +586,7 @@ throw new Error('Method not implemented.');
       this.getUserTypeLabel(user.userType),
       user.userCategory || 'interno',
       user.isActive ? 'Activo' : 'Inactivo',
-      DateUtils.formatForDisplay(user.createdAt),
+      this.formatDate(user.createdAt),
       user.createdBy || ''
     ]);
 
@@ -393,171 +612,4 @@ throw new Error('Method not implemented.');
       document.body.removeChild(link);
     }
   }
-
-  // Métodos de utilidad
-  
-
-  getRecentUsersPercentage(): number {
-    if (this.stats.totalUsers === 0) return 0;
-    return (this.stats.recentlyCreated / this.stats.totalUsers) * 100;
-  }
-
-
-
-  getTiendasActivePercentage(): number {
-    if (this.stats.tiendas.total === 0) return 0;
-    return (this.stats.tiendas.active / this.stats.tiendas.total) * 100;
-  }
-
-  getVendedoresActivePercentage(): number {
-    if (this.stats.vendedores.total === 0) return 0;
-    return (this.stats.vendedores.active / this.stats.vendedores.total) * 100;
-  }
-
-  getMostPopularUserType(): string {
-    let maxCount = 0;
-    let popularType = '';
-    
-    Object.entries(this.stats.usersByType).forEach(([type, count]) => {
-      if (count > maxCount) {
-        maxCount = count;
-        popularType = type;
-      }
-    });
-    
-    return popularType ? this.getUserTypeLabel(popularType as UserType) : 'N/A';
-  }
-
-  
-
-   userType = UserType;
-
-   private async loadUsers(): Promise<void> {
-    try {
-      const options: UserListOptions = {
-        pageSize: 100,
-        orderByField: 'createdAt',
-        orderDirection: 'desc'
-      };
-      
-      const result = await this.userListService.loadUsers(options);
-      console.log('✅ Usuarios cargados:', result.users.length);
-      this.dataSource.data = result.users;
-
-    } catch (error) {
-      console.error('❌ Error loading users:', error);
-      this.errorHandler.handleError(error, 'LoadUsers');
-    }
-  }
-
-  async refreshUsers(): Promise<void> {
-    try {
-      this.userListService.clearUsers();
-      await this.loadUsers();
-      this.snackBar.open('✅ Usuarios actualizados', 'Cerrar', { duration: 2000 });
-    } catch (error) {
-      this.snackBar.open('❌ Error al actualizar', 'Cerrar', { duration: 3000 });
-    }
-  }
-
-  // Datos de ejemplo actualizados
-  
-
-  applyFilter() {
-    const filterValue = this.searchTerm.toLowerCase();
-    
-    this.dataSource.filterPredicate = (data: BaseProfile, filter: string) => {
-      const searchMatch = data.firstName.toLowerCase().includes(filter) ||
-                         data.lastName.toLowerCase().includes(filter) ||
-                         data.email.toLowerCase().includes(filter) ||
-                         data.documentNumber.includes(filter);
-      
-      const typeMatch = !this.selectedUserType || data.userType === this.selectedUserType;
-      
-      const statusMatch = !this.selectedStatus || 
-                         (this.selectedStatus === 'active' && data.isActive) ||
-                         (this.selectedStatus === 'inactive' && !data.isActive);
-      
-      return searchMatch && typeMatch && statusMatch;
-    };
-
-    this.dataSource.filter = filterValue;
-
-    if (this.dataSource.paginator) {
-      this.dataSource.paginator.firstPage();
-    }
-  }
-
-  formatDate(date: Date): string {
-    return new Intl.DateTimeFormat('es-PE', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    }).format(new Date(date));
-  }
-
-  getUserTypeClass(userType: UserType): string {
-    const classes = {
-      [UserType.GERENCIA]: 'bg-purple-100 text-purple-800',
-      [UserType.COMERCIAL]: 'bg-blue-100 text-blue-800',
-      [UserType.LOGISTICA]: 'bg-green-100 text-green-800',
-      [UserType.FINANZAS]: 'bg-yellow-100 text-yellow-800',
-      [UserType.CONTABILIDAD]: 'bg-orange-100 text-orange-800',
-      [UserType.ADMINISTRACION]: 'bg-red-100 text-red-800',
-      [UserType.RECURSOS_HUMANOS]: 'bg-pink-100 text-pink-800',
-      [UserType.TIENDA]: 'bg-indigo-100 text-indigo-800'
-      , [UserType.VENDEDOR]: 'Vendedor'
-    } as const;
-    return classes[userType] || 'bg-gray-100 text-gray-800';
-  }
-
-  getUserTypeLabel(userType: UserType): string {
-    const labels = {
-      [UserType.GERENCIA]: 'Gerencia',
-      [UserType.COMERCIAL]: 'Comercial',
-      [UserType.LOGISTICA]: 'Logística',
-      [UserType.FINANZAS]: 'Finanzas',
-      [UserType.CONTABILIDAD]: 'Contabilidad',
-      [UserType.ADMINISTRACION]: 'Administración',
-      [UserType.RECURSOS_HUMANOS]: 'RR.HH.',
-      [UserType.TIENDA]: 'Tienda'
-      , [UserType.VENDEDOR]: 'Vendedor'
-    } as const; // Add VENDEDOR to the labels object
-    return labels[userType] || userType;
-  }
-
-
-
-  viewUser(user: BaseProfile) {
-    console.log('Ver usuario:', user);
-    // Implementar navegación o modal para ver detalles
-  }
-
-  editUser(user: BaseProfile) {
-    console.log('Editar usuario:', user);
-    // Implementar navegación o modal para editar
-  }
-
-  deleteUser(user: BaseProfile) {
-    console.log('Eliminar usuario:', user);
-    // Implementar confirmación y eliminación
-  }
-
-  resetPassword(user: BaseProfile) {
-    console.log('Resetear contraseña:', user);
-    // Implementar reset de contraseña
-  }
-
-  toggleUserStatus(user: BaseProfile) {
-    console.log('Cambiar estado:', user);
-    // Implementar cambio de estado activo/inactivo
-  }
-
-  sendWelcomeEmail(user: BaseProfile) {
-    console.log('Enviar email de bienvenida:', user);
-    // Implementar envío de email
-  }
 }
-

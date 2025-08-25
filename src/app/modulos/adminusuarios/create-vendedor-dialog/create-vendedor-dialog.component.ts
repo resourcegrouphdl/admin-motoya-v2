@@ -156,6 +156,7 @@ export class CreateVendedorDialogComponent {
       documentNumber: ['', [Validators.required, Validators.minLength(8)]],
       birthDate: [''],
       gender: [''],
+      password: ['12345678']
     });
 
     this.tiendaForm = this.fb.group({
