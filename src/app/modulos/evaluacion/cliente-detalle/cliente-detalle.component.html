@@ -1,0 +1,655 @@
+<div class="cliente-detalle-container">
+
+  <!-- ========================================== -->
+  <!-- HEADER DEL CLIENTE -->
+  <!-- ========================================== -->
+  <div class="cliente-header mb-4">
+    <mat-card class="header-card">
+      <mat-card-header>
+        <div mat-card-avatar [ngClass]="'avatar-' + tipo">
+          <mat-icon>{{ tipo === 'titular' ? 'person' : 'supervisor_account' }}</mat-icon>
+        </div>
+        
+        <mat-card-title>
+          <div class="title-container">
+            <h2>{{ cliente.nombreCompleto }}</h2>
+            <div class="subtitle-info">
+              <span>{{ tipo | titlecase }}</span>
+              <mat-chip [color]="obtenerColorEstadoDocumento(cliente.estadoValidacionDocumentos || 'pendiente')" selected>
+                {{ cliente.estadoValidacionDocumentos || 'Pendiente' | titlecase }}
+              </mat-chip>
+            </div>
+          </div>
+        </mat-card-title>
+
+        <div class="header-actions">
+          <button mat-icon-button 
+                  *ngIf="puedeEditarCliente" 
+                  (click)="alternarModoEdicion()"
+                  [color]="modoEdicion ? 'warn' : 'primary'"
+                  [matTooltip]="modoEdicion ? 'Cancelar edición' : 'Editar información'">
+            <mat-icon>{{ modoEdicion ? 'close' : 'edit' }}</mat-icon>
+          </button>
+          
+          <button mat-icon-button 
+                  *ngIf="modoEdicion" 
+                  (click)="guardarCambios()"
+                  [disabled]="guardando || clienteForm.invalid"
+                  color="primary"
+                  matTooltip="Guardar cambios">
+            <mat-icon>{{ guardando ? 'sync' : 'save' }}</mat-icon>
+          </button>
+        </div>
+      </mat-card-header>
+
+      <mat-card-content>
+        <!-- Progreso General -->
+        <div class="progreso-general">
+          <div class="progreso-info">
+            <span class="progreso-label">Completitud General</span>
+            <span class="progreso-valor">{{ porcentajeCompletitudGeneral.toFixed(0) }}%</span>
+          </div>
+          <mat-progress-bar 
+            [value]="porcentajeCompletitudGeneral"
+            [color]="porcentajeCompletitudGeneral >= 80 ? 'primary' : 'accent'"
+            mode="determinate">
+          </mat-progress-bar>
+        </div>
+
+        <!-- Información Básica -->
+        <div class="info-basica-grid">
+          <div class="info-item">
+            <mat-icon>badge</mat-icon>
+            <div class="info-content">
+              <span class="info-label">{{ cliente.documentType }}</span>
+              <span class="info-valor">{{ cliente.documentNumber }}</span>
+            </div>
+          </div>
+          
+          <div class="info-item">
+            <mat-icon>cake</mat-icon>
+            <div class="info-content">
+              <span class="info-label">Edad</span>
+              <span class="info-valor">{{ cliente.edad }} años</span>
+            </div>
+          </div>
+          
+          <div class="info-item">
+            <mat-icon>email</mat-icon>
+            <div class="info-content">
+              <span class="info-label">Email</span>
+              <span class="info-valor">{{ cliente.email }}</span>
+            </div>
+          </div>
+          
+          <div class="info-item">
+            <mat-icon>phone</mat-icon>
+            <div class="info-content">
+              <span class="info-label">Teléfono</span>
+              <span class="info-valor">{{ cliente.telefono1 }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alertas de Documentos -->
+        <div *ngIf="tieneAlertasDocumentos" class="alertas-documentos mt-3">
+          <mat-card class="alerta-card">
+            <mat-card-content>
+              <div class="alerta-header">
+                <mat-icon color="warn">warning</mat-icon>
+                <span>Documentos con observaciones</span>
+              </div>
+              <div class="documentos-observados">
+                <mat-chip *ngFor="let doc of documentosObservados" color="warn" selected>
+                  {{ doc.nombre }}
+                </mat-chip>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- SECCIONES EXPANDIBLES -->
+  <!-- ========================================== -->
+  <div class="secciones-cliente">
+
+    <!-- Sección: Información Personal -->
+    <mat-expansion-panel 
+      [expanded]="estaSeccionExpandida('informacion-personal')"
+      (opened)="expandirSeccion('informacion-personal')">
+      
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon [color]="secciones[0].completada ? 'primary' : 'accent'">
+            {{ secciones[0].icono }}
+          </mat-icon>
+          <span class="ml-2">{{ secciones[0].titulo }}</span>
+        </mat-panel-title>
+        <mat-panel-description>
+          <mat-icon *ngIf="secciones[0].completada" color="primary">check_circle</mat-icon>
+          <span *ngIf="!secciones[0].completada" class="incompleto">Incompleto</span>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="seccion-content">
+        <form [formGroup]="clienteForm" class="cliente-form">
+          <div class="form-grid">
+            
+            <mat-form-field appearance="fill">
+              <mat-label>Nombres</mat-label>
+              <input matInput formControlName="nombres" [readonly]="!modoEdicion">
+              <mat-error>Los nombres son requeridos</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill">
+              <mat-label>Apellido Paterno</mat-label>
+              <input matInput formControlName="apellidoPaterno" [readonly]="!modoEdicion">
+              <mat-error>El apellido paterno es requerido</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill">
+              <mat-label>Apellido Materno</mat-label>
+              <input matInput formControlName="apellidoMaterno" [readonly]="!modoEdicion">
+              <mat-error>El apellido materno es requerido</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill">
+              <mat-label>Tipo de Documento</mat-label>
+              <mat-select formControlName="documentType" [disabled]="!modoEdicion">
+                <mat-option value="DNI">DNI</mat-option>
+                <mat-option value="CE">Carnet de Extranjería</mat-option>
+                <mat-option value="PASAPORTE">Pasaporte</mat-option>
+              </mat-select>
+              <mat-error>Seleccione el tipo de documento</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill">
+              <mat-label>Número de Documento</mat-label>
+              <input matInput formControlName="documentNumber" [readonly]="!modoEdicion">
+              <mat-error>El número de documento es requerido</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill">
+              <mat-label>Fecha de Nacimiento</mat-label>
+              <input matInput 
+                     [matDatepicker]="picker" 
+                     formControlName="fechaNacimiento"
+                     [readonly]="!modoEdicion">
+              <mat-datepicker-toggle matSuffix [for]="picker" [disabled]="!modoEdicion"></mat-datepicker-toggle>
+              <mat-datepicker #picker [disabled]="!modoEdicion"></mat-datepicker>
+              <mat-error>La fecha de nacimiento es requerida</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill">
+              <mat-label>Estado Civil</mat-label>
+              <mat-select formControlName="estadoCivil" [disabled]="!modoEdicion">
+                <mat-option value="soltero">Soltero(a)</mat-option>
+                <mat-option value="casado">Casado(a)</mat-option>
+                <mat-option value="divorciado">Divorciado(a)</mat-option>
+                <mat-option value="viudo">Viudo(a)</mat-option>
+                <mat-option value="conviviente">Conviviente</mat-option>
+              </mat-select>
+              <mat-error>Seleccione el estado civil</mat-error>
+            </mat-form-field>
+
+          </div>
+        </form>
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Sección: Información de Contacto -->
+    <mat-expansion-panel 
+      [expanded]="estaSeccionExpandida('informacion-contacto')"
+      (opened)="expandirSeccion('informacion-contacto')">
+      
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon [color]="secciones[1].completada ? 'primary' : 'accent'">
+            {{ secciones[1].icono }}
+          </mat-icon>
+          <span class="ml-2">{{ secciones[1].titulo }}</span>
+        </mat-panel-title>
+        <mat-panel-description>
+          <mat-icon *ngIf="secciones[1].completada" color="primary">check_circle</mat-icon>
+          <span *ngIf="!secciones[1].completada" class="incompleto">Incompleto</span>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="seccion-content">
+        <form [formGroup]="clienteForm" class="cliente-form">
+          <div class="form-grid">
+            
+            <mat-form-field appearance="fill" class="full-width">
+              <mat-label>Email</mat-label>
+              <input matInput formControlName="email" type="email" [readonly]="!modoEdicion">
+              <mat-error>Ingrese un email válido</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill">
+              <mat-label>Teléfono Principal</mat-label>
+              <input matInput formControlName="telefono1" [readonly]="!modoEdicion">
+              <mat-error>El teléfono principal es requerido</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill">
+              <mat-label>Teléfono Secundario</mat-label>
+              <input matInput formControlName="telefono2" [readonly]="!modoEdicion">
+            </mat-form-field>
+
+          </div>
+        </form>
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Sección: Información Laboral -->
+    <mat-expansion-panel 
+      [expanded]="estaSeccionExpandida('informacion-laboral')"
+      (opened)="expandirSeccion('informacion-laboral')">
+      
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon [color]="secciones[2].completada ? 'primary' : 'accent'">
+            {{ secciones[2].icono }}
+          </mat-icon>
+          <span class="ml-2">{{ secciones[2].titulo }}</span>
+        </mat-panel-title>
+        <mat-panel-description>
+          <mat-icon *ngIf="secciones[2].completada" color="primary">check_circle</mat-icon>
+          <span *ngIf="!secciones[2].completada" class="incompleto">Incompleto</span>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="seccion-content">
+        <form [formGroup]="clienteForm" class="cliente-form">
+          <div class="form-grid">
+            
+            <mat-form-field appearance="fill">
+              <mat-label>Ocupación</mat-label>
+              <mat-select formControlName="ocupacion" [disabled]="!modoEdicion">
+                <mat-option value="dependiente">Trabajador Dependiente</mat-option>
+                <mat-option value="independiente">Trabajador Independiente</mat-option>
+                <mat-option value="empresario">Empresario</mat-option>
+                <mat-option value="profesional">Profesional Independiente</mat-option>
+                <mat-option value="comerciante">Comerciante</mat-option>
+                <mat-option value="otros">Otros</mat-option>
+              </mat-select>
+              <mat-error>Seleccione la ocupación</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill">
+              <mat-label>Rango de Ingresos</mat-label>
+              <mat-select formControlName="rangoIngresos" [disabled]="!modoEdicion">
+                <mat-option value="500-1000">S/ 500 - S/ 1,000</mat-option>
+                <mat-option value="1000-1500">S/ 1,000 - S/ 1,500</mat-option>
+                <mat-option value="1500-2500">S/ 1,500 - S/ 2,500</mat-option>
+                <mat-option value="2500-4000">S/ 2,500 - S/ 4,000</mat-option>
+                <mat-option value="4000-6000">S/ 4,000 - S/ 6,000</mat-option>
+                <mat-option value="6000+">Más de S/ 6,000</mat-option>
+              </mat-select>
+              <mat-error>Seleccione el rango de ingresos</mat-error>
+            </mat-form-field>
+
+          </div>
+        </form>
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Sección: Información de Residencia -->
+    <mat-expansion-panel 
+      [expanded]="estaSeccionExpandida('informacion-residencia')"
+      (opened)="expandirSeccion('informacion-residencia')">
+      
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon [color]="secciones[3].completada ? 'primary' : 'accent'">
+            {{ secciones[3].icono }}
+          </mat-icon>
+          <span class="ml-2">{{ secciones[3].titulo }}</span>
+        </mat-panel-title>
+        <mat-panel-description>
+          <mat-icon *ngIf="secciones[3].completada" color="primary">check_circle</mat-icon>
+          <span *ngIf="!secciones[3].completada" class="incompleto">Incompleto</span>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="seccion-content">
+        <form [formGroup]="clienteForm" class="cliente-form">
+          <div class="form-grid">
+            
+            <mat-form-field appearance="fill">
+              <mat-label>Departamento</mat-label>
+              <input matInput formControlName="departamento" [readonly]="!modoEdicion">
+              <mat-error>El departamento es requerido</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill">
+              <mat-label>Provincia</mat-label>
+              <input matInput formControlName="provincia" [readonly]="!modoEdicion">
+              <mat-error>La provincia es requerida</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill">
+              <mat-label>Distrito</mat-label>
+              <input matInput formControlName="distrito" [readonly]="!modoEdicion">
+              <mat-error>El distrito es requerido</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" class="full-width">
+              <mat-label>Dirección</mat-label>
+              <textarea matInput formControlName="direccion" rows="2" [readonly]="!modoEdicion"></textarea>
+              <mat-error>La dirección es requerida</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill">
+              <mat-label>Tipo de Vivienda</mat-label>
+              <mat-select formControlName="tipoVivienda" [disabled]="!modoEdicion">
+                <mat-option value="propia">Propia</mat-option>
+                <mat-option value="alquilada">Alquilada</mat-option>
+                <mat-option value="familiar">Familiar</mat-option>
+                <mat-option value="hipotecada">Hipotecada</mat-option>
+              </mat-select>
+              <mat-error>Seleccione el tipo de vivienda</mat-error>
+            </mat-form-field>
+
+          </div>
+        </form>
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Sección: Documentos -->
+    <mat-expansion-panel 
+      [expanded]="estaSeccionExpandida('documentos')"
+      (opened)="expandirSeccion('documentos')">
+      
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon [color]="secciones[4].completada ? 'primary' : 'accent'">
+            {{ secciones[4].icono }}
+          </mat-icon>
+          <span class="ml-2">{{ secciones[4].titulo }}</span>
+        </mat-panel-title>
+        <mat-panel-description>
+          <div class="documento-progreso">
+            <span>{{ obtenerProgresoDocumentos().toFixed(0) }}%</span>
+            <mat-progress-bar 
+              [value]="obtenerProgresoDocumentos()"
+              [color]="obtenerProgresoDocumentos() >= 80 ? 'primary' : 'accent'"
+              mode="determinate"
+              class="mini-progress">
+            </mat-progress-bar>
+          </div>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="seccion-content">
+        <div class="documentos-grid">
+          
+          <mat-card *ngFor="let documento of documentos" 
+                    class="documento-card"
+                    [ngClass]="'documento-' + documento.estado">
+            
+            <mat-card-header>
+              <div mat-card-avatar [ngClass]="'avatar-' + documento.estado">
+                <mat-icon>{{ documento.icono }}</mat-icon>
+              </div>
+              
+              <mat-card-title>
+                {{ documento.nombre }}
+                <mat-chip *ngIf="documento.requerido" size="small" color="accent">Requerido</mat-chip>
+              </mat-card-title>
+              
+              <mat-card-subtitle>
+                <mat-chip [color]="obtenerColorEstadoDocumento(documento.estado)" selected>
+                  {{ documento.estado | titlecase }}
+                </mat-chip>
+              </mat-card-subtitle>
+            </mat-card-header>
+
+            <mat-card-content>
+              <div *ngIf="documento.fechaSubida" class="documento-info">
+                <small>Subido: {{ formatearFecha(documento.fechaSubida) }}</small>
+              </div>
+              
+              <div *ngIf="documento.observaciones" class="documento-observaciones">
+                <mat-icon color="warn" class="obs-icon">warning</mat-icon>
+                <small>{{ documento.observaciones }}</small>
+              </div>
+            </mat-card-content>
+
+            <mat-card-actions>
+              <!-- Subir documento -->
+              <button mat-stroked-button 
+                      *ngIf="!documento.url && !readonly"
+                      (click)="fileInput.click()"
+                      color="primary">
+                <mat-icon>upload</mat-icon>
+                Subir
+              </button>
+              
+              <!-- Ver documento -->
+              <button mat-stroked-button 
+                      *ngIf="documento.url"
+                      (click)="verDocumento(documento)"
+                      color="primary">
+                <mat-icon>visibility</mat-icon>
+                Ver
+              </button>
+              
+              <!-- Reemplazar documento -->
+              <button mat-stroked-button 
+                      *ngIf="documento.url && !readonly"
+                      (click)="fileInput.click()"
+                      color="accent">
+                <mat-icon>sync</mat-icon>
+                Reemplazar
+              </button>
+              
+              <!-- Eliminar documento -->
+              <button mat-icon-button 
+                      *ngIf="documento.url && !readonly"
+                      (click)="eliminarDocumento(documento.tipo)"
+                      color="warn"
+                      matTooltip="Eliminar documento">
+                <mat-icon>delete</mat-icon>
+              </button>
+
+              <!-- Input file oculto -->
+              <input #fileInput 
+                     type="file" 
+                     accept="image/*,.pdf"
+                     style="display: none"
+                     (change)="subirDocumento(documento.tipo, $event)">
+            </mat-card-actions>
+          </mat-card>
+
+        </div>
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Sección: Validaciones Automáticas -->
+    <mat-expansion-panel 
+      [expanded]="estaSeccionExpandida('validaciones')"
+      (opened)="expandirSeccion('validaciones')">
+      
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon [color]="secciones[5].completada ? 'primary' : 'accent'">
+            {{ secciones[5].icono }}
+          </mat-icon>
+          <span class="ml-2">{{ secciones[5].titulo }}</span>
+        </mat-panel-title>
+        <mat-panel-description>
+          <div class="validacion-progreso">
+            <span>{{ obtenerProgresoValidaciones().toFixed(0) }}%</span>
+            <mat-progress-bar 
+              [value]="obtenerProgresoValidaciones()"
+              [color]="obtenerProgresoValidaciones() >= 80 ? 'primary' : 'accent'"
+              mode="determinate"
+              class="mini-progress">
+            </mat-progress-bar>
+          </div>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="seccion-content">
+        <div class="validaciones-header mb-3">
+          <button mat-raised-button 
+                  color="primary"
+                  (click)="ejecutarTodasLasValidaciones()"
+                  [disabled]="ejecutandoValidaciones"
+                  *ngIf="!readonly">
+            <mat-icon>{{ ejecutandoValidaciones ? 'sync' : 'verified_user' }}</mat-icon>
+            {{ ejecutandoValidaciones ? 'Ejecutando...' : 'Ejecutar Todas las Validaciones' }}
+          </button>
+        </div>
+
+        <div class="validaciones-lista">
+          
+          <mat-card *ngFor="let validacion of validaciones" 
+                    class="validacion-card"
+                    [ngClass]="'validacion-' + validacion.estado">
+            
+            <mat-card-content>
+              <div class="validacion-header">
+                <div class="validacion-info">
+                  <mat-icon [color]="obtenerColorValidacion(validacion.estado)">
+                    {{ obtenerIconoValidacion(validacion.estado) }}
+                  </mat-icon>
+                  <div class="validacion-detalles">
+                    <h4>{{ validacion.tipo }}</h4>
+                    <p>{{ validacion.mensaje }}</p>
+                  </div>
+                </div>
+                
+                <div class="validacion-acciones">
+                  <mat-chip [color]="obtenerColorValidacion(validacion.estado)" selected>
+                    {{ validacion.estado | titlecase }}
+                  </mat-chip>
+                  
+                  <button mat-icon-button 
+                          *ngIf="validacion.estado === 'pendiente' && !readonly"
+                          (click)="ejecutarValidacionAutomatica(validacion.tipo)"
+                          color="primary"
+                          matTooltip="Ejecutar validación">
+                    <mat-icon>play_arrow</mat-icon>
+                  </button>
+                </div>
+              </div>
+
+              <div *ngIf="validacion.fecha" class="validacion-fecha">
+                <small>Última ejecución: {{ formatearFecha(validacion.fecha) }}</small>
+              </div>
+
+              <!-- Resultados de Centrales de Riesgo -->
+              <div *ngIf="validacion.tipo === 'CENTRALES_RIESGO' && validacion.resultado" 
+                   class="resultados-centrales mt-2">
+                <h5>Resultados:</h5>
+                <div class="centrales-grid">
+                  
+                  <div *ngIf="validacion.resultado.equifax" class="central-item">
+                    <span class="central-nombre">Equifax:</span>
+                    <mat-chip [color]="validacion.resultado.equifax === 'normal' ? 'primary' : 'warn'" selected>
+                      {{ validacion.resultado.equifax | titlecase }}
+                    </mat-chip>
+                  </div>
+                  
+                  <div *ngIf="validacion.resultado.experian" class="central-item">
+                    <span class="central-nombre">Experian:</span>
+                    <mat-chip [color]="validacion.resultado.experian === 'normal' ? 'primary' : 'warn'" selected>
+                      {{ validacion.resultado.experian | titlecase }}
+                    </mat-chip>
+                  </div>
+                  
+                  <div *ngIf="validacion.resultado.dataCredito" class="central-item">
+                    <span class="central-nombre">DataCrédito:</span>
+                    <mat-chip [color]="validacion.resultado.dataCredito === 'normal' ? 'primary' : 'warn'" selected>
+                      {{ validacion.resultado.dataCredito | titlecase }}
+                    </mat-chip>
+                  </div>
+                  
+                  <div *ngIf="validacion.resultado.scoreSBS" class="central-item">
+                    <span class="central-nombre">Score SBS:</span>
+                    <mat-chip [color]="validacion.resultado.scoreSBS >= 500 ? 'primary' : 'warn'" selected>
+                      {{ validacion.resultado.scoreSBS }}
+                    </mat-chip>
+                  </div>
+
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+
+        </div>
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Sección: Información como Fiador (solo para fiadores) -->
+    <mat-expansion-panel 
+      *ngIf="tipo === 'fiador'"
+      [expanded]="estaSeccionExpandida('informacion-aval')"
+      (opened)="expandirSeccion('informacion-aval')">
+      
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon [color]="secciones[6].completada ? 'primary' : 'accent'">
+            {{ secciones[6].icono }}
+          </mat-icon>
+          <span class="ml-2">{{ secciones[6].titulo }}</span>
+        </mat-panel-title>
+        <mat-panel-description>
+          <mat-icon *ngIf="secciones[6]?.completada" color="primary">check_circle</mat-icon>
+          <span *ngIf="!secciones[6]?.completada" class="incompleto">Incompleto</span>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="seccion-content">
+        <div class="fiador-info">
+          
+          <div class="info-grid">
+            <div class="info-item">
+              <mat-icon>people</mat-icon>
+              <div class="info-content">
+                <span class="info-label">Relación con Titular</span>
+                <span class="info-valor">{{ cliente.relacionConTitular || 'No especificada' }}</span>
+              </div>
+            </div>
+            
+            <div class="info-item">
+              <mat-icon>schedule</mat-icon>
+              <div class="info-content">
+                <span class="info-label">Tiempo de Conocimiento</span>
+                <span class="info-valor">{{ cliente.tiempoConoceTitular || 'No especificado' }}</span>
+              </div>
+            </div>
+            
+            <div class="info-item">
+              <mat-icon>account_balance</mat-icon>
+              <div class="info-content">
+                <span class="info-label">Capacidad de Aval</span>
+                <span class="info-valor">
+                  {{ cliente.capacidadAval ? ('S/ ' + cliente.capacidadAval.toLocaleString()) : 'No evaluada' }}
+                </span>
+              </div>
+            </div>
+            
+            <div class="info-item">
+              <mat-icon [color]="cliente.aceptaResponsabilidad ? 'primary' : 'warn'">
+                {{ cliente.aceptaResponsabilidad ? 'check_circle' : 'cancel' }}
+              </mat-icon>
+              <div class="info-content">
+                <span class="info-label">Acepta Responsabilidad</span>
+                <span class="info-valor">{{ cliente.aceptaResponsabilidad ? 'Sí' : 'No' }}</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </mat-expansion-panel>
+
+  </div>
+
+</div>

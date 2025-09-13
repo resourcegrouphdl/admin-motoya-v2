@@ -1,0 +1,803 @@
+.expediente-resumen-container {
+  padding: 1rem;
+  max-width: 1400px;
+  margin: 0 auto;
+
+  .seccion-general {
+    .info-general-card {
+      background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+
+      .avatar-cliente {
+        background-color: #2196f3;
+        color: white;
+      }
+
+      .info-basica {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #6c757d;
+        font-size: 0.9rem;
+
+        .separator {
+          color: #dee2e6;
+        }
+      }
+
+      .detalles-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+
+        .detalle-item {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 0.75rem;
+          background-color: rgba(0, 0, 0, 0.02);
+          border-radius: 8px;
+
+          .detalle-icon {
+            color: #6c757d;
+            font-size: 20px;
+          }
+
+          .detalle-content {
+            flex: 1;
+
+            .detalle-label {
+              display: block;
+              font-size: 0.8rem;
+              color: #6c757d;
+              font-weight: 500;
+            }
+
+            .detalle-valor {
+              display: block;
+              font-size: 0.9rem;
+              color: #495057;
+              font-weight: 600;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .seccion-alertas {
+    .alertas-card {
+      border-left: 4px solid #ff9800;
+      background-color: #fff3e0;
+
+      .alertas-lista {
+        .alerta-item {
+          padding: 0.5rem 0;
+          font-weight: 500;
+          color: #e65100;
+          display: flex;
+          align-items: center;
+
+          &:not(:last-child) {
+            border-bottom: 1px solid rgba(230, 81, 0, 0.1);
+          }
+        }
+      }
+    }
+  }
+
+  .seccion-titulo {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 0.5rem;
+  }
+
+  .seccion-metricas {
+    .metricas-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+
+      .metrica-card {
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        &.metrica-primary {
+          border-left: 4px solid #2196f3;
+        }
+
+        &.metrica-success {
+          border-left: 4px solid #4caf50;
+        }
+
+        &.metrica-warn {
+          border-left: 4px solid #ff9800;
+        }
+
+        &.metrica-accent {
+          border-left: 4px solid #ff5722;
+        }
+
+        .metrica-header {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          margin-bottom: 0.75rem;
+
+          .metrica-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #6c757d;
+          }
+        }
+
+        .metrica-valor {
+          font-size: 1.5rem;
+          font-weight: 700;
+          color: #212529;
+          margin-bottom: 0.5rem;
+        }
+
+        .metrica-progreso {
+          margin-bottom: 0.5rem;
+
+          ::ng-deep .mat-mdc-progress-bar {
+            height: 6px;
+            border-radius: 3px;
+          }
+        }
+
+        .metrica-descripcion {
+          font-size: 0.8rem;
+          color: #6c757d;
+          line-height: 1.3;
+        }
+      }
+    }
+  }
+
+  .seccion-scores {
+    .scores-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+
+      .progreso-general-card,
+      .scores-detalle-card {
+        height: fit-content;
+      }
+
+      .progreso-visual {
+        .progreso-principal {
+          margin-bottom: 1rem;
+
+          ::ng-deep .mat-mdc-progress-bar {
+            height: 8px;
+            border-radius: 4px;
+          }
+        }
+
+        .estado-actual {
+          text-align: center;
+        }
+      }
+
+      .scores-lista {
+        .score-item {
+          margin-bottom: 1rem;
+
+          .score-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+
+            .score-label {
+              font-weight: 500;
+              color: #495057;
+            }
+
+            .score-valor {
+              font-weight: 600;
+              color: #212529;
+            }
+          }
+
+          ::ng-deep .mat-mdc-progress-bar {
+            height: 6px;
+            border-radius: 3px;
+          }
+        }
+      }
+
+      .scores-detalles {
+        .analisis-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 1rem;
+          margin-top: 1rem;
+
+          .analisis-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+
+            .analisis-label {
+              font-size: 0.9rem;
+              color: #6c757d;
+              font-weight: 500;
+            }
+          }
+        }
+
+        .acciones-scores {
+          text-align: center;
+        }
+      }
+    }
+  }
+
+  .seccion-timeline {
+    .timeline-card {
+      .timeline-container {
+        position: relative;
+        padding: 1rem 0;
+
+        .timeline-item {
+          position: relative;
+          padding-left: 3rem;
+          padding-bottom: 2rem;
+
+          &.timeline-completado {
+            .timeline-marker mat-icon {
+              color: #4caf50;
+            }
+          }
+
+          &.timeline-actual {
+            .timeline-marker {
+              background-color: #2196f3;
+              border-radius: 50%;
+              padding: 0.5rem;
+
+              mat-icon {
+                color: white;
+              }
+            }
+
+            .timeline-content {
+              background-color: rgba(33, 150, 243, 0.05);
+              border-left: 3px solid #2196f3;
+              padding-left: 1rem;
+            }
+          }
+
+          &.timeline-pendiente {
+            opacity: 0.6;
+
+            .timeline-marker mat-icon {
+              color: #9e9e9e;
+            }
+          }
+
+          .timeline-marker {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: white;
+            border: 2px solid #e9ecef;
+            border-radius: 50%;
+            z-index: 2;
+          }
+
+          .timeline-content {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+
+            .timeline-header {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 0.5rem;
+
+              .timeline-titulo {
+                margin: 0;
+                font-size: 1rem;
+                font-weight: 600;
+                color: #495057;
+              }
+
+              .timeline-fecha {
+                font-size: 0.8rem;
+                color: #6c757d;
+                font-weight: 500;
+              }
+            }
+
+            .timeline-descripcion {
+              margin: 0;
+              font-size: 0.9rem;
+              color: #6c757d;
+              line-height: 1.4;
+            }
+
+            .timeline-estado-actual {
+              margin-top: 0.75rem;
+            }
+          }
+
+          .timeline-line {
+            position: absolute;
+            left: 0.9rem;
+            top: 2rem;
+            bottom: -2rem;
+            width: 2px;
+            background-color: #e9ecef;
+            z-index: 1;
+          }
+
+          &:last-child .timeline-line {
+            display: none;
+          }
+        }
+      }
+    }
+  }
+
+  .seccion-recomendaciones {
+    .recomendaciones-card {
+      border-left: 4px solid #2196f3;
+      background-color: #e3f2fd;
+
+      .recomendaciones-lista {
+        .recomendacion-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 0.75rem;
+          padding: 0.75rem 0;
+          border-bottom: 1px solid rgba(33, 150, 243, 0.1);
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+          .recomendacion-icon {
+            color: #1976d2;
+            font-size: 18px;
+            margin-top: 0.1rem;
+          }
+
+          .recomendacion-texto {
+            flex: 1;
+            font-size: 0.9rem;
+            color: #1565c0;
+            line-height: 1.4;
+          }
+        }
+      }
+    }
+  }
+
+  .seccion-financiera {
+    .financiera-card {
+      .financiera-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+
+        .financiera-item {
+          text-align: center;
+          padding: 1rem;
+          background-color: #f8f9fa;
+          border-radius: 8px;
+          border: 1px solid #e9ecef;
+
+          .financiera-label {
+            font-size: 0.8rem;
+            color: #6c757d;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+          }
+
+          .financiera-valor {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #212529;
+
+            &.principal {
+              font-size: 1.4rem;
+              color: #2196f3;
+            }
+
+            &.destacado {
+              font-size: 1.3rem;
+              color: #4caf50;
+            }
+          }
+
+          .financiera-porcentaje {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-top: 0.25rem;
+          }
+        }
+      }
+
+      .aprobacion-info {
+        background-color: rgba(76, 175, 80, 0.05);
+        border-radius: 8px;
+        padding: 1rem;
+
+        h4 {
+          color: #388e3c;
+          margin-bottom: 1rem;
+        }
+
+        .aprobacion-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 1rem;
+
+          .aprobacion-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            .aprobacion-label {
+              font-weight: 500;
+              color: #495057;
+            }
+
+            .aprobacion-valor {
+              font-weight: 600;
+              color: #2e7d32;
+            }
+          }
+        }
+
+        .condiciones-especiales {
+          h5 {
+            color: #388e3c;
+            margin-bottom: 0.5rem;
+          }
+
+          .condiciones-lista {
+            margin: 0;
+            padding-left: 1.5rem;
+
+            li {
+              margin-bottom: 0.25rem;
+              color: #495057;
+            }
+          }
+        }
+      }
+
+      .rechazo-info {
+        background-color: rgba(244, 67, 54, 0.05);
+        border-radius: 8px;
+        padding: 1rem;
+
+        .rechazo-contenido {
+          display: flex;
+          align-items: flex-start;
+          gap: 1rem;
+
+          .rechazo-detalles {
+            flex: 1;
+
+            h4 {
+              color: #d32f2f;
+              margin-bottom: 0.5rem;
+            }
+
+            p {
+              margin: 0;
+              color: #495057;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .seccion-participantes {
+    .participantes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
+
+      .participante-card {
+        height: fit-content;
+
+        .participante-info {
+          h4 {
+            margin: 0 0 0.5rem 0;
+            color: #495057;
+            font-size: 1.1rem;
+          }
+
+          p {
+            margin: 0.25rem 0;
+            font-size: 0.9rem;
+            color: #6c757d;
+          }
+
+          .relacion-info {
+            background-color: #f8f9fa;
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+          }
+
+          .participante-estado {
+            margin-top: 1rem;
+          }
+        }
+
+        .referencias-lista {
+          .referencia-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e9ecef;
+
+            &:last-child {
+              border-bottom: none;
+            }
+
+            .referencia-info {
+              flex: 1;
+
+              strong {
+                display: block;
+                color: #495057;
+                font-size: 0.9rem;
+              }
+
+              .referencia-parentesco {
+                font-size: 0.8rem;
+                color: #6c757d;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .seccion-acciones {
+    .acciones-card {
+      background-color: #f8f9fa;
+      border: 1px solid #e9ecef;
+
+      h3 {
+        margin: 0 0 1rem 0;
+        color: #495057;
+        font-size: 1.1rem;
+      }
+
+      .acciones-botones {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        justify-content: center;
+
+        button {
+          min-width: 140px;
+        }
+      }
+    }
+  }
+
+  .mb-1 {
+    margin-bottom: 0.25rem;
+  }
+  .mb-2 {
+    margin-bottom: 0.5rem;
+  }
+  .mb-3 {
+    margin-bottom: 1rem;
+  }
+  .mb-4 {
+    margin-bottom: 1.5rem;
+  }
+  .mt-1 {
+    margin-top: 0.25rem;
+  }
+  .mt-2 {
+    margin-top: 0.5rem;
+  }
+  .mt-3 {
+    margin-top: 1rem;
+  }
+  .mt-4 {
+    margin-top: 1.5rem;
+  }
+  .ml-2 {
+    margin-left: 0.5rem;
+  }
+  .my-3 {
+    margin: 1rem 0;
+  }
+
+  @media (max-width: 1024px) {
+    .scores-container {
+      grid-template-columns: 1fr !important;
+    }
+
+    .participantes-grid {
+      grid-template-columns: 1fr !important;
+    }
+
+    .metricas-grid {
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: 0.5rem;
+
+    .detalles-grid {
+      grid-template-columns: 1fr !important;
+    }
+
+    .financiera-grid {
+      grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    .analisis-grid {
+      grid-template-columns: 1fr !important;
+    }
+
+    .acciones-botones {
+      justify-content: stretch !important;
+
+      button {
+        flex: 1;
+        min-width: auto;
+      }
+    }
+
+    .timeline-item {
+      padding-left: 2.5rem;
+
+      .timeline-marker {
+        width: 1.5rem;
+        height: 1.5rem;
+
+        mat-icon {
+          font-size: 16px;
+        }
+      }
+
+      .timeline-line {
+        left: 0.65rem;
+      }
+    }
+  }
+
+  @media (max-width: 480px) {
+    .metricas-grid {
+      grid-template-columns: 1fr !important;
+    }
+
+    .financiera-grid {
+      grid-template-columns: 1fr !important;
+    }
+
+    .metrica-card {
+      .metrica-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+      }
+    }
+
+    .info-basica {
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      gap: 0.25rem !important;
+
+      .separator {
+        display: none;
+      }
+    }
+  }
+
+  .metrica-card,
+  .timeline-item,
+  .participante-card {
+    animation: fadeInUp 0.4s ease-out;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .expediente-resumen-container {
+      .info-general-card,
+      .metrica-card,
+      .timeline-card,
+      .participante-card,
+      .acciones-card {
+        background-color: #1e1e1e;
+        color: #ffffff;
+      }
+
+      .seccion-titulo {
+        color: #ffffff;
+        border-bottom-color: #333;
+      }
+
+      .detalles-grid .detalle-item,
+      .timeline-content,
+      .financiera-item {
+        background-color: rgba(255, 255, 255, 0.05);
+      }
+
+      .alertas-card {
+        background-color: rgba(255, 152, 0, 0.1);
+      }
+
+      .recomendaciones-card {
+        background-color: rgba(33, 150, 243, 0.1);
+      }
+
+      .aprobacion-info {
+        background-color: rgba(76, 175, 80, 0.1);
+      }
+
+      .rechazo-info {
+        background-color: rgba(244, 67, 54, 0.1);
+      }
+
+      .timeline-line {
+        background-color: #333;
+      }
+    }
+  }
+
+  @media print {
+    .acciones-card {
+      display: none !important;
+    }
+
+    .metrica-card {
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .timeline-card {
+      break-inside: avoid;
+    }
+
+    .participante-card {
+      break-inside: avoid;
+    }
+  }
+}

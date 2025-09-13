@@ -18,7 +18,6 @@ export interface IMenu {
             route : '/dashboard/panelmain',
             resumen :' pagina principal del sistema'
         },
-
         {
             title : ' gestion de aliados',
             name : 'aliado comercial',
@@ -26,7 +25,13 @@ export interface IMenu {
             route : '/dashboard/vendedores',
             resumen: 'gestion de aliados comerciales'
         },
-
+        {
+            title : 'gestion de clientes',
+            name : 'gestion de clientes',
+            icon : 'group',
+            route : '/dashboard/admin-clientes',
+            resumen: 'gestion de clientes del sistema',
+        },
         {
             title : 'precios tiendaas',
             name : 'gestion',

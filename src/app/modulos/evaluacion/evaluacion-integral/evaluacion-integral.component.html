@@ -1,0 +1,781 @@
+<div class="evaluacion-integral-container">
+  <!-- ========================================== -->
+  <!-- HEADER DE EVALUACIÓN INTEGRAL -->
+  <!-- ========================================== -->
+  <div class="evaluacion-header mb-4">
+    <mat-card class="header-card">
+      <mat-card-header>
+        <div mat-card-avatar class="avatar-evaluacion">
+          <mat-icon>assessment</mat-icon>
+        </div>
+
+        <mat-card-title>
+          <div class="title-container">
+            <h2>Evaluación Integral</h2>
+            <div class="subtitle-info">
+              <mat-chip [color]="colorRecomendacion" selected>
+                {{
+                  recomendacionFinal === "aprobar"
+                    ? "RECOMENDADO PARA APROBACIÓN"
+                    : recomendacionFinal === "condicional"
+                    ? "APROBACIÓN CONDICIONAL"
+                    : "NO RECOMENDADO"
+                }}
+              </mat-chip>
+
+              <mat-chip [color]="obtenerColorScore(scoreFinal)" selected>
+                Score Final: {{ scoreFinal }}/100
+              </mat-chip>
+
+              <mat-chip
+                [color]="NIVELES_RIESGO[nivelRiesgoGeneral].color"
+                selected
+              >
+                <mat-icon matChipAvatar>{{
+                  NIVELES_RIESGO[nivelRiesgoGeneral].icono
+                }}</mat-icon>
+                {{ NIVELES_RIESGO[nivelRiesgoGeneral].descripcion }}
+              </mat-chip>
+            </div>
+          </div>
+        </mat-card-title>
+
+        <div class="header-actions">
+          <button
+            mat-icon-button
+            (click)="toggleAnalisisDetallado()"
+            matTooltip="Análisis detallado"
+          >
+            <mat-icon>analytics</mat-icon>
+          </button>
+
+          <button
+            mat-icon-button
+            (click)="exportarEvaluacion()"
+            matTooltip="Exportar evaluación"
+          >
+            <mat-icon>download</mat-icon>
+          </button>
+
+          <button
+            mat-icon-button
+            [matMenuTriggerFor]="menuOpciones"
+            matTooltip="Más opciones"
+          >
+            <mat-icon>more_vert</mat-icon>
+          </button>
+        </div>
+      </mat-card-header>
+
+      <mat-card-content>
+        <!-- Score Final Prominente -->
+        <div class="score-principal">
+          <div class="score-visual">
+            <div class="score-circle" [ngClass]="'score-' + colorRecomendacion">
+              <span class="score-numero">{{ scoreFinal }}</span>
+              <span class="score-denominador">/100</span>
+            </div>
+            <div class="score-descripcion">
+              <h3>{{ obtenerDescripcionScore(scoreFinal) }}</h3>
+              <p class="score-texto">
+                {{
+                  recomendacionFinal === "aprobar"
+                    ? "El solicitante cumple satisfactoriamente con todos los criterios de evaluación"
+                    : recomendacionFinal === "condicional"
+                    ? "El solicitante cumple parcialmente, requiere condiciones especiales"
+                    : "El solicitante no cumple con los criterios mínimos requeridos"
+                }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Breakdown de Scores por Criterio -->
+        <div class="scores-breakdown">
+          <div class="breakdown-header">
+            <h4>Desglose por Criterios</h4>
+          </div>
+          <div class="criterios-grid">
+            <div
+              *ngFor="let criterio of criteriosEvaluacion"
+              class="criterio-item"
+            >
+              <div class="criterio-header">
+                <span class="criterio-nombre">{{ criterio.nombre }}</span>
+                <span class="criterio-peso">{{ criterio.peso }}%</span>
+              </div>
+              <div class="criterio-score">
+                <div class="score-bar">
+                  <mat-progress-bar
+                    [value]="criterio.scoreObtenido"
+                    [color]="obtenerColorScore(criterio.scoreObtenido)"
+                    mode="determinate"
+                  >
+                  </mat-progress-bar>
+                </div>
+                <span class="score-valor"
+                  >{{ criterio.scoreObtenido }}/{{ criterio.scoreMaximo }}</span
+                >
+              </div>
+              <mat-chip
+                [color]="
+                  criterio.estado === 'aprobado'
+                    ? 'primary'
+                    : criterio.estado === 'observado'
+                    ? 'accent'
+                    : 'warn'
+                "
+                selected
+                class="criterio-estado"
+              >
+                {{
+                  criterio.estado === "aprobado"
+                    ? "Aprobado"
+                    : criterio.estado === "observado"
+                    ? "Con Observaciones"
+                    : criterio.estado === "rechazado"
+                    ? "Rechazado"
+                    : "Pendiente"
+                }}
+              </mat-chip>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- SECCIONES EXPANDIBLES -->
+  <!-- ========================================== -->
+  <div class="secciones-evaluacion">
+    <!-- Sección: Análisis de Criterios -->
+    <mat-expansion-panel
+      [expanded]="estaSeccionExpandida('criterios')"
+      (opened)="expandirSeccion('criterios')"
+    >
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon color="primary">checklist</mat-icon>
+          <span class="ml-2">Análisis Detallado por Criterios</span>
+        </mat-panel-title>
+        <mat-panel-description>
+          <mat-chip color="accent" selected>
+            {{ contarCriteriosAprobados() }}/{{
+              criteriosEvaluacion.length || 0
+            }}
+            aprobados
+          </mat-chip>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="seccion-content">
+        <div class="criterios-detallados">
+          <mat-card
+            *ngFor="let criterio of criteriosEvaluacion"
+            class="criterio-card"
+            [ngClass]="'criterio-' + criterio.estado"
+          >
+            <mat-card-header>
+              <div mat-card-avatar class="avatar-criterio">
+                <mat-icon>{{
+                  criterio.estado === "aprobado"
+                    ? "check_circle"
+                    : criterio.estado === "observado"
+                    ? "warning"
+                    : criterio.estado === "rechazado"
+                    ? "cancel"
+                    : "schedule"
+                }}</mat-icon>
+              </div>
+
+              <mat-card-title>{{ criterio.nombre }}</mat-card-title>
+              <mat-card-subtitle>
+                Peso: {{ criterio.peso }}% | Score:
+                {{ criterio.scoreObtenido }}/{{ criterio.scoreMaximo }}
+              </mat-card-subtitle>
+            </mat-card-header>
+
+            <mat-card-content>
+              <!-- Barra de progreso del criterio -->
+              <div class="criterio-progreso">
+                <mat-progress-bar
+                  [value]="criterio.scoreObtenido"
+                  [color]="obtenerColorScore(criterio.scoreObtenido)"
+                  mode="determinate"
+                >
+                </mat-progress-bar>
+                <span class="progreso-texto">
+                  {{ criterio.scoreObtenido }}% -
+                  {{ obtenerDescripcionScore(criterio.scoreObtenido) }}
+                </span>
+              </div>
+
+              <!-- Observaciones -->
+              <div
+                class="criterio-observaciones"
+                *ngIf="criterio.observaciones"
+              >
+                <div class="observaciones-header">
+                  <mat-icon color="accent">note</mat-icon>
+                  <span>Observaciones</span>
+                </div>
+                <p>{{ criterio.observaciones }}</p>
+              </div>
+
+              <!-- Recomendación -->
+              <div
+                class="criterio-recomendacion"
+                *ngIf="criterio.recomendacion"
+              >
+                <div class="recomendacion-header">
+                  <mat-icon color="primary">lightbulb</mat-icon>
+                  <span>Recomendación</span>
+                </div>
+                <p>{{ criterio.recomendacion }}</p>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Sección: Análisis de Riesgos -->
+    <mat-expansion-panel
+      [expanded]="estaSeccionExpandida('riesgos')"
+      (opened)="expandirSeccion('riesgos')"
+    >
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon [color]="NIVELES_RIESGO[nivelRiesgoGeneral].color">
+            {{ NIVELES_RIESGO[nivelRiesgoGeneral].icono }}
+          </mat-icon>
+          <span class="ml-2">Análisis de Factores de Riesgo</span>
+        </mat-panel-title>
+        <mat-panel-description>
+          <mat-chip [color]="NIVELES_RIESGO[nivelRiesgoGeneral].color" selected>
+            {{ factoresRiesgo.length }} factores identificados
+          </mat-chip>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="seccion-content">
+        <!-- Resumen de Riesgos -->
+        <div class="resumen-riesgos mb-4">
+          <div class="riesgo-nivel">
+            <div class="nivel-header">
+              <mat-icon
+                [color]="NIVELES_RIESGO[nivelRiesgoGeneral].color"
+                class="nivel-icon"
+              >
+                {{ NIVELES_RIESGO[nivelRiesgoGeneral].icono }}
+              </mat-icon>
+              <h3>{{ NIVELES_RIESGO[nivelRiesgoGeneral].descripcion }}</h3>
+            </div>
+            <div class="nivel-descripcion">
+              <p>
+                {{
+                  nivelRiesgoGeneral === "bajo"
+                    ? "El perfil del solicitante presenta riesgos mínimos y controlables"
+                    : nivelRiesgoGeneral === "medio"
+                    ? "El perfil presenta algunos riesgos que requieren monitoreo"
+                    : "El perfil presenta riesgos significativos que requieren atención especial"
+                }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Distribución de riesgos -->
+          <div class="distribucion-riesgos">
+            <div
+              class="riesgo-categoria"
+              *ngFor="let nivel of ['bajo', 'medio', 'alto']"
+            >
+              <span class="categoria-label"
+                >{{ NIVELES_RIESGO[nivel].descripcion }}:</span
+              >
+              <mat-chip [color]="obtenerInfoNivel(nivel).color" selected>
+                {{ contarFactoresPorNivel(nivel) }}
+              </mat-chip>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lista de Factores de Riesgo -->
+        <div class="factores-riesgo">
+          <div
+            *ngFor="let factor of factoresRiesgo"
+            class="factor-card"
+            [ngClass]="'factor-' + factor.nivel"
+          >
+            <div class="factor-header">
+              <div class="factor-info">
+                <span class="factor-categoria">{{ factor.categoria }}</span>
+                <h4 class="factor-nombre">{{ factor.factor }}</h4>
+              </div>
+              <div class="factor-nivel">
+                <mat-chip [color]="NIVELES_RIESGO[factor.nivel].color" selected>
+                  <mat-icon matChipAvatar>{{
+                    NIVELES_RIESGO[factor.nivel].icono
+                  }}</mat-icon>
+                  {{ NIVELES_RIESGO[factor.nivel].descripcion }}
+                </mat-chip>
+                <span class="factor-impacto"
+                  >Impacto: {{ factor.impacto }}%</span
+                >
+              </div>
+            </div>
+
+            <div class="factor-descripcion">
+              <p>{{ factor.descripcion }}</p>
+            </div>
+
+            <div class="factor-mitigacion" *ngIf="factor.mitigable">
+              <mat-icon color="primary">build</mat-icon>
+              <span>Factor mitigable con acciones correctivas</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Sección: Evaluación Financiera -->
+    <mat-expansion-panel
+      *ngIf="evaluacionFinanciera"
+      [expanded]="estaSeccionExpandida('financiera')"
+      (opened)="expandirSeccion('financiera')"
+    >
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon color="primary">account_balance</mat-icon>
+          <span class="ml-2">Evaluación Financiera Detallada</span>
+        </mat-panel-title>
+        <mat-panel-description>
+          <mat-chip
+            [color]="
+              evaluacionFinanciera.recomendacion === 'aprobar'
+                ? 'primary'
+                : evaluacionFinanciera.recomendacion === 'condicional'
+                ? 'accent'
+                : 'warn'
+            "
+            selected
+          >
+            Score: {{ evaluacionFinanciera.scoreTotal }}/100
+          </mat-chip>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="seccion-content">
+        <div class="evaluacion-financiera-detalle">
+          <!-- Componentes de la evaluación financiera -->
+          <div class="componentes-financieros">
+            <div class="componente-item">
+              <div class="componente-header">
+                <mat-icon color="primary">payments</mat-icon>
+                <span>Capacidad de Pago</span>
+              </div>
+              <div class="componente-score">
+                <mat-progress-bar
+                  [value]="evaluacionFinanciera.capacidadPago"
+                  color="primary"
+                  mode="determinate"
+                >
+                </mat-progress-bar>
+                <span>{{ evaluacionFinanciera.capacidadPago }}/100</span>
+              </div>
+            </div>
+
+            <div class="componente-item">
+              <div class="componente-header">
+                <mat-icon color="accent">trending_up</mat-icon>
+                <span>Estabilidad de Ingresos</span>
+              </div>
+              <div class="componente-score">
+                <mat-progress-bar
+                  [value]="evaluacionFinanciera.estabilidadIngresos"
+                  color="accent"
+                  mode="determinate"
+                >
+                </mat-progress-bar>
+                <span>{{ evaluacionFinanciera.estabilidadIngresos }}/100</span>
+              </div>
+            </div>
+
+            <div class="componente-item">
+              <div class="componente-header">
+                <mat-icon color="primary">history</mat-icon>
+                <span>Historial Crediticio</span>
+              </div>
+              <div class="componente-score">
+                <mat-progress-bar
+                  [value]="evaluacionFinanciera.historialCrediticio"
+                  color="primary"
+                  mode="determinate"
+                >
+                </mat-progress-bar>
+                <span>{{ evaluacionFinanciera.historialCrediticio }}/100</span>
+              </div>
+            </div>
+
+            <div class="componente-item">
+              <div class="componente-header">
+                <mat-icon color="accent">security</mat-icon>
+                <span>Garantías</span>
+              </div>
+              <div class="componente-score">
+                <mat-progress-bar
+                  [value]="evaluacionFinanciera.garantias"
+                  color="accent"
+                  mode="determinate"
+                >
+                </mat-progress-bar>
+                <span>{{ evaluacionFinanciera.garantias }}/100</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recomendación financiera -->
+          <div class="recomendacion-financiera">
+            <div class="recomendacion-header">
+              <mat-icon
+                [color]="
+                  evaluacionFinanciera.recomendacion === 'aprobar'
+                    ? 'primary'
+                    : evaluacionFinanciera.recomendacion === 'condicional'
+                    ? 'accent'
+                    : 'warn'
+                "
+              >
+                {{
+                  evaluacionFinanciera.recomendacion === "aprobar"
+                    ? "check_circle"
+                    : evaluacionFinanciera.recomendacion === "condicional"
+                    ? "warning"
+                    : "cancel"
+                }}
+              </mat-icon>
+              <h4>
+                {{
+                  evaluacionFinanciera.recomendacion === "aprobar"
+                    ? "Perfil Financiero Favorable"
+                    : evaluacionFinanciera.recomendacion === "condicional"
+                    ? "Perfil Financiero Condicional"
+                    : "Perfil Financiero No Favorable"
+                }}
+              </h4>
+            </div>
+            <p class="recomendacion-descripcion">
+              {{
+                evaluacionFinanciera.recomendacion === "aprobar"
+                  ? "El solicitante demuestra excelente capacidad financiera para el crédito solicitado"
+                  : evaluacionFinanciera.recomendacion === "condicional"
+                  ? "El solicitante tiene capacidad financiera con algunas reservas que requieren condiciones especiales"
+                  : "El solicitante no demuestra capacidad financiera suficiente para el crédito solicitado"
+              }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Sección: Análisis Comparativo -->
+    <mat-expansion-panel
+      *ngIf="analisisComparativo"
+      [expanded]="estaSeccionExpandida('comparativo')"
+      (opened)="expandirSeccion('comparativo')"
+    >
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon color="accent">compare_arrows</mat-icon>
+          <span class="ml-2">Análisis Comparativo</span>
+        </mat-panel-title>
+        <mat-panel-description>
+          <mat-chip
+            [color]="
+              analisisComparativo.posicionCliente === 'superior'
+                ? 'primary'
+                : analisisComparativo.posicionCliente === 'promedio'
+                ? 'accent'
+                : 'warn'
+            "
+            selected
+          >
+            {{
+              analisisComparativo.posicionCliente === "superior"
+                ? "Superior al Promedio"
+                : analisisComparativo.posicionCliente === "promedio"
+                ? "Promedio del Sector"
+                : "Inferior al Promedio"
+            }}
+          </mat-chip>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="seccion-content">
+        <div class="analisis-comparativo-detalle">
+          <!-- Benchmarks del sector -->
+          <div class="benchmarks-sector">
+            <h4>Benchmarks del Sector</h4>
+            <div class="benchmarks-grid">
+              <div class="benchmark-item">
+                <span class="benchmark-label">Score Mínimo:</span>
+                <span class="benchmark-valor">{{
+                  analisisComparativo.benchmarks.scoreMinimo
+                }}</span>
+              </div>
+              <div class="benchmark-item">
+                <span class="benchmark-label">Score Promedio:</span>
+                <span class="benchmark-valor">{{
+                  analisisComparativo.benchmarks.scorePromedio
+                }}</span>
+              </div>
+              <div class="benchmark-item">
+                <span class="benchmark-label">Score Excelente:</span>
+                <span class="benchmark-valor">{{
+                  analisisComparativo.benchmarks.scoreExcelente
+                }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Posicionamiento del cliente -->
+          <div class="posicionamiento-cliente">
+            <h4>Posicionamiento del Cliente</h4>
+            <div class="posicion-visual">
+              <div class="escala-sector">
+                <div class="marca-sector minimo">
+                  {{ analisisComparativo.benchmarks.scoreMinimo }}
+                </div>
+                <div class="marca-sector promedio">
+                  {{ analisisComparativo.benchmarks.scorePromedio }}
+                </div>
+                <div class="marca-sector excelente">
+                  {{ analisisComparativo.benchmarks.scoreExcelente }}
+                </div>
+              </div>
+              <div
+                class="posicion-cliente"
+                [style.left.%]="(scoreFinal / 100) * 100"
+              >
+                <div class="indicador-cliente">
+                  <span>{{ scoreFinal }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Factores diferenciadores -->
+          <div
+            class="factores-diferenciadores"
+            *ngIf="analisisComparativo.factoresDiferenciadores.length > 0"
+          >
+            <h4>Factores Diferenciadores</h4>
+            <div class="diferenciadores-lista">
+              <mat-chip
+                *ngFor="
+                  let factor of analisisComparativo.factoresDiferenciadores
+                "
+                color="primary"
+                selected
+              >
+                <mat-icon matChipAvatar>star</mat-icon>
+                {{ factor }}
+              </mat-chip>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Sección: Recomendaciones Finales -->
+    <mat-expansion-panel
+      [expanded]="estaSeccionExpandida('recomendaciones')"
+      (opened)="expandirSeccion('recomendaciones')"
+    >
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon [color]="colorRecomendacion">
+            {{
+              recomendacionFinal === "aprobar"
+                ? "check_circle"
+                : recomendacionFinal === "condicional"
+                ? "warning"
+                : "cancel"
+            }}
+          </mat-icon>
+          <span class="ml-2">Recomendaciones Finales</span>
+        </mat-panel-title>
+        <mat-panel-description>
+          <mat-chip [color]="colorRecomendacion" selected>
+            {{
+              recomendacionFinal === "aprobar"
+                ? "APROBAR"
+                : recomendacionFinal === "condicional"
+                ? "CONDICIONAL"
+                : "RECHAZAR"
+            }}
+          </mat-chip>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="seccion-content">
+        <div class="recomendaciones-finales">
+          <!-- Decisión principal -->
+          <div class="decision-principal">
+            <div class="decision-header">
+              <div
+                class="decision-icono"
+                [ngClass]="'decision-' + recomendacionFinal"
+              >
+                <mat-icon>
+                  {{
+                    recomendacionFinal === "aprobar"
+                      ? "check_circle"
+                      : recomendacionFinal === "condicional"
+                      ? "warning"
+                      : "cancel"
+                  }}
+                </mat-icon>
+              </div>
+              <div class="decision-texto">
+                <h3>
+                  {{
+                    recomendacionFinal === "aprobar"
+                      ? "APROBACIÓN RECOMENDADA"
+                      : recomendacionFinal === "condicional"
+                      ? "APROBACIÓN CONDICIONAL"
+                      : "RECHAZO RECOMENDADO"
+                  }}
+                </h3>
+                <p>
+                  {{
+                    recomendacionFinal === "aprobar"
+                      ? "El solicitante cumple satisfactoriamente con todos los criterios y puede ser aprobado según términos solicitados"
+                      : recomendacionFinal === "condicional"
+                      ? "El solicitante cumple parcialmente con los criterios y puede ser aprobado con condiciones especiales"
+                      : "El solicitante no cumple con los criterios mínimos requeridos para la aprobación del crédito"
+                  }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Condiciones especiales (si es condicional) -->
+          <div
+            class="condiciones-especiales"
+            *ngIf="recomendacionFinal === 'condicional'"
+          >
+            <h4>Condiciones Especiales Requeridas</h4>
+            <div class="condiciones-lista">
+              <!-- Aquí podrían ir condiciones específicas generadas dinámicamente -->
+              <div
+                class="condicion-item"
+                *ngIf="
+                  (expediente.solicitud.inicial /
+                    expediente.solicitud.precioCompraMoto) *
+                    100 <
+                  25
+                "
+              >
+                <mat-icon color="accent">trending_up</mat-icon>
+                <span>Incrementar inicial al 25% del valor del vehículo</span>
+              </div>
+              <div
+                class="condicion-item"
+                *ngIf="!expediente.fiador || scoreGarantes < 70"
+              >
+                <mat-icon color="accent">supervisor_account</mat-icon>
+                <span
+                  >Reforzar garantías con fiador adicional o mejorar perfil
+                  actual</span
+                >
+              </div>
+              <div class="condicion-item" *ngIf="scoreReferencias < 60">
+                <mat-icon color="accent">contacts</mat-icon>
+                <span
+                  >Proporcionar referencias adicionales de mejor calidad</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Próximos pasos -->
+          <div class="proximos-pasos">
+            <h4>Próximos Pasos</h4>
+            <div class="pasos-lista">
+              <div class="paso-item" *ngIf="recomendacionFinal === 'aprobar'">
+                <mat-icon color="primary">arrow_forward</mat-icon>
+                <span>Proceder con generación de certificado OTOYA</span>
+              </div>
+              <div
+                class="paso-item"
+                *ngIf="recomendacionFinal === 'condicional'"
+              >
+                <mat-icon color="accent">assignment</mat-icon>
+                <span>Coordinar cumplimiento de condiciones especiales</span>
+              </div>
+              <div class="paso-item" *ngIf="recomendacionFinal === 'rechazar'">
+                <mat-icon color="warn">feedback</mat-icon>
+                <span
+                  >Comunicar decisión y brindar retroalimentación al
+                  cliente</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-expansion-panel>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- PANEL DE ANÁLISIS DETALLADO -->
+  <!-- ========================================== -->
+  <div class="analisis-detallado" *ngIf="mostrarAnalisisDetallado" [@slideIn]>
+    <mat-card class="analisis-card">
+      <mat-card-header>
+        <mat-card-title
+          class="d-flex justify-content-between align-items-center w-100"
+        >
+          <span>Análisis Detallado</span>
+          <button mat-icon-button (click)="toggleAnalisisDetallado()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </mat-card-title>
+      </mat-card-header>
+
+      <mat-card-content>
+        <div class="analisis-contenido">
+          <p>Panel de análisis detallado en desarrollo.</p>
+          <p>
+            Aquí se mostrarán gráficos comparativos, tendencias históricas y
+            análisis predictivo.
+          </p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- MENÚ DE OPCIONES -->
+<!-- ========================================== -->
+<mat-menu #menuOpciones="matMenu">
+  <button mat-menu-item (click)="exportarEvaluacion()">
+    <mat-icon>download</mat-icon>
+    <span>Exportar Evaluación</span>
+  </button>
+  <button mat-menu-item (click)="generarReporte()">
+    <mat-icon>description</mat-icon>
+    <span>Generar Reporte Completo</span>
+  </button>
+  <mat-divider></mat-divider>
+  <button mat-menu-item (click)="toggleAnalisisDetallado()">
+    <mat-icon>analytics</mat-icon>
+    <span
+      >{{ mostrarAnalisisDetallado ? "Ocultar" : "Mostrar" }} Análisis
+      Detallado</span
+    >
+  </button>
+</mat-menu>

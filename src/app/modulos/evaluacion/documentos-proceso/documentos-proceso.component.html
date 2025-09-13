@@ -1,0 +1,524 @@
+<div class="documentos-proceso-container">
+
+  <!-- ========================================== -->
+  <!-- HEADER DE DOCUMENTOS -->
+  <!-- ========================================== -->
+  <div class="documentos-header mb-4">
+    <mat-card class="header-card">
+      <mat-card-header>
+        <div mat-card-avatar class="avatar-documentos">
+          <mat-icon>folder</mat-icon>
+        </div>
+        
+        <mat-card-title>
+          <div class="title-container">
+            <h2>Documentos del Proceso</h2>
+            <div class="subtitle-info" *ngIf="tieneDocumentos">
+              <mat-chip [color]="estadoValidacion.color" selected>
+                {{ estadoValidacion.mensaje }}
+              </mat-chip>
+              
+              <mat-chip color="accent" selected>
+                {{ estadisticas.total }} documentos registrados
+              </mat-chip>
+              
+              <mat-chip color="primary" selected *ngIf="estadisticas.tamanoTotalMB > 0">
+                {{ estadisticas.tamanoTotalMB }} MB total
+              </mat-chip>
+            </div>
+          </div>
+        </mat-card-title>
+
+        <div class="header-actions">
+          <button mat-icon-button (click)="subirDocumento()" matTooltip="Subir documento">
+            <mat-icon>file_upload</mat-icon>
+          </button>
+          
+          <button mat-icon-button (click)="validarTodosDocumentos()" 
+                  matTooltip="Validar todos"
+                  [disabled]="documentosPendientes.length === 0">
+            <mat-icon>verified_user</mat-icon>
+          </button>
+          
+          <button mat-icon-button [matMenuTriggerFor]="menuOpciones" matTooltip="Más opciones">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+        </div>
+      </mat-card-header>
+
+      <mat-card-content *ngIf="tieneDocumentos">
+        <!-- Progreso de Validación -->
+        <div class="progreso-validacion">
+          <div class="progreso-info">
+            <span class="progreso-label">Documentos Aprobados</span>
+            <span class="progreso-valor">{{ estadisticas.porcentajeCompletitud }}%</span>
+          </div>
+          <mat-progress-bar 
+            [value]="estadisticas.porcentajeCompletitud"
+            [color]="obtenerColorEstado(estadoValidacion.estado === 'completo' ? 'aprobado' : 'pendiente')"
+            mode="determinate">
+          </mat-progress-bar>
+        </div>
+
+        <!-- Estadísticas Rápidas -->
+        <div class="estadisticas-grid">
+          <div class="estadistica-item">
+            <mat-icon color="primary">check_circle</mat-icon>
+            <div class="estadistica-content">
+              <span class="estadistica-numero">{{ estadisticas.aprobados }}</span>
+              <span class="estadistica-label">Aprobados</span>
+            </div>
+          </div>
+          
+          <div class="estadistica-item">
+            <mat-icon color="accent">schedule</mat-icon>
+            <div class="estadistica-content">
+              <span class="estadistica-numero">{{ estadisticas.pendientes }}</span>
+              <span class="estadistica-label">Pendientes</span>
+            </div>
+          </div>
+          
+          <div class="estadistica-item">
+            <mat-icon color="warn">error</mat-icon>
+            <div class="estadistica-content">
+              <span class="estadistica-numero">{{ estadisticas.observados }}</span>
+              <span class="estadistica-label">Observados</span>
+            </div>
+          </div>
+          
+          <div class="estadistica-item">
+            <mat-icon color="warn">cancel</mat-icon>
+            <div class="estadistica-content">
+              <span class="estadistica-numero">{{ estadisticas.rechazados }}</span>
+              <span class="estadistica-label">Rechazados</span>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- CONTENIDO PRINCIPAL -->
+  <!-- ========================================== -->
+  <div *ngIf="!tieneDocumentos" class="documentos-vacio">
+    <mat-card class="empty-card">
+      <mat-card-content class="text-center p-5">
+        <mat-icon class="empty-icon" color="accent">folder_open</mat-icon>
+        <h3>No hay documentos registrados</h3>
+        <p class="text-muted mb-4">Para continuar con la evaluación, se requiere subir la documentación del titular y fiador.</p>
+        <button mat-raised-button color="primary" (click)="subirDocumento()">
+          <mat-icon>file_upload</mat-icon>
+          Subir Primer Documento
+        </button>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- SECCIONES EXPANDIBLES -->
+  <!-- ========================================== -->
+  <div *ngIf="tieneDocumentos" class="secciones-documentos">
+
+    <!-- Sección: Resumen de Validación -->
+    <mat-expansion-panel 
+      [expanded]="estaSeccionExpandida('resumen')"
+      (opened)="expandirSeccion('resumen')">
+      
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon color="primary">analytics</mat-icon>
+          <span class="ml-2">Resumen de Validación</span>
+        </mat-panel-title>
+        <mat-panel-description>
+          <mat-chip [color]="obtenerColorEstado(estadoValidacion.estado === 'completo' ? 'aprobado' : 'pendiente')" selected>
+            {{ estadisticas.aprobados }}/{{ estadisticas.total }} aprobados
+          </mat-chip>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="seccion-content">
+        <!-- Métricas Detalladas -->
+        <div class="metricas-detalladas">
+          <div class="metrica-card">
+            <div class="metrica-header">
+              <mat-icon color="primary">assignment_turned_in</mat-icon>
+              <span>Estado de Validación</span>
+            </div>
+            <div class="metrica-grid">
+              <div class="metrica-item">
+                <span class="metrica-label">Aprobados</span>
+                <mat-chip color="primary" selected>{{ estadisticas.aprobados }}</mat-chip>
+              </div>
+              <div class="metrica-item">
+                <span class="metrica-label">Pendientes</span>
+                <mat-chip color="accent" selected>{{ estadisticas.pendientes }}</mat-chip>
+              </div>
+              <div class="metrica-item">
+                <span class="metrica-label">Observados</span>
+                <mat-chip color="warn" selected>{{ estadisticas.observados }}</mat-chip>
+              </div>
+              <div class="metrica-item">
+                <span class="metrica-label">Rechazados</span>
+                <mat-chip color="warn" selected>{{ estadisticas.rechazados }}</mat-chip>
+              </div>
+            </div>
+          </div>
+
+          <!-- Información de Archivos -->
+          <div class="metrica-card">
+            <div class="metrica-header">
+              <mat-icon color="accent">storage</mat-icon>
+              <span>Información de Archivos</span>
+            </div>
+            <div class="archivo-info">
+              <div class="archivo-item">
+                <span class="archivo-label">Total de Documentos</span>
+                <span class="archivo-valor">{{ estadisticas.total }}</span>
+              </div>
+              <div class="archivo-item">
+                <span class="archivo-label">Tamaño Total</span>
+                <span class="archivo-valor">{{ estadisticas.tamanoTotalMB }} MB</span>
+              </div>
+              <div class="archivo-item">
+                <span class="archivo-label">Promedio por Archivo</span>
+                <span class="archivo-valor">
+                  {{ estadisticas.total > 0 ? (estadisticas.tamanoTotalMB / estadisticas.total).toFixed(2) : 0 }} MB
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Documentos Faltantes -->
+          <div class="metrica-card" *ngIf="obtenerDocumentosFaltantes().length > 0">
+            <div class="metrica-header">
+              <mat-icon color="warn">warning</mat-icon>
+              <span>Documentos Faltantes</span>
+            </div>
+            <div class="faltantes-lista">
+              <mat-chip *ngFor="let tipo of obtenerDocumentosFaltantes()" 
+                       color="warn" 
+                       selected>
+                <mat-icon matChipAvatar>{{ obtenerIconoTipoDocumento(tipo) }}</mat-icon>
+                {{ obtenerNombreTipoDocumento(tipo) }}
+              </mat-chip>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Sección: Documentos por Categoría -->
+    <mat-expansion-panel 
+      *ngFor="let grupo of documentosAgrupados"
+      [expanded]="estaSeccionExpandida('grupo-' + grupo.categoria)"
+      (opened)="expandirSeccion('grupo-' + grupo.categoria)">
+      
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon [color]="grupo.color">{{ grupo.icono }}</mat-icon>
+          <span class="ml-2">{{ grupo.label }}</span>
+        </mat-panel-title>
+        <mat-panel-description>
+          <mat-chip color="accent" selected>
+            {{ grupo.documentos.length }} documento{{ grupo.documentos.length > 1 ? 's' : '' }}
+          </mat-chip>
+          <mat-chip 
+            [color]="grupo.completitud >= 80 ? 'primary' : grupo.completitud >= 50 ? 'accent' : 'warn'" 
+            selected>
+            {{ grupo.completitud }}% completo
+          </mat-chip>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="seccion-content">
+        <div class="documentos-lista">
+          
+          <mat-card *ngFor="let documento of grupo.documentos" 
+                    class="documento-card"
+                    [class.selected]="documentoSeleccionado?.id === documento.id"
+                    (click)="seleccionarDocumento(documento)">
+            
+            <mat-card-header>
+              <div mat-card-avatar class="avatar-documento">
+                <mat-icon>{{ obtenerIconoTipoDocumento(documento.tipoDocumento) }}</mat-icon>
+              </div>
+              
+              <mat-card-title>
+                <div class="documento-nombre">
+                  {{ obtenerNombreTipoDocumento(documento.tipoDocumento) }}
+                </div>
+                <div class="documento-archivo">
+                  {{ documento.nombreArchivo }}
+                </div>
+              </mat-card-title>
+              
+              <mat-card-subtitle>
+                <div class="documento-info">
+                  <span class="documento-tamaño">{{ formatearTamano(documento['tamaño']) }}</span>
+                  <span class="documento-version">v{{ documento.version }}</span>
+                </div>
+                <div class="documento-estado">
+                  <mat-chip 
+                    [color]="ESTADOS_DOCUMENTO[documento.estado].color" 
+                    selected>
+                    <mat-icon matChipAvatar>
+                      {{ ESTADOS_DOCUMENTO[documento.estado].icono }}
+                    </mat-icon>
+                    {{ ESTADOS_DOCUMENTO[documento.estado].label }}
+                  </mat-chip>
+                </div>
+              </mat-card-subtitle>
+
+              <div class="documento-actions">
+                <button mat-icon-button [matMenuTriggerFor]="menuDocumento" 
+                        (click)="$event.stopPropagation()">
+                  <mat-icon>more_vert</mat-icon>
+                </button>
+                
+                <mat-menu #menuDocumento="matMenu">
+                  <button *ngFor="let accion of obtenerAccionesDisponibles(documento)" 
+                          mat-menu-item 
+                          [disabled]="!accion.disponible"
+                          (click)="ejecutarAccion(documento, accion.id)">
+                    <mat-icon [color]="accion.color">{{ accion.icono }}</mat-icon>
+                    <span>{{ accion.label }}</span>
+                  </button>
+                </mat-menu>
+              </div>
+            </mat-card-header>
+
+            <mat-card-content>
+              <!-- Información de fechas -->
+              <div class="documento-fechas">
+                <div class="fecha-item">
+                  <mat-icon class="icon-small">schedule</mat-icon>
+                  <span>Subido: {{ formatearFecha(documento.fechaSubida) }}</span>
+                </div>
+                
+                <div class="fecha-item" *ngIf="documento.fechaValidacion">
+                  <mat-icon class="icon-small" [color]="obtenerColorEstado(documento.estado)">
+                    {{ ESTADOS_DOCUMENTO[documento.estado].icono }}
+                  </mat-icon>
+                  <span>Validado: {{ formatearFecha(documento.fechaValidacion) }}</span>
+                </div>
+              </div>
+
+              <!-- Observaciones -->
+              <div class="documento-observaciones" *ngIf="documento.observaciones">
+                <div class="observaciones-header">
+                  <mat-icon color="accent">note</mat-icon>
+                  <span>Observaciones</span>
+                </div>
+                <p class="observaciones-texto">{{ documento.observaciones }}</p>
+              </div>
+
+              <!-- Vista previa -->
+              <div class="documento-preview" *ngIf="esDocumentoImagen(documento)">
+                <button mat-stroked-button 
+                        color="primary" 
+                        (click)="verDocumento(documento); $event.stopPropagation()">
+                  <mat-icon>visibility</mat-icon>
+                  Ver Vista Previa
+                </button>
+              </div>
+
+              <!-- Indicadores especiales -->
+              <div class="documento-indicadores">
+                <mat-chip *ngIf="documento.esVersionFinal" color="primary" selected>
+                  <mat-icon matChipAvatar>verified</mat-icon>
+                  Versión Final
+                </mat-chip>
+                
+                <mat-chip *ngIf="esDocumentoPDF(documento)" color="accent" selected>
+                  <mat-icon matChipAvatar>picture_as_pdf</mat-icon>
+                  PDF
+                </mat-chip>
+                
+                <mat-chip *ngIf="esDocumentoImagen(documento)" color="accent" selected>
+                  <mat-icon matChipAvatar>image</mat-icon>
+                  Imagen
+                </mat-chip>
+              </div>
+            </mat-card-content>
+          </mat-card>
+
+        </div>
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Sección: Documentos Problemáticos -->
+    <mat-expansion-panel 
+      *ngIf="documentosProblematicos.length > 0"
+      [expanded]="estaSeccionExpandida('problematicos')"
+      (opened)="expandirSeccion('problematicos')">
+      
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon color="warn">warning</mat-icon>
+          <span class="ml-2">Documentos Problemáticos</span>
+        </mat-panel-title>
+        <mat-panel-description>
+          <mat-chip color="warn" selected>
+            {{ documentosProblematicos.length }} requieren atención
+          </mat-chip>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="seccion-content">
+        <p class="section-description">
+          Los siguientes documentos requieren atención especial o correcciones:
+        </p>
+        
+        <div class="documentos-problematicos">
+          <mat-card *ngFor="let documento of documentosProblematicos" 
+                    class="documento-problema">
+            <mat-card-content>
+              <div class="problema-header">
+                <div class="problema-info">
+                  <strong>{{ obtenerNombreTipoDocumento(documento.tipoDocumento) }}</strong>
+                  <span class="problema-archivo">{{ documento.nombreArchivo }}</span>
+                </div>
+                <mat-chip [color]="ESTADOS_DOCUMENTO[documento.estado].color" selected>
+                  {{ ESTADOS_DOCUMENTO[documento.estado].label }}
+                </mat-chip>
+              </div>
+              
+              <div class="problema-descripcion" *ngIf="documento.observaciones">
+                <mat-icon color="warn">info</mat-icon>
+                <span>{{ documento.observaciones }}</span>
+              </div>
+              
+              <div class="problema-acciones">
+                <button mat-button color="primary" 
+                        (click)="verDocumento(documento)"
+                        *ngIf="documento.estado === 'observado'">
+                  <mat-icon>visibility</mat-icon>
+                  Ver Documento
+                </button>
+                
+                <button mat-button color="accent"
+                        (click)="reemplazarDocumento(documento)"
+                        *ngIf="documento.estado === 'observado'">
+                  <mat-icon>file_upload</mat-icon>
+                  Reemplazar
+                </button>
+                
+                <button mat-button color="primary"
+                        (click)="subirNuevoDocumento(documento.tipoDocumento)"
+                        *ngIf="documento.estado === 'rechazado'">
+                  <mat-icon>add</mat-icon>
+                  Subir Nuevo
+                </button>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </div>
+    </mat-expansion-panel>
+
+  </div>
+
+  <!-- ========================================== -->
+  <!-- VISOR DE DOCUMENTOS -->
+  <!-- ========================================== -->
+  <div class="visor-overlay" 
+       *ngIf="mostrarVisorDocumento && documentoSeleccionado"
+       (click)="cerrarVisorDocumento()">
+    
+    <mat-card class="visor-card" (click)="$event.stopPropagation()">
+      <mat-card-header>
+        <mat-card-title class="d-flex justify-content-between align-items-center w-100">
+          <span>{{ obtenerNombreTipoDocumento(documentoSeleccionado.tipoDocumento) }}</span>
+          <button mat-icon-button (click)="cerrarVisorDocumento()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </mat-card-title>
+        <mat-card-subtitle>
+          {{ documentoSeleccionado.nombreArchivo }} - {{ formatearTamano(documentoSeleccionado['tamaño']) }}
+        </mat-card-subtitle>
+      </mat-card-header>
+      
+      <mat-card-content class="visor-content">
+        <!-- Vista previa de imagen -->
+        <div class="imagen-container" *ngIf="esDocumentoImagen(documentoSeleccionado)">
+          <img [src]="documentoSeleccionado.urlArchivo" 
+               [alt]="documentoSeleccionado.nombreArchivo"
+               class="documento-imagen">
+        </div>
+        
+        <!-- Vista previa de PDF -->
+        <div class="pdf-container" *ngIf="esDocumentoPDF(documentoSeleccionado)">
+          <iframe [src]="documentoSeleccionado.urlArchivo" 
+                  class="documento-pdf"
+                  frameborder="0">
+          </iframe>
+        </div>
+        
+        <!-- Información del documento -->
+        <div class="documento-info-detalle">
+          <div class="info-item">
+            <span class="info-label">Estado:</span>
+            <mat-chip [color]="ESTADOS_DOCUMENTO[documentoSeleccionado.estado].color" selected>
+              {{ ESTADOS_DOCUMENTO[documentoSeleccionado.estado].label }}
+            </mat-chip>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Fecha de Subida:</span>
+            <span class="info-valor">{{ formatearFecha(documentoSeleccionado.fechaSubida) }}</span>
+          </div>
+          <div class="info-item" *ngIf="documentoSeleccionado.fechaValidacion">
+            <span class="info-label">Fecha de Validación:</span>
+            <span class="info-valor">{{ formatearFecha(documentoSeleccionado.fechaValidacion) }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Versión:</span>
+            <span class="info-valor">{{ documentoSeleccionado.version }}</span>
+          </div>
+        </div>
+      </mat-card-content>
+      
+      <mat-card-actions class="justify-content-between">
+        <div class="acciones-izquierda">
+          <button mat-button (click)="descargarDocumento(documentoSeleccionado)">
+            <mat-icon>download</mat-icon>
+            Descargar
+          </button>
+        </div>
+        <div class="acciones-derecha">
+          <button mat-button (click)="cerrarVisorDocumento()">Cerrar</button>
+          <button mat-raised-button color="primary" 
+                  (click)="aprobarDocumento(documentoSeleccionado)"
+                  *ngIf="documentoSeleccionado.estado === 'pendiente' && puedeAprobarDocumentosPublico()">>
+            Aprobar
+          </button>
+        </div>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+</div>
+
+<!-- ========================================== -->
+<!-- MENÚ DE OPCIONES -->
+<!-- ========================================== -->
+<mat-menu #menuOpciones="matMenu">
+  <button mat-menu-item (click)="exportarDocumentos()">
+    <mat-icon>download</mat-icon>
+    <span>Exportar Lista</span>
+  </button>
+  <button mat-menu-item (click)="generarReporteDocumentos()">
+    <mat-icon>assessment</mat-icon>
+    <span>Generar Reporte</span>
+  </button>
+  <mat-divider></mat-divider>
+  <button mat-menu-item (click)="validarTodosDocumentos()" 
+          [disabled]="documentosPendientes.length === 0">
+    <mat-icon>verified_user</mat-icon>
+    <span>Validar Todos los Pendientes</span>
+  </button>
+  <button mat-menu-item (click)="subirDocumento()">
+    <mat-icon>file_upload</mat-icon>
+    <span>Subir Documentos</span>
+  </button>
+</mat-menu>

@@ -1,0 +1,827 @@
+<div class="decision-final-container">
+
+  <!-- ========================================== -->
+  <!-- HEADER DE DECISIÓN FINAL -->
+  <!-- ========================================== -->
+  <div class="decision-header mb-4">
+    <mat-card class="header-card">
+      <mat-card-header>
+        <div mat-card-avatar class="avatar-decision" 
+             [ngClass]="'avatar-' + (recomendacionComite?.decision || 'neutro')">
+          <mat-icon>{{ obtenerIconoDecision(recomendacionComite?.decision || '') }}</mat-icon>
+        </div>
+        
+        <mat-card-title>
+          <div class="title-container">
+            <h2>Decisión Final del Comité</h2>
+            <div class="subtitle-info">
+              <mat-chip [color]="obtenerColorDecision(recomendacionComite?.decision || '')" selected>
+                {{ recomendacionComite?.decision === 'aprobar' ? 'RECOMENDACIÓN: APROBAR' :
+                   recomendacionComite?.decision === 'condicional' ? 'RECOMENDACIÓN: APROBAR CON CONDICIONES' :
+                   recomendacionComite?.decision === 'rechazar' ? 'RECOMENDACIÓN: RECHAZAR' :
+                   'EVALUANDO...' }}
+              </mat-chip>
+              
+              <mat-chip [color]="obtenerColorScore(scoreConsolidado)" selected>
+                Score Final: {{ scoreConsolidado }}/100
+              </mat-chip>
+              
+              <mat-chip [color]="probabilidadDefault <= 5 ? 'primary' : 
+                                 probabilidadDefault <= 10 ? 'accent' : 'warn'" selected>
+                <mat-icon matChipAvatar>assessment</mat-icon>
+                Riesgo: {{ formatearPorcentaje(probabilidadDefault) }}
+              </mat-chip>
+            </div>
+          </div>
+        </mat-card-title>
+
+        <div class="header-actions">
+          <button mat-raised-button 
+                  color="primary" 
+                  (click)="toggleFormularioDecision()"
+                  [disabled]="decisionTomada"
+                  *ngIf="!mostrarFormularioDecision">
+            <mat-icon>gavel</mat-icon>
+            {{ decisionTomada ? 'Decisión Tomada' : 'Tomar Decisión' }}
+          </button>
+          
+          <button mat-button 
+                  (click)="modificarDecision()"
+                  *ngIf="decisionTomada">
+            <mat-icon>edit</mat-icon>
+            Modificar Decisión
+          </button>
+          
+          <button mat-icon-button matTooltip="Exportar análisis">
+            <mat-icon>download</mat-icon>
+          </button>
+        </div>
+      </mat-card-header>
+
+      <mat-card-content>
+        <!-- Score Consolidado Prominente -->
+        <div class="score-consolidado">
+          <div class="score-visual">
+            <div class="score-circle" [ngClass]="'score-' + obtenerColorScore(scoreConsolidado)">
+              <span class="score-numero">{{ scoreConsolidado }}</span>
+              <span class="score-denominador">/100</span>
+            </div>
+            <div class="score-descripcion">
+              <h3>{{ obtenerDescripcionScore(scoreConsolidado) }}</h3>
+              <p class="score-detalle">
+                Confianza en recomendación: {{ recomendacionComite?.confianza || 0 }}%
+              </p>
+            </div>
+          </div>
+          
+          <!-- Métricas de riesgo -->
+          <div class="metricas-riesgo">
+            <div class="metrica-item">
+              <span class="metrica-label">Probabilidad de Default:</span>
+              <span class="metrica-valor" 
+                    [ngClass]="'text-' + (probabilidadDefault <= 5 ? 'primary' : 
+                                         probabilidadDefault <= 10 ? 'accent' : 'warn')">
+                {{ formatearPorcentaje(probabilidadDefault) }}
+              </span>
+            </div>
+            <div class="metrica-item">
+              <span class="metrica-label">Nivel de Riesgo:</span>
+              <span class="metrica-valor" [ngClass]="'text-' + obtenerColorScore(scoreConsolidado)">
+                {{ nivelRiesgoFinal | titlecase }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- FORMULARIO DE DECISIÓN -->
+  <!-- ========================================== -->
+  <div class="formulario-decision mb-4" *ngIf="mostrarFormularioDecision">
+    <mat-card class="formulario-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon color="primary">assignment</mat-icon>
+          Formulario de Decisión Final
+        </mat-card-title>
+        <mat-card-subtitle>
+          Complete los detalles de la decisión del comité de créditos
+        </mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <form [formGroup]="formularioDecision" class="decision-form">
+          
+          <!-- Decisión Principal -->
+          <div class="form-section">
+            <h4>Decisión del Comité</h4>
+            <mat-radio-group formControlName="decision" class="decision-options">
+              <mat-radio-button *ngFor="let opcion of TIPOS_DECISION" 
+                               [value]="opcion.value"
+                               [color]="opcion.color"
+                               class="decision-option">
+                <div class="option-content">
+                  <mat-icon [color]="opcion.color">{{ opcion.icon }}</mat-icon>
+                  <span>{{ opcion.label }}</span>
+                </div>
+              </mat-radio-button>
+            </mat-radio-group>
+          </div>
+
+          <!-- Términos de Aprobación -->
+          <div class="form-section" 
+               *ngIf="formularioDecision.get('decision')?.value === 'aprobar' || 
+                      formularioDecision.get('decision')?.value === 'condicional'">
+            <h4>Términos de Aprobación</h4>
+            
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Monto Aprobado</mat-label>
+                <input matInput 
+                       type="number" 
+                       formControlName="montoAprobado"
+                       placeholder="Ingrese el monto aprobado">
+                <span matTextPrefix>S/ </span>
+                <mat-error *ngIf="formularioDecision.get('montoAprobado')?.hasError('required')">
+                  El monto es requerido
+                </mat-error>
+                <mat-error *ngIf="formularioDecision.get('montoAprobado')?.hasError('min')">
+                  El monto mínimo es S/ 1,000
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Tasa de Interés</mat-label>
+                <input matInput 
+                       type="number" 
+                       formControlName="tasaInteres"
+                       step="0.5"
+                       placeholder="Tasa anual">
+                <span matTextSuffix>%</span>
+                <mat-error *ngIf="formularioDecision.get('tasaInteres')?.hasError('required')">
+                  La tasa es requerida
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Plazo en Quincenas</mat-label>
+                <input matInput 
+                       type="number" 
+                       formControlName="plazoQuincenas"
+                       placeholder="Número de quincenas">
+                <mat-error *ngIf="formularioDecision.get('plazoQuincenas')?.hasError('required')">
+                  El plazo es requerido
+                </mat-error>
+              </mat-form-field>
+            </div>
+          </div>
+
+          <!-- Condiciones Especiales -->
+          <div class="form-section" 
+               *ngIf="formularioDecision.get('decision')?.value === 'condicional'">
+            <h4>Condiciones Especiales</h4>
+            
+            <div class="condiciones-grid">
+              <mat-checkbox *ngFor="let condicion of CONDICIONES_PREDEFINIDAS"
+                           [value]="condicion"
+                           class="condicion-checkbox">
+                {{ condicion }}
+              </mat-checkbox>
+            </div>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Condiciones Adicionales</mat-label>
+              <textarea matInput 
+                        formControlName="condicionesAdicionales"
+                        rows="3"
+                        placeholder="Especifique condiciones adicionales si las hay"></textarea>
+            </mat-form-field>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Plazo para Cumplir Condiciones</mat-label>
+                <input matInput 
+                       type="number" 
+                       formControlName="plazoCondiciones"
+                       placeholder="Días">
+                <span matTextSuffix>días</span>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Fecha Límite</mat-label>
+                <input matInput 
+                       type="date" 
+                       formControlName="fechaLimiteCondiciones">
+              </mat-form-field>
+            </div>
+          </div>
+
+          <!-- Motivo y Observaciones -->
+          <div class="form-section">
+            <h4>Fundamentación de la Decisión</h4>
+            
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Motivo de la Decisión</mat-label>
+              <textarea matInput 
+                        formControlName="motivoDecision"
+                        rows="4"
+                        placeholder="Explique detalladamente los motivos que sustentan esta decisión"
+                        required></textarea>
+              <mat-error *ngIf="formularioDecision.get('motivoDecision')?.hasError('required')">
+                El motivo es requerido
+              </mat-error>
+              <mat-error *ngIf="formularioDecision.get('motivoDecision')?.hasError('minlength')">
+                El motivo debe tener al menos 10 caracteres
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Observaciones del Comité</mat-label>
+              <textarea matInput 
+                        formControlName="observacionesComite"
+                        rows="3"
+                        placeholder="Observaciones adicionales del comité evaluador"></textarea>
+            </mat-form-field>
+          </div>
+
+          <!-- Controles Adicionales -->
+          <div class="form-section">
+            <mat-checkbox formControlName="requiereAprobacionSupervisor">
+              Requiere aprobación del supervisor
+            </mat-checkbox>
+          </div>
+
+        </form>
+      </mat-card-content>
+
+      <mat-card-actions align="end">
+        <button mat-button (click)="toggleFormularioDecision()">
+          Cancelar
+        </button>
+        <button mat-raised-button 
+                color="primary" 
+                (click)="procesarDecision()"
+                [disabled]="formularioDecision.invalid">
+          <mat-icon>save</mat-icon>
+          Confirmar Decisión
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- SECCIONES EXPANDIBLES -->
+  <!-- ========================================== -->
+  <div class="secciones-decision">
+
+    <!-- Sección: Análisis por Criterios -->
+    <mat-expansion-panel 
+      [expanded]="estaSeccionExpandida('criterios')"
+      (opened)="expandirSeccion('criterios')">
+      
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon color="primary">checklist</mat-icon>
+          <span class="ml-2">Evaluación por Criterios de Decisión</span>
+        </mat-panel-title>
+        <mat-panel-description>
+          <mat-chip color="primary" selected>
+            {{ contarCriteriosPorEstado('favorable') }} favorables
+          </mat-chip>
+          <mat-chip color="warn" selected>
+            {{ contarCriteriosPorEstado('desfavorable') }} desfavorables
+          </mat-chip>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="seccion-content">
+        <div class="criterios-grid">
+          
+          <mat-card *ngFor="let criterio of criteriosDecision" 
+                    class="criterio-card"
+                    [ngClass]="'criterio-' + criterio.estado">
+            
+            <mat-card-header>
+              <div mat-card-avatar class="avatar-criterio">
+                <mat-icon [color]="obtenerColorEstadoCriterio(criterio.estado)">
+                  {{ criterio.estado === 'favorable' ? 'check_circle' :
+                     criterio.estado === 'neutro' ? 'help' : 'warning' }}
+                </mat-icon>
+              </div>
+              
+              <mat-card-title>{{ criterio.nombre }}</mat-card-title>
+              <mat-card-subtitle>
+                Peso: {{ criterio.peso }}% | Puntuación: {{ criterio.puntuacion }}/100
+                <mat-chip [color]="obtenerColorEstadoCriterio(criterio.estado)" 
+                         selected 
+                         class="estado-chip">
+                  {{ criterio.estado | titlecase }}
+                </mat-chip>
+              </mat-card-subtitle>
+            </mat-card-header>
+
+            <mat-card-content>
+              <!-- Barra de progreso del criterio -->
+              <div class="criterio-progreso">
+                <mat-progress-bar 
+                  [value]="criterio.puntuacion" 
+                  [color]="obtenerColorEstadoCriterio(criterio.estado)"
+                  mode="determinate">
+                </mat-progress-bar>
+                <span class="progreso-texto">
+                  {{ criterio.puntuacion }}% - {{ criterio.estado | titlecase }}
+                </span>
+              </div>
+
+              <!-- Observaciones -->
+              <div class="criterio-observaciones">
+                <p>{{ criterio.observaciones }}</p>
+              </div>
+
+              <!-- Indicador de obligatoriedad -->
+              <div class="criterio-obligatorio" *ngIf="criterio.esObligatorio">
+                <mat-chip color="accent" selected>
+                  <mat-icon matChipAvatar>star</mat-icon>
+                  Criterio Obligatorio
+                </mat-chip>
+              </div>
+            </mat-card-content>
+          </mat-card>
+
+        </div>
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Sección: Recomendación del Sistema -->
+    <mat-expansion-panel 
+      [expanded]="estaSeccionExpandida('recomendacion')"
+      (opened)="expandirSeccion('recomendacion')">
+      
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon color="accent">psychology</mat-icon>
+          <span class="ml-2">Recomendación del Sistema</span>
+        </mat-panel-title>
+        <mat-panel-description>
+          <mat-chip [color]="obtenerColorDecision(recomendacionComite?.decision || '')" selected>
+            {{ recomendacionComite?.decision | titlecase }}
+          </mat-chip>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="seccion-content" *ngIf="recomendacionComite">
+        
+        <!-- Decisión Recomendada -->
+        <div class="recomendacion-principal">
+          <div class="decision-header">
+            <div class="decision-icono" [ngClass]="'decision-' + recomendacionComite.decision">
+              <mat-icon>{{ obtenerIconoDecision(recomendacionComite.decision) }}</mat-icon>
+            </div>
+            <div class="decision-info">
+              <h3>{{ recomendacionComite.decision === 'aprobar' ? 'RECOMENDACIÓN: APROBAR' :
+                     recomendacionComite.decision === 'condicional' ? 'RECOMENDACIÓN: APROBAR CON CONDICIONES' :
+                     'RECOMENDACIÓN: RECHAZAR' }}</h3>
+              <p class="confidence-level">
+                Nivel de confianza: {{ recomendacionComite.confianza }}%
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Factores Clave -->
+        <div class="factores-clave">
+          <h4>Factores Clave Identificados</h4>
+          <div class="factores-lista">
+            <mat-chip *ngFor="let factor of recomendacionComite.factoresClave" 
+                     color="primary" 
+                     class="factor-chip">
+              <mat-icon matChipAvatar>star</mat-icon>
+              {{ factor }}
+            </mat-chip>
+          </div>
+        </div>
+
+        <!-- Riesgos Identificados -->
+        <div class="riesgos-identificados" *ngIf="recomendacionComite.riesgosIdentificados.length > 0">
+          <h4>Riesgos Identificados</h4>
+          <div class="riesgos-lista">
+            <mat-chip *ngFor="let riesgo of recomendacionComite.riesgosIdentificados" 
+                     color="warn" 
+                     class="riesgo-chip">
+              <mat-icon matChipAvatar>warning</mat-icon>
+              {{ riesgo }}
+            </mat-chip>
+          </div>
+        </div>
+
+        <!-- Condiciones Sugeridas -->
+        <div class="condiciones-sugeridas" *ngIf="recomendacionComite.condicionesSugeridas.length > 0">
+          <h4>Condiciones Sugeridas por el Sistema</h4>
+          <div class="condiciones-lista">
+            <div *ngFor="let condicion of recomendacionComite.condicionesSugeridas" 
+                 class="condicion-item">
+              <mat-icon color="accent">rule</mat-icon>
+              <span>{{ condicion }}</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Sección: Análisis de Riesgo -->
+    <mat-expansion-panel 
+      [expanded]="estaSeccionExpandida('riesgo')"
+      (opened)="expandirSeccion('riesgo')">
+      
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon color="warn">assessment</mat-icon>
+          <span class="ml-2">Análisis de Riesgo Crediticio</span>
+        </mat-panel-title>
+        <mat-panel-description>
+          <mat-chip [color]="probabilidadDefault <= 5 ? 'primary' : 
+                             probabilidadDefault <= 10 ? 'accent' : 'warn'" selected>
+            Default: {{ formatearPorcentaje(probabilidadDefault) }}
+          </mat-chip>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="seccion-content">
+        
+        <!-- Indicadores de Riesgo -->
+        <div class="indicadores-riesgo">
+          <div class="indicador-principal">
+            <div class="indicador-visual">
+              <div class="gauge-container">
+                <div class="gauge" 
+                     [style.transform]="'rotate(' + (probabilidadDefault * 9 - 90) + 'deg)'">
+                </div>
+                <div class="gauge-center">
+                  <span class="gauge-value">{{ formatearPorcentaje(probabilidadDefault) }}</span>
+                  <span class="gauge-label">Prob. Default</span>
+                </div>
+              </div>
+            </div>
+            <div class="indicador-descripcion">
+              <h4>Probabilidad de Incumplimiento</h4>
+              <p>
+                {{ probabilidadDefault <= 5 ? 'Riesgo muy bajo - Cliente con alta probabilidad de cumplimiento' :
+                   probabilidadDefault <= 10 ? 'Riesgo moderado - Cliente con buena probabilidad de cumplimiento' :
+                   probabilidadDefault <= 15 ? 'Riesgo medio - Requiere monitoreo adicional' :
+                   'Riesgo alto - Considerar condiciones especiales o rechazo' }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Factores de Riesgo Detallados -->
+        <div class="factores-riesgo-detalle">
+  <h4>Desglose de Factores de Riesgo</h4>
+  
+  <div class="factor-item">
+    <span class="factor-nombre">Score Crediticio</span>
+    <div class="factor-barra">
+      <mat-progress-bar [value]="scoreConsolidado" color="primary"></mat-progress-bar>
+      <span class="factor-valor">{{ scoreConsolidado }}/100</span>
+    </div>
+  </div>
+
+  <div class="factor-item">
+    <span class="factor-nombre">Capacidad de Pago</span>
+    <div class="factor-barra">
+      <mat-progress-bar [value]="obtenerPuntuacionCriterio('capacidad_pago')" 
+                       color="accent"></mat-progress-bar>
+      <span class="factor-valor">
+        {{ obtenerPuntuacionCriterio('capacidad_pago') }}/100
+      </span>
+    </div>
+  </div>
+
+  <div class="factor-item">
+    <span class="factor-nombre">Garantías</span>
+    <div class="factor-barra">
+      <mat-progress-bar [value]="obtenerPuntuacionCriterio('garantias')" 
+                       color="primary"></mat-progress-bar>
+      <span class="factor-valor">
+        {{ obtenerPuntuacionCriterio('garantias') }}/100
+      </span>
+    </div>
+  </div>
+
+  <div class="factor-item">
+    <span class="factor-nombre">Centrales de Riesgo</span>
+    <div class="factor-barra">
+      <mat-progress-bar [value]="obtenerPuntuacionCriterio('centrales_riesgo')" 
+                       color="accent"></mat-progress-bar>
+      <span class="factor-valor">
+        {{ obtenerPuntuacionCriterio('centrales_riesgo') }}/100
+      </span>
+    </div>
+  </div>
+</div>
+
+        <!-- Recomendaciones de Mitigación -->
+        <div class="mitigacion-riesgo">
+          <h4>Estrategias de Mitigación</h4>
+          <div class="estrategias-lista">
+            <div class="estrategia-item" *ngIf="probabilidadDefault > 10">
+              <mat-icon color="primary">shield</mat-icon>
+              <span>Incrementar garantías o reducir monto del crédito</span>
+            </div>
+            <div class="estrategia-item" *ngIf="!expediente.fiador">
+              <mat-icon color="primary">supervisor_account</mat-icon>
+              <span>Solicitar fiador con perfil crediticio sólido</span>
+            </div>
+            <div class="estrategia-item" *ngIf="(expediente.solicitud.inicial / expediente.solicitud.precioCompraMoto) * 100 < 25">
+              <mat-icon color="primary">trending_up</mat-icon>
+              <span>Aumentar porcentaje de inicial al 25% o más</span>
+            </div>
+            <div class="estrategia-item">
+              <mat-icon color="primary">schedule</mat-icon>
+              <span>Establecer seguimiento quincenal durante los primeros 6 meses</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Sección: Simulación Financiera -->
+    <mat-expansion-panel 
+      [expanded]="estaSeccionExpandida('simulacion')"
+      (opened)="expandirSeccion('simulacion')">
+      
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon color="primary">calculate</mat-icon>
+          <span class="ml-2">Simulación Financiera</span>
+        </mat-panel-title>
+        <mat-panel-description>
+          <mat-chip color="primary" selected>
+            Tasa sugerida: {{ formularioDecision.get('tasaInteres')?.value || 18.5 }}%
+          </mat-chip>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="seccion-content">
+        
+        <!-- Términos Propuestos -->
+        <div class="terminos-propuestos">
+          <h4>Términos Financieros Propuestos</h4>
+          
+          <div class="terminos-grid">
+            <div class="termino-item">
+              <mat-icon>payments</mat-icon>
+              <div class="termino-info">
+                <span class="termino-label">Monto Total</span>
+                <span class="termino-valor">{{ formatearMoneda(expediente.solicitud.precioCompraMoto) }}</span>
+              </div>
+            </div>
+
+            <div class="termino-item">
+              <mat-icon>trending_down</mat-icon>
+              <div class="termino-info">
+                <span class="termino-label">Inicial</span>
+                <span class="termino-valor">
+                  {{ formatearMoneda(expediente.solicitud.inicial) }}
+                  ({{ formatearPorcentaje((expediente.solicitud.inicial / expediente.solicitud.precioCompraMoto) * 100) }})
+                </span>
+              </div>
+            </div>
+
+            <div class="termino-item">
+              <mat-icon>account_balance</mat-icon>
+              <div class="termino-info">
+                <span class="termino-label">Monto Financiado</span>
+                <span class="termino-valor">{{ formatearMoneda(expediente.solicitud.montoFinanciado) }}</span>
+              </div>
+            </div>
+
+            <div class="termino-item">
+              <mat-icon>percent</mat-icon>
+              <div class="termino-info">
+                <span class="termino-label">Tasa Anual</span>
+                <span class="termino-valor">{{ formularioDecision.get('tasaInteres')?.value || 18.5 }}%</span>
+              </div>
+            </div>
+
+            <div class="termino-item">
+              <mat-icon>schedule</mat-icon>
+              <div class="termino-info">
+                <span class="termino-label">Plazo</span>
+                <span class="termino-valor">{{ expediente.solicitud.plazoQuincenas }} quincenas</span>
+              </div>
+            </div>
+
+            <div class="termino-item">
+              <mat-icon>payment</mat-icon>
+              <div class="termino-info">
+                <span class="termino-label">Cuota Quincenal</span>
+                <span class="termino-valor">{{ formatearMoneda(expediente.solicitud.montoCuota) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Comparación con Solicitud Original -->
+        <div class="comparacion-terminos">
+          <h4>Comparación con Solicitud Original</h4>
+          
+          <div class="comparacion-tabla">
+            <div class="comparacion-header">
+              <span>Concepto</span>
+              <span>Solicitado</span>
+              <span>Propuesto</span>
+              <span>Diferencia</span>
+            </div>
+            
+            <div class="comparacion-fila">
+              <span>Monto</span>
+              <span>{{ formatearMoneda(expediente.solicitud.precioCompraMoto) }}</span>
+              <span>{{ formatearMoneda(formularioDecision.get('montoAprobado')?.value || expediente.solicitud.precioCompraMoto) }}</span>
+              <span class="diferencia" 
+                    [ngClass]="formularioDecision.get('montoAprobado')?.value === expediente.solicitud.precioCompraMoto ? 'sin-cambio' : 'con-cambio'">
+                {{ formularioDecision.get('montoAprobado')?.value === expediente.solicitud.precioCompraMoto ? 'Sin cambio' : 
+                   'Modificado' }}
+              </span>
+            </div>
+            
+            <div class="comparacion-fila">
+              <span>Tasa</span>
+              <span>18.5%</span>
+              <span>{{ formularioDecision.get('tasaInteres')?.value || 18.5 }}%</span>
+              <span class="diferencia">
+                {{ (formularioDecision.get('tasaInteres')?.value || 18.5) === 18.5 ? 'Sin cambio' : 
+                   ((formularioDecision.get('tasaInteres')?.value || 18.5) > 18.5 ? 'Mayor' : 'Menor') }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Proyección de Flujo -->
+        <div class="proyeccion-flujo">
+          <h4>Proyección de Ingresos</h4>
+          
+          <div class="flujo-resumen">
+            <div class="flujo-item">
+              <span class="flujo-label">Total a Pagar:</span>
+              <span class="flujo-valor">{{ formatearMoneda(expediente.solicitud.totalAPagar) }}</span>
+            </div>
+            <div class="flujo-item">
+              <span class="flujo-label">Total Intereses:</span>
+              <span class="flujo-valor">{{ formatearMoneda(expediente.solicitud.totalAPagar - expediente.solicitud.montoFinanciado) }}</span>
+            </div>
+            <div class="flujo-item">
+              <span class="flujo-label">Rentabilidad Estimada:</span>
+              <span class="flujo-valor">
+                {{ formatearPorcentaje(((expediente.solicitud.totalAPagar - expediente.solicitud.montoFinanciado) / expediente.solicitud.montoFinanciado) * 100) }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Sección: Decisión Tomada -->
+    <mat-expansion-panel 
+      *ngIf="decisionTomada"
+      [expanded]="estaSeccionExpandida('decision_tomada')"
+      (opened)="expandirSeccion('decision_tomada')">
+      
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon [color]="obtenerColorDecision(formularioDecision.get('decision')?.value)">
+            {{ obtenerIconoDecision(formularioDecision.get('decision')?.value) }}
+          </mat-icon>
+          <span class="ml-2">Decisión Final Registrada</span>
+        </mat-panel-title>
+        <mat-panel-description>
+          <mat-chip [color]="obtenerColorDecision(formularioDecision.get('decision')?.value)" selected>
+            {{ formularioDecision.get('decision')?.value | titlecase }}
+          </mat-chip>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="seccion-content">
+        
+        <!-- Resumen de la Decisión -->
+        <div class="decision-resumen">
+          <div class="decision-principal">
+            <div class="decision-icono-grande" 
+                 [ngClass]="'decision-' + formularioDecision.get('decision')?.value">
+              <mat-icon>{{ obtenerIconoDecision(formularioDecision.get('decision')?.value) }}</mat-icon>
+            </div>
+            <div class="decision-detalles">
+              <h3>
+                {{ formularioDecision.get('decision')?.value === 'aprobar' ? 'SOLICITUD APROBADA' :
+                   formularioDecision.get('decision')?.value === 'condicional' ? 'APROBACIÓN CONDICIONAL' :
+                   'SOLICITUD RECHAZADA' }}
+              </h3>
+              <p class="decision-fecha">
+                Decisión tomada el {{ fechaActual }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Términos Aprobados -->
+        <div class="terminos-aprobados" 
+             *ngIf="formularioDecision.get('decision')?.value !== 'rechazar'">
+          <h4>Términos Aprobados</h4>
+          
+          <div class="terminos-aprobados-grid">
+            <div class="termino-aprobado">
+              <mat-icon>account_balance</mat-icon>
+              <span class="termino-label">Monto Aprobado:</span>
+              <span class="termino-valor">{{ formatearMoneda(formularioDecision.get('montoAprobado')?.value) }}</span>
+            </div>
+            
+            <div class="termino-aprobado">
+              <mat-icon>percent</mat-icon>
+              <span class="termino-label">Tasa de Interés:</span>
+              <span class="termino-valor">{{ formularioDecision.get('tasaInteres')?.value }}% anual</span>
+            </div>
+            
+            <div class="termino-aprobado">
+              <mat-icon>schedule</mat-icon>
+              <span class="termino-label">Plazo:</span>
+              <span class="termino-valor">{{ formularioDecision.get('plazoQuincenas')?.value }} quincenas</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Condiciones (si aplica) -->
+        <div class="condiciones-aprobadas" 
+             *ngIf="formularioDecision.get('decision')?.value === 'condicional'">
+          <h4>Condiciones para la Aprobación</h4>
+          
+          <div class="condiciones-lista-aprobadas">
+            <div *ngFor="let condicion of recomendacionComite?.condicionesSugeridas" 
+                 class="condicion-aprobada">
+              <mat-icon color="accent">rule</mat-icon>
+              <span>{{ condicion }}</span>
+            </div>
+          </div>
+          
+          <div class="plazo-condiciones" *ngIf="formularioDecision.get('fechaLimiteCondiciones')?.value">
+            <mat-icon>schedule</mat-icon>
+            <span>Plazo para cumplir condiciones: {{ formularioDecision.get('fechaLimiteCondiciones')?.value | date:'shortDate' }}</span>
+          </div>
+        </div>
+
+        <!-- Motivo de la Decisión -->
+        <div class="motivo-decision">
+          <h4>Fundamentación</h4>
+          <div class="motivo-contenido">
+            <p>{{ formularioDecision.get('motivoDecision')?.value }}</p>
+          </div>
+        </div>
+
+        <!-- Observaciones del Comité -->
+        <div class="observaciones-comite" 
+             *ngIf="formularioDecision.get('observacionesComite')?.value">
+          <h4>Observaciones del Comité</h4>
+          <div class="observaciones-contenido">
+            <p>{{ formularioDecision.get('observacionesComite')?.value }}</p>
+          </div>
+        </div>
+
+        <!-- Próximos Pasos -->
+        <div class="proximos-pasos">
+          <h4>Próximos Pasos</h4>
+          <div class="pasos-lista">
+            <div class="paso-item" 
+                 *ngIf="formularioDecision.get('decision')?.value === 'aprobar'">
+              <mat-icon color="primary">verified</mat-icon>
+              <span>Generar certificado OTOYA</span>
+            </div>
+            
+            <div class="paso-item" 
+                 *ngIf="formularioDecision.get('decision')?.value === 'condicional'">
+              <mat-icon color="accent">assignment</mat-icon>
+              <span>Verificar cumplimiento de condiciones</span>
+            </div>
+            
+            <div class="paso-item" 
+                 *ngIf="formularioDecision.get('decision')?.value === 'rechazar'">
+              <mat-icon color="warn">mail</mat-icon>
+              <span>Notificar decisión al cliente</span>
+            </div>
+            
+            <div class="paso-item">
+              <mat-icon color="primary">update</mat-icon>
+              <span>Actualizar estado del expediente</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </mat-expansion-panel>
+
+  </div>
+
+</div>

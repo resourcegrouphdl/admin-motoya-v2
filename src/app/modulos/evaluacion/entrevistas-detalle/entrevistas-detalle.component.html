@@ -1,0 +1,537 @@
+<div class="entrevistas-detalle-container">
+
+  <!-- ========================================== -->
+  <!-- HEADER DE ENTREVISTAS -->
+  <!-- ========================================== -->
+  <div class="entrevistas-header mb-4">
+    <mat-card class="header-card">
+      <mat-card-header>
+        <div mat-card-avatar class="avatar-entrevistas">
+          <mat-icon>record_voice_over</mat-icon>
+        </div>
+        
+        <mat-card-title>
+          <div class="title-container">
+            <h2>Entrevistas y Evaluaciones</h2>
+            <div class="subtitle-info" *ngIf="tieneEntrevistas">
+              <mat-chip [color]="estadoEntrevistas.color" selected>
+                {{ estadoEntrevistas.mensaje }}
+              </mat-chip>
+              
+              <mat-chip color="accent" selected>
+                {{ estadisticas.totalEvaluaciones }} entrevista{{ estadisticas.totalEvaluaciones > 1 ? 's' : '' }}
+              </mat-chip>
+              
+              <mat-chip color="primary" selected *ngIf="estadisticas.scorePromedioEntrevistas > 0">
+                Score: {{ estadisticas.scorePromedioEntrevistas }}/100
+              </mat-chip>
+            </div>
+          </div>
+        </mat-card-title>
+
+        <div class="header-actions">
+          <button mat-icon-button (click)="programarEntrevista()" 
+                  matTooltip="Programar entrevista"
+                  [disabled]="!puedeIniciarEntrevista()">
+            <mat-icon>event_available</mat-icon>
+          </button>
+          
+          <button mat-icon-button [matMenuTriggerFor]="menuOpciones" matTooltip="Más opciones">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+        </div>
+      </mat-card-header>
+
+      <mat-card-content *ngIf="tieneEntrevistas">
+        <!-- Progreso de Entrevistas -->
+        <div class="progreso-entrevistas">
+          <div class="progreso-info">
+            <span class="progreso-label">Entrevistas Completadas</span>
+            <span class="progreso-valor">{{ estadisticas.porcentajeCompletitud }}%</span>
+          </div>
+          <mat-progress-bar 
+            [value]="estadisticas.porcentajeCompletitud"
+            [color]="estadoEntrevistas.estado === 'completo' ? 'primary' : 'accent'"
+            mode="determinate">
+          </mat-progress-bar>
+        </div>
+
+        <!-- Estadísticas Rápidas -->
+        <div class="estadisticas-grid">
+          <div class="estadistica-item">
+            <mat-icon color="primary">check_circle</mat-icon>
+            <div class="estadistica-content">
+              <span class="estadistica-numero">{{ estadisticas.entrevistasCompletadas }}</span>
+              <span class="estadistica-label">Completadas</span>
+            </div>
+          </div>
+          
+          <div class="estadistica-item">
+            <mat-icon color="accent">play_circle</mat-icon>
+            <div class="estadistica-content">
+              <span class="estadistica-numero">{{ estadisticas.entrevistasEnProceso }}</span>
+              <span class="estadistica-label">En Proceso</span>
+            </div>
+          </div>
+          
+          <div class="estadistica-item">
+            <mat-icon color="warn">schedule</mat-icon>
+            <div class="estadistica-content">
+              <span class="estadistica-numero">{{ estadisticas.entrevistasPendientes }}</span>
+              <span class="estadistica-label">Pendientes</span>
+            </div>
+          </div>
+          
+          <div class="estadistica-item" *ngIf="estadisticas.tiempoPromedioEntrevista > 0">
+            <mat-icon color="primary">access_time</mat-icon>
+            <div class="estadistica-content">
+              <span class="estadistica-numero">{{ estadisticas.tiempoPromedioEntrevista }}m</span>
+              <span class="estadistica-label">Tiempo Promedio</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Información de Referencias -->
+        <div class="referencias-info" *ngIf="referencias && referencias.length > 0">
+          <div class="referencias-header">
+            <mat-icon color="accent">contacts</mat-icon>
+            <span>Referencias Verificadas</span>
+          </div>
+          <div class="referencias-detalle">
+            <mat-chip [color]="estadisticas.referenciasVerificadas >= 2 ? 'primary' : 'warn'" selected>
+              {{ estadisticas.referenciasVerificadas }}/{{ referencias.length }} verificadas
+            </mat-chip>
+            <span class="referencias-texto" *ngIf="estadisticas.referenciasVerificadas < 2">
+              Se requieren al menos 2 referencias verificadas
+            </span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- CONTENIDO PRINCIPAL -->
+  <!-- ========================================== -->
+  <div *ngIf="!tieneEntrevistas" class="entrevistas-vacio">
+    <mat-card class="empty-card">
+      <mat-card-content class="text-center p-5">
+        <mat-icon class="empty-icon" color="accent">record_voice_over</mat-icon>
+        <h3>No hay entrevistas programadas</h3>
+        <p class="text-muted mb-4">Para continuar con la evaluación, se debe programar y realizar al menos una entrevista personal.</p>
+        <button mat-raised-button color="primary" 
+                (click)="programarEntrevista()"
+                [disabled]="!puedeIniciarEntrevista()">
+          <mat-icon>event_available</mat-icon>
+          Programar Primera Entrevista
+        </button>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- SECCIONES EXPANDIBLES -->
+  <!-- ========================================== -->
+  <div *ngIf="tieneEntrevistas" class="secciones-entrevistas">
+
+    <!-- Sección: Resumen de Entrevistas -->
+    <mat-expansion-panel 
+      [expanded]="estaSeccionExpandida('resumen')"
+      (opened)="expandirSeccion('resumen')">
+      
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon color="primary">analytics</mat-icon>
+          <span class="ml-2">Resumen de Entrevistas</span>
+        </mat-panel-title>
+        <mat-panel-description>
+          <mat-chip [color]="estadisticas.porcentajeCompletitud >= 100 ? 'primary' : 'accent'" selected>
+            {{ estadisticas.entrevistasCompletadas }}/{{ estadisticas.totalEvaluaciones }} completadas
+          </mat-chip>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="seccion-content">
+        <!-- Métricas Detalladas -->
+        <div class="metricas-detalladas">
+          <div class="metrica-card">
+            <div class="metrica-header">
+              <mat-icon color="primary">assignment_turned_in</mat-icon>
+              <span>Estado de Entrevistas</span>
+            </div>
+            <div class="metrica-grid">
+              <div class="metrica-item">
+                <span class="metrica-label">Completadas</span>
+                <mat-chip color="primary" selected>{{ estadisticas.entrevistasCompletadas }}</mat-chip>
+              </div>
+              <div class="metrica-item">
+                <span class="metrica-label">En Proceso</span>
+                <mat-chip color="accent" selected>{{ estadisticas.entrevistasEnProceso }}</mat-chip>
+              </div>
+              <div class="metrica-item">
+                <span class="metrica-label">Pendientes</span>
+                <mat-chip color="warn" selected>{{ estadisticas.entrevistasPendientes }}</mat-chip>
+              </div>
+            </div>
+          </div>
+
+          <!-- Métricas de Calidad -->
+          <div class="metrica-card" *ngIf="estadisticas.scorePromedioEntrevistas > 0">
+            <div class="metrica-header">
+              <mat-icon color="accent">star</mat-icon>
+              <span>Calidad de Entrevistas</span>
+            </div>
+            <div class="calidad-info">
+              <div class="calidad-item">
+                <span class="calidad-label">Score Promedio</span>
+                <mat-chip [color]="obtenerColorScore(estadisticas.scorePromedioEntrevistas)" selected>
+                  {{ estadisticas.scorePromedioEntrevistas }}/100
+                </mat-chip>
+              </div>
+              <div class="calidad-item">
+                <span class="calidad-label">Evaluación</span>
+                <span class="calidad-descripcion">
+                  {{ obtenerDescripcionScore(estadisticas.scorePromedioEntrevistas) }}
+                </span>
+              </div>
+              <div class="calidad-item" *ngIf="estadisticas.tiempoPromedioEntrevista > 0">
+                <span class="calidad-label">Tiempo Promedio</span>
+                <span class="calidad-valor">
+                  {{ formatearDuracion(estadisticas.tiempoPromedioEntrevista) }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Estado de Prerequisites -->
+          <div class="metrica-card">
+            <div class="metrica-header">
+              <mat-icon [color]="cumpleRequisitosMinimos() ? 'primary' : 'warn'">
+                {{ cumpleRequisitosMinimos() ? 'check_circle' : 'warning' }}
+              </mat-icon>
+              <span>Requisitos del Proceso</span>
+            </div>
+            <div class="requisitos-lista">
+              <div class="requisito-item">
+                <mat-icon [color]="estadisticas.entrevistasCompletadas >= 1 ? 'primary' : 'warn'">
+                  {{ estadisticas.entrevistasCompletadas >= 1 ? 'check' : 'close' }}
+                </mat-icon>
+                <span>Al menos 1 entrevista completada</span>
+                <mat-chip [color]="estadisticas.entrevistasCompletadas >= 1 ? 'primary' : 'warn'" selected>
+                  {{ estadisticas.entrevistasCompletadas >= 1 ? 'Cumple' : 'Pendiente' }}
+                </mat-chip>
+              </div>
+              <div class="requisito-item">
+                <mat-icon [color]="estadisticas.referenciasVerificadas >= 2 ? 'primary' : 'warn'">
+                  {{ estadisticas.referenciasVerificadas >= 2 ? 'check' : 'close' }}
+                </mat-icon>
+                <span>Al menos 2 referencias verificadas</span>
+                <mat-chip [color]="estadisticas.referenciasVerificadas >= 2 ? 'primary' : 'warn'" selected>
+                  {{ estadisticas.referenciasVerificadas >= 2 ? 'Cumple' : 'Pendiente' }}
+                </mat-chip>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Sección: Entrevistas Activas -->
+    <mat-expansion-panel 
+      *ngFor="let grupo of entrevistasAgrupadas"
+      [expanded]="estaSeccionExpandida('grupo-' + grupo.tipo)"
+      (opened)="expandirSeccion('grupo-' + grupo.tipo)">
+      
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon [color]="grupo.color">{{ grupo.icono }}</mat-icon>
+          <span class="ml-2">{{ grupo.label }}</span>
+        </mat-panel-title>
+        <mat-panel-description>
+          <mat-chip color="accent" selected>
+            {{ grupo.evaluaciones.length }} evaluacion{{ grupo.evaluaciones.length > 1 ? 'es' : '' }}
+          </mat-chip>
+          <mat-chip [color]="grupo.completada ? 'primary' : 'warn'" selected>
+            {{ grupo.completada ? 'Completada' : 'Pendiente' }}
+          </mat-chip>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="seccion-content">
+        <div class="entrevistas-lista">
+          
+          <mat-card *ngFor="let evaluacion of grupo.evaluaciones" 
+                    class="entrevista-card"
+                    [class.selected]="evaluacionSeleccionada?.id === evaluacion.id"
+                    (click)="seleccionarEvaluacion(evaluacion)">
+            
+            <mat-card-header>
+              <div mat-card-avatar class="avatar-entrevista">
+                <mat-icon>{{ ESTADOS_EVALUACION[evaluacion.estado].icono }}</mat-icon>
+              </div>
+              
+              <mat-card-title>
+                <div class="entrevista-titulo">
+                  Entrevista #{{ evaluacion.id?.substring(0, 8) }}
+                </div>
+                <div class="entrevista-evaluador">
+                  {{ evaluacion.evaluadorNombre }}
+                </div>
+              </mat-card-title>
+              
+              <mat-card-subtitle>
+                <div class="entrevista-fechas">
+                  <div class="fecha-item">
+                    <mat-icon class="icon-small">schedule</mat-icon>
+                    <span>{{ formatearFecha(evaluacion.fechaInicio) }}</span>
+                  </div>
+                  <div class="fecha-item" *ngIf="evaluacion.fechaFin">
+                    <mat-icon class="icon-small">check</mat-icon>
+                    <span>Finalizada: {{ formatearFecha(evaluacion.fechaFin) }}</span>
+                  </div>
+                </div>
+                <div class="entrevista-estado">
+                  <mat-chip 
+                    [color]="ESTADOS_EVALUACION[evaluacion.estado].color" 
+                    selected>
+                    <mat-icon matChipAvatar>
+                      {{ ESTADOS_EVALUACION[evaluacion.estado].icono }}
+                    </mat-icon>
+                    {{ ESTADOS_EVALUACION[evaluacion.estado].label }}
+                  </mat-chip>
+                </div>
+              </mat-card-subtitle>
+
+              <div class="entrevista-actions">
+                <button mat-icon-button [matMenuTriggerFor]="menuEntrevista" 
+                        (click)="$event.stopPropagation()">
+                  <mat-icon>more_vert</mat-icon>
+                </button>
+                
+                <mat-menu #menuEntrevista="matMenu">
+                  <button mat-menu-item (click)="iniciarEntrevista(evaluacion)"
+                          *ngIf="evaluacion.estado === 'pendiente'"
+                          [disabled]="!puedeIniciarEntrevista()">
+                    <mat-icon color="primary">play_circle</mat-icon>
+                    <span>Iniciar Entrevista</span>
+                  </button>
+                  <button mat-menu-item (click)="completarEntrevista(evaluacion)"
+                          *ngIf="evaluacion.estado === 'en_proceso'"
+                          [disabled]="!puedeCompletarEntrevista()">
+                    <mat-icon color="primary">check_circle</mat-icon>
+                    <span>Completar Entrevista</span>
+                  </button>
+                  <button mat-menu-item (click)="editarEntrevista(evaluacion)">
+                    <mat-icon color="accent">edit</mat-icon>
+                    <span>Editar Detalles</span>
+                  </button>
+                  <button mat-menu-item (click)="reprogramarEntrevista(evaluacion)"
+                          *ngIf="evaluacion.estado === 'pendiente'">
+                    <mat-icon color="accent">event</mat-icon>
+                    <span>Reprogramar</span>
+                  </button>
+                  <button mat-menu-item (click)="agregarObservaciones(evaluacion)">
+                    <mat-icon color="primary">note_add</mat-icon>
+                    <span>Agregar Observaciones</span>
+                  </button>
+                  <mat-divider></mat-divider>
+                  <button mat-menu-item (click)="cancelarEntrevista(evaluacion)"
+                          *ngIf="evaluacion.estado !== 'completada'">
+                    <mat-icon color="warn">cancel</mat-icon>
+                    <span>Cancelar</span>
+                  </button>
+                </mat-menu>
+              </div>
+            </mat-card-header>
+
+            <mat-card-content>
+              <!-- Información de la entrevista -->
+              <div class="entrevista-info">
+                <div class="info-item" *ngIf="evaluacion.tiempoEmpleado">
+                  <mat-icon class="icon-small">access_time</mat-icon>
+                  <span>Duración: {{ formatearDuracion(evaluacion.tiempoEmpleado) }}</span>
+                </div>
+                
+                <div class="info-item" *ngIf="evaluacion.score">
+                  <mat-icon class="icon-small" [color]="obtenerColorScore(evaluacion.score)">star</mat-icon>
+                  <span>Score: {{ evaluacion.score }}/100 ({{ obtenerDescripcionScore(evaluacion.score) }})</span>
+                </div>
+                
+                <div class="info-item" *ngIf="evaluacion.requiereRevision">
+                  <mat-icon class="icon-small" color="warn">flag</mat-icon>
+                  <span>Requiere revisión</span>
+                </div>
+              </div>
+
+              <!-- Observaciones -->
+              <div class="entrevista-observaciones" *ngIf="evaluacion.observaciones">
+                <div class="observaciones-header">
+                  <mat-icon color="accent">note</mat-icon>
+                  <span>Observaciones</span>
+                </div>
+                <p class="observaciones-texto">{{ evaluacion.observaciones }}</p>
+              </div>
+
+              <!-- Recomendación -->
+              <div class="entrevista-recomendacion" *ngIf="evaluacion.recomendacion">
+                <div class="recomendacion-header">
+                  <mat-icon color="primary">lightbulb</mat-icon>
+                  <span>Recomendación</span>
+                </div>
+                <p class="recomendacion-texto">{{ evaluacion.recomendacion }}</p>
+              </div>
+
+              <!-- Progreso de la entrevista -->
+              <div class="entrevista-progreso" *ngIf="evaluacion.estado === 'en_proceso'">
+                <div class="progreso-header">
+                  <mat-icon color="accent">trending_up</mat-icon>
+                  <span>Entrevista en Proceso</span>
+                </div>
+                <mat-progress-bar mode="indeterminate" color="accent"></mat-progress-bar>
+                <div class="progreso-acciones">
+                  <button mat-stroked-button color="primary" 
+                          (click)="completarEntrevista(evaluacion); $event.stopPropagation()">
+                    <mat-icon>check</mat-icon>
+                    Finalizar Entrevista
+                  </button>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+
+        </div>
+      </div>
+    </mat-expansion-panel>
+
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL DE PROGRAMACIÓN -->
+  <!-- ========================================== -->
+  <div class="programacion-overlay" 
+       *ngIf="mostrarProgramacion"
+       (click)="cerrarProgramacion()">
+    
+    <mat-card class="programacion-card" (click)="$event.stopPropagation()">
+      <mat-card-header>
+        <mat-card-title class="d-flex justify-content-between align-items-center w-100">
+          <span>Programar Nueva Entrevista</span>
+          <button mat-icon-button (click)="cerrarProgramacion()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </mat-card-title>
+      </mat-card-header>
+      
+      <mat-card-content class="programacion-content">
+        <div class="programacion-info">
+          <p>Funcionalidad de programación de entrevistas en desarrollo.</p>
+          <p>Se integrará con el sistema de calendario y asignación de evaluadores.</p>
+        </div>
+      </mat-card-content>
+      
+      <mat-card-actions class="justify-content-end">
+        <button mat-button (click)="cerrarProgramacion()">Cancelar</button>
+        <button mat-raised-button color="primary" disabled>
+          Programar
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL DE DETALLE DE EVALUACIÓN -->
+  <!-- ========================================== -->
+  <div class="detalle-overlay" 
+       *ngIf="mostrarDetalleEvaluacion && evaluacionSeleccionada"
+       (click)="cerrarDetalleEvaluacion()">
+    
+    <mat-card class="detalle-card" (click)="$event.stopPropagation()">
+      <mat-card-header>
+        <mat-card-title class="d-flex justify-content-between align-items-center w-100">
+          <span>Detalle de Evaluación</span>
+          <button mat-icon-button (click)="cerrarDetalleEvaluacion()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </mat-card-title>
+        <mat-card-subtitle>
+          {{ evaluacionSeleccionada.evaluadorNombre }} - {{ formatearFecha(evaluacionSeleccionada.fechaInicio) }}
+        </mat-card-subtitle>
+      </mat-card-header>
+      
+      <mat-card-content class="detalle-content">
+        <!-- Información completa de la evaluación -->
+        <div class="detalle-seccion">
+          <h4>Información General</h4>
+          <div class="detalle-grid">
+            <div class="detalle-item">
+              <span class="detalle-label">ID:</span>
+              <span class="detalle-valor">{{ evaluacionSeleccionada.id }}</span>
+            </div>
+            <div class="detalle-item">
+              <span class="detalle-label">Estado:</span>
+              <mat-chip [color]="ESTADOS_EVALUACION[evaluacionSeleccionada.estado].color" selected>
+                {{ ESTADOS_EVALUACION[evaluacionSeleccionada.estado].label }}
+              </mat-chip>
+            </div>
+            <div class="detalle-item">
+              <span class="detalle-label">Evaluador:</span>
+              <span class="detalle-valor">{{ evaluacionSeleccionada.evaluadorNombre }}</span>
+            </div>
+            <div class="detalle-item" *ngIf="evaluacionSeleccionada.score">
+              <span class="detalle-label">Score:</span>
+              <span class="detalle-valor">{{ evaluacionSeleccionada.score }}/100</span>
+            </div>
+            <div class="detalle-item" *ngIf="evaluacionSeleccionada.tiempoEmpleado">
+              <span class="detalle-label">Duración:</span>
+              <span class="detalle-valor">{{ formatearDuracion(evaluacionSeleccionada.tiempoEmpleado) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Observaciones y recomendaciones completas -->
+        <div class="detalle-seccion" *ngIf="evaluacionSeleccionada.observaciones">
+          <h4>Observaciones</h4>
+          <div class="observaciones-completas">
+            <p>{{ evaluacionSeleccionada.observaciones }}</p>
+          </div>
+        </div>
+
+        <div class="detalle-seccion" *ngIf="evaluacionSeleccionada.recomendacion">
+          <h4>Recomendación</h4>
+          <div class="recomendacion-completa">
+            <p>{{ evaluacionSeleccionada.recomendacion }}</p>
+          </div>
+        </div>
+      </mat-card-content>
+      
+      <mat-card-actions class="justify-content-end">
+        <button mat-button (click)="cerrarDetalleEvaluacion()">Cerrar</button>
+        <button mat-raised-button color="primary" 
+                (click)="editarEntrevista(evaluacionSeleccionada)">
+          Editar
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+</div>
+
+<!-- ========================================== -->
+<!-- MENÚ DE OPCIONES -->
+<!-- ========================================== -->
+<mat-menu #menuOpciones="matMenu">
+  <button mat-menu-item (click)="exportarEntrevistas()">
+    <mat-icon>download</mat-icon>
+    <span>Exportar Entrevistas</span>
+  </button>
+  <button mat-menu-item (click)="generarReporteEntrevistas()">
+    <mat-icon>assessment</mat-icon>
+    <span>Generar Reporte</span>
+  </button>
+  <mat-divider></mat-divider>
+  <button mat-menu-item (click)="programarEntrevista()" 
+          [disabled]="!puedeIniciarEntrevista()">
+    <mat-icon>event_available</mat-icon>
+    <span>Programar Nueva Entrevista</span>
+  </button>
+</mat-menu>

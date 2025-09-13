@@ -1,0 +1,751 @@
+.documentacion-legal-container {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ========================================== */
+/* HEADER DE DOCUMENTACIÓN */
+/* ========================================== */
+
+.documentacion-header .header-card {
+  margin-bottom: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.avatar-documentacion {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, #2196f3, #21cbf3);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+}
+
+.title-container h2 {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.subtitle-info {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* Progreso General */
+.progreso-general {
+  padding: 24px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 12px;
+  margin-top: 16px;
+}
+
+.progreso-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.progreso-label {
+  font-weight: 500;
+  color: #555;
+}
+
+.progreso-porcentaje {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #2196f3;
+}
+
+.progreso-bar {
+  height: 8px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+
+.resumen-estados {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.estado-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 20px;
+  font-weight: 500;
+}
+
+/* ========================================== */
+/* CONFIGURACIÓN */
+/* ========================================== */
+
+.configuracion-panel .configuracion-card {
+  margin-bottom: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.configuracion-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  align-items: end;
+}
+
+.form-field {
+  flex: 1;
+}
+
+/* ========================================== */
+/* DOCUMENTOS GRID */
+/* ========================================== */
+
+.documentos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.documento-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+}
+
+.documento-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Estados de documentos */
+.documento-card.documento-pendiente {
+  border-left: 4px solid #ff9800;
+}
+
+.documento-card.documento-generando {
+  border-left: 4px solid #2196f3;
+}
+
+.documento-card.documento-generado {
+  border-left: 4px solid #4caf50;
+}
+
+.documento-card.documento-firmado {
+  border-left: 4px solid #4caf50;
+  background: linear-gradient(135deg, #f8fff8 0%, #e8f5e8 100%);
+}
+
+.documento-card.documento-archivado {
+  border-left: 4px solid #9e9e9e;
+  opacity: 0.8;
+}
+
+.avatar-documento {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-documento.avatar-pendiente {
+  background: linear-gradient(45deg, #ff9800, #ffb74d);
+  color: white;
+}
+
+.avatar-documento.avatar-generando {
+  background: linear-gradient(45deg, #2196f3, #64b5f6);
+  color: white;
+}
+
+.avatar-documento.avatar-generado {
+  background: linear-gradient(45deg, #4caf50, #66bb6a);
+  color: white;
+}
+
+.avatar-documento.avatar-firmado {
+  background: linear-gradient(45deg, #4caf50, #66bb6a);
+  color: white;
+}
+
+.avatar-documento.avatar-archivado {
+  background: linear-gradient(45deg, #9e9e9e, #bdbdbd);
+  color: white;
+}
+
+.documento-badges {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.estado-chip {
+  font-size: 0.75rem;
+}
+
+/* Información del documento */
+.documento-info {
+  margin: 16px 0;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.info-item mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+/* Dependencias */
+.dependencias {
+  margin: 16px 0;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+}
+
+.dependencias-label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #555;
+  margin-bottom: 8px;
+}
+
+.dependencias-lista {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.dependencia-chip {
+  font-size: 0.75rem;
+  height: 24px;
+}
+
+/* Progreso de documento */
+.progreso-documento {
+  margin: 16px 0;
+}
+
+.progreso-texto {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: #2196f3;
+  font-weight: 500;
+}
+
+/* Acciones de documentos */
+.acciones-secundarias {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* ========================================== */
+/* CRONOGRAMA TIMELINE */
+/* ========================================== */
+
+.cronograma-timeline {
+  padding: 20px 0;
+}
+
+.timeline-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  margin-bottom: 32px;
+  position: relative;
+}
+
+.timeline-marker {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.marker-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid;
+  background: white;
+}
+
+.marker-circle.marker-pendiente {
+  border-color: #ff9800;
+  color: #ff9800;
+}
+
+.marker-circle.marker-generando {
+  border-color: #2196f3;
+  color: #2196f3;
+  animation: pulse 2s infinite;
+}
+
+.marker-circle.marker-generado,
+.marker-circle.marker-firmado {
+  border-color: #4caf50;
+  color: #4caf50;
+  background: #4caf50;
+  color: white;
+}
+
+.timeline-line {
+  position: absolute;
+  top: 48px;
+  left: 50%;
+  width: 2px;
+  height: 40px;
+  background: #e0e0e0;
+  transform: translateX(-50%);
+}
+
+.timeline-content {
+  flex: 1;
+  padding-top: 8px;
+}
+
+.timeline-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.timeline-header h4 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.timeline-descripcion {
+  margin: 0 0 12px 0;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.timeline-meta {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.85rem;
+  color: #777;
+}
+
+.meta-item mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.meta-item.obligatorio {
+  color: #ff9800;
+  font-weight: 500;
+}
+
+.meta-item.bloqueado {
+  color: #f44336;
+  font-weight: 500;
+}
+
+/* ========================================== */
+/* HISTORIAL */
+/* ========================================== */
+
+.historial-lista {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.historial-item {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  border-bottom: 1px solid #e0e0e0;
+  transition: background-color 0.2s ease;
+}
+
+.historial-item:hover {
+  background-color: #f8f9fa;
+}
+
+.historial-item:last-child {
+  border-bottom: none;
+}
+
+.evento-fecha {
+  min-width: 140px;
+  font-size: 0.85rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.evento-contenido {
+  flex: 1;
+}
+
+.evento-accion {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  font-weight: 500;
+  color: #333;
+}
+
+.evento-accion mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.evento-usuario {
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.evento-observaciones {
+  font-size: 0.9rem;
+  color: #555;
+  font-style: italic;
+}
+
+/* ========================================== */
+/* VISTA PREVIA */
+/* ========================================== */
+
+.vista-previa-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.vista-previa-container {
+  width: 90%;
+  max-width: 900px;
+  max-height: 90%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vista-previa-card {
+  width: 100%;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.vista-previa-content {
+  flex: 1;
+  padding: 0;
+  overflow: hidden;
+}
+
+.documento-preview {
+  width: 100%;
+  height: 600px;
+  background: #f5f5f5;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* ========================================== */
+/* ANIMACIONES */
+/* ========================================== */
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.4);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 10px rgba(33, 150, 243, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(33, 150, 243, 0);
+  }
+}
+
+.documento-card,
+.timeline-item,
+.historial-item {
+  animation: slideInUp 0.3s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Estados de hover mejorados */
+.documento-card:hover,
+.timeline-item:hover,
+.historial-item:hover {
+  transform: translateY(-2px);
+  transition: all 0.2s ease;
+}
+
+/* ========================================== */
+/* UTILIDADES Y RESPONSIVE */
+/* ========================================== */
+
+.ml-2 {
+  margin-left: 8px;
+}
+
+.d-flex {
+  display: flex;
+}
+
+.justify-content-between {
+  justify-content: space-between;
+}
+
+.align-items-center {
+  align-items: center;
+}
+
+.w-100 {
+  width: 100%;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .documentacion-legal-container {
+    padding: 12px;
+  }
+  
+  .documentos-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .header-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .header-actions button {
+    width: 100%;
+  }
+  
+  .resumen-estados {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .timeline-item {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .timeline-marker {
+    align-self: center;
+  }
+  
+  .timeline-line {
+    display: none;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .subtitle-info {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .timeline-meta {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .vista-previa-container {
+    width: 95%;
+    max-height: 95%;
+  }
+  
+  .documento-preview {
+    height: 400px;
+  }
+}
+
+@media (max-width: 480px) {
+  .progreso-info {
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+  }
+  
+  .evento-fecha {
+    min-width: auto;
+  }
+  
+  .historial-item {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .acciones-secundarias {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .acciones-secundarias button {
+    width: 100%;
+  }
+}
+
+/* Mejoras de accesibilidad */
+.documento-card:focus,
+.timeline-item:focus,
+button:focus {
+  outline: 2px solid #2196f3;
+  outline-offset: 2px;
+}
+
+/* Indicadores de carga mejorados */
+.documento-card.documento-generando {
+  position: relative;
+  overflow: hidden;
+}
+
+.documento-card.documento-generando::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #2196f3, transparent);
+  animation: loading 2s infinite;
+}
+
+@keyframes loading {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Estados de éxito mejorados */
+.documento-card.documento-firmado {
+  position: relative;
+}
+
+.documento-card.documento-firmado::after {
+  content: '✓';
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 24px;
+  height: 24px;
+  background: #4caf50;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+/* Efectos de sombra mejorados */
+.documento-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.documento-card:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.documento-card.documento-firmado {
+  box-shadow: 0 4px 20px rgba(76, 175, 80, 0.2);
+}
+
+/* Transiciones suaves */
+* {
+  transition: all 0.2s ease;
+}
+
+/* Scrollbar personalizado para historial */
+.historial-lista::-webkit-scrollbar {
+  width: 6px;
+}
+
+.historial-lista::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.historial-lista::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.historial-lista::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}

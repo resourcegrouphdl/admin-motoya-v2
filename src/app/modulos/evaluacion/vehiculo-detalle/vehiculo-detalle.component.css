@@ -1,0 +1,704 @@
+.vehiculo-detalle-container {
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ====================================== */
+/* HEADER DEL VEHÍCULO */
+/* ====================================== */
+.vehiculo-header .header-card {
+  background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+}
+
+.vehiculo-header .avatar-vehiculo {
+  background-color: #4caf50;
+  color: white;
+}
+
+.vehiculo-header .title-container h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #212529;
+}
+
+.vehiculo-header .subtitle-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.vehiculo-header .header-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.vehiculo-header .progreso-general {
+  margin: 1rem 0;
+}
+
+.vehiculo-header .progreso-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.vehiculo-header .progreso-label {
+  font-size: 0.9rem;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.vehiculo-header .progreso-valor {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #495057;
+}
+
+/* ====================================== */
+/* INFORMACIÓN RÁPIDA */
+/* ====================================== */
+.info-rapida-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.info-rapida-grid .info-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background-color: rgba(0,0,0,0.02);
+  border-radius: 8px;
+}
+
+.info-rapida-grid .info-item mat-icon {
+  color: #6c757d;
+  font-size: 20px;
+}
+
+.info-rapida-grid .info-content {
+  flex: 1;
+}
+
+.info-rapida-grid .info-label {
+  display: block;
+  font-size: 0.8rem;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.info-rapida-grid .info-valor {
+  display: block;
+  font-size: 0.9rem;
+  color: #495057;
+  font-weight: 600;
+}
+
+/* ====================================== */
+/* ALERTAS DEL VEHÍCULO */
+/* ====================================== */
+.alertas-vehiculo {
+  margin-top: 1rem;
+}
+
+.alertas-vehiculo .alerta-card {
+  background-color: #fff3e0;
+  border-left: 4px solid #ff9800;
+}
+
+.alertas-vehiculo .alerta-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 500;
+  color: #e65100;
+}
+
+/* ====================================== */
+/* SECCIONES EXPANDIBLES */
+/* ====================================== */
+.secciones-vehiculo {
+  margin-top: 1rem;
+}
+
+.secciones-vehiculo .mat-expansion-panel {
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.secciones-vehiculo .mat-expansion-panel-header {
+  padding: 1rem 1.5rem;
+}
+
+.secciones-vehiculo .mat-panel-title {
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+}
+
+.secciones-vehiculo .mat-panel-description {
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.secciones-vehiculo .incompleto {
+  color: #ff9800;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.secciones-vehiculo .seccion-content {
+  padding: 1.5rem;
+  background-color: #fafafa;
+}
+
+/* ====================================== */
+/* ESPECIFICACIONES */
+/* ====================================== */
+.especificaciones-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.especificaciones-grid .especificacion-item {
+  padding: 1rem;
+  background-color: white;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  transition: all 0.3s ease;
+}
+
+.especificaciones-grid .especificacion-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.especificaciones-grid .especificacion-item.tecnica {
+  border-left: 4px solid #2196f3;
+}
+
+.especificaciones-grid .especificacion-item.adicional {
+  border-left: 4px solid #9c27b0;
+}
+
+.especificaciones-grid .spec-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.especificaciones-grid .spec-nombre {
+  font-size: 0.9rem;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.especificaciones-grid .spec-valor {
+  font-size: 1.1rem;
+  color: #212529;
+  font-weight: 600;
+}
+
+/* ====================================== */
+/* INFORMACIÓN ADICIONAL */
+/* ====================================== */
+.info-adicional h4 {
+  margin: 0 0 1rem 0;
+  color: #495057;
+  font-size: 1.1rem;
+}
+
+.info-adicional .adicional-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.info-adicional .adicional-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background-color: rgba(76, 175, 80, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(76, 175, 80, 0.2);
+  font-weight: 500;
+  color: #2e7d32;
+}
+
+.info-adicional .accesorios-lista h5 {
+  margin: 0 0 0.75rem 0;
+  color: #495057;
+  font-size: 1rem;
+}
+
+.info-adicional .accesorios-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* ====================================== */
+/* FINANCIERA */
+/* ====================================== */
+.financiera-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.financiera-grid .detalle-financiero {
+  transition: all 0.3s ease;
+  border-left: 4px solid transparent;
+}
+
+.financiera-grid .detalle-financiero:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.financiera-grid .detalle-financiero.destacado {
+  border-left-color: #4caf50;
+  background-color: rgba(76, 175, 80, 0.02);
+}
+
+.financiera-grid .detalle-header {
+  margin-bottom: 0.75rem;
+}
+
+.financiera-grid .detalle-concepto {
+  font-size: 0.9rem;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.financiera-grid .detalle-valor {
+  font-size: 1.3rem;
+  color: #212529;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.financiera-grid .detalle-descripcion {
+  color: #6c757d;
+  font-size: 0.8rem;
+  line-height: 1.3;
+}
+
+/* ====================================== */
+/* CALCULADORA FINANCIERA */
+/* ====================================== */
+.calculadora-financiera .calculadora-card {
+  background-color: rgba(33, 150, 243, 0.02);
+  border: 1px solid rgba(33, 150, 243, 0.1);
+}
+
+.calculadora-financiera .calculadora-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.calculadora-financiera .calculo-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background-color: white;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.calculadora-financiera .calculo-label {
+  font-size: 0.9rem;
+  color: #495057;
+  font-weight: 500;
+}
+
+.calculadora-financiera .calculo-valor {
+  font-size: 1rem;
+  color: #2196f3;
+  font-weight: 600;
+}
+
+/* ====================================== */
+/* COMPARACIÓN DE PRECIOS */
+/* ====================================== */
+.comparacion-precios .comparacion-card {
+  background-color: rgba(255, 193, 7, 0.02);
+  border: 1px solid rgba(255, 193, 7, 0.2);
+}
+
+.comparacion-precios h5 {
+  margin: 0 0 1rem 0;
+  color: #495057;
+  font-size: 1rem;
+}
+
+.comparacion-precios .comparacion-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.comparacion-precios .precio-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+}
+
+.comparacion-precios .precio-item.diferencia {
+  border-top: 1px solid #e0e0e0;
+  padding-top: 0.75rem;
+  font-weight: 600;
+}
+
+.comparacion-precios .precio-label {
+  font-size: 0.9rem;
+  color: #495057;
+}
+
+.comparacion-precios .precio-valor {
+  font-size: 1rem;
+  color: #212529;
+  font-weight: 600;
+}
+
+.comparacion-precios .precio-valor.ahorro {
+  color: #4caf50;
+}
+
+.comparacion-precios .precio-valor.sobrecosto {
+  color: #f44336;
+}
+
+/* ====================================== */
+/* DOCUMENTACIÓN */
+/* ====================================== */
+.documentacion-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.estado-documentacion h4 {
+  margin: 0 0 1rem 0;
+  color: #495057;
+  font-size: 1.1rem;
+}
+
+.estado-documentacion .documentos-estado {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.estado-documentacion .documento-estado-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  background-color: white;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.estado-documentacion .documento-estado-item span {
+  flex: 1;
+  font-weight: 500;
+  color: #495057;
+}
+
+/* ====================================== */
+/* FECHAS IMPORTANTES */
+/* ====================================== */
+.fechas-importantes h4 {
+  margin: 0 0 1rem 0;
+  color: #495057;
+  font-size: 1.1rem;
+}
+
+.fechas-importantes .fechas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.fechas-importantes .fecha-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background-color: white;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.fechas-importantes .fecha-item mat-icon {
+  color: #6c757d;
+}
+
+.fechas-importantes .fecha-content {
+  flex: 1;
+}
+
+.fechas-importantes .fecha-label {
+  display: block;
+  font-size: 0.8rem;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.fechas-importantes .fecha-valor {
+  display: block;
+  font-size: 0.9rem;
+  color: #495057;
+  font-weight: 600;
+}
+
+/* ====================================== */
+/* ACCIONES RÁPIDAS */
+/* ====================================== */
+.acciones-vehiculo .acciones-card {
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+}
+
+.acciones-vehiculo h3 {
+  margin: 0 0 1rem 0;
+  color: #495057;
+  font-size: 1.1rem;
+}
+
+.acciones-vehiculo .acciones-botones {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.acciones-vehiculo .acciones-botones button {
+  min-width: 140px;
+}
+
+/* ====================================== */
+/* UTILIDADES */
+/* ====================================== */
+.ml-2 { margin-left: 0.5rem; }
+.mt-2 { margin-top: 0.5rem; }
+.mt-3 { margin-top: 1rem; }
+.mt-4 { margin-top: 1.5rem; }
+.mb-3 { margin-bottom: 1rem; }
+.mb-4 { margin-bottom: 1.5rem; }
+
+/* ====================================== */
+/* RESPONSIVE DESIGN */
+/* ====================================== */
+@media (max-width: 768px) {
+  .vehiculo-detalle-container {
+    padding: 0.5rem;
+  }
+
+  .info-rapida-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .especificaciones-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .financiera-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .calculadora-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .fechas-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .subtitle-info {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.5rem !important;
+  }
+
+  .header-actions {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .acciones-botones {
+    flex-direction: column;
+  }
+
+  .acciones-botones button {
+    width: 100%;
+    min-width: auto;
+  }
+
+  .adicional-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .documentos-estado {
+    gap: 0.75rem !important;
+  }
+
+  .calculo-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .detalle-financiero .detalle-valor {
+    font-size: 1.1rem;
+  }
+
+  .especificacion-item .spec-valor {
+    font-size: 1rem;
+  }
+
+  .accesorios-chips {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .documento-estado-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .precio-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+}
+
+/* ====================================== */
+/* ANIMACIONES */
+/* ====================================== */
+.especificacion-item,
+.detalle-financiero,
+.documento-estado-item,
+.fecha-item {
+  animation: fadeInUp 0.4s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Animación para la calculadora */
+.calculadora-financiera {
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    max-height: 1000px;
+  }
+}
+
+/* ====================================== */
+/* MODO OSCURO */
+/* ====================================== */
+@media (prefers-color-scheme: dark) {
+  .header-card,
+  .especificacion-item,
+  .detalle-financiero,
+  .calculadora-card,
+  .comparacion-card,
+  .documento-estado-item,
+  .fecha-item,
+  .acciones-card,
+  .alerta-card {
+    background-color: #1e1e1e;
+    color: #ffffff;
+    border-color: #333;
+  }
+
+  .seccion-content {
+    background-color: #2a2a2a !important;
+  }
+
+  .info-item,
+  .adicional-item,
+  .calculo-item {
+    background-color: rgba(255,255,255,0.05) !important;
+  }
+
+  .alerta-card {
+    background-color: rgba(255, 152, 0, 0.1) !important;
+  }
+
+  .calculadora-card {
+    background-color: rgba(33, 150, 243, 0.1) !important;
+  }
+
+  .comparacion-card {
+    background-color: rgba(255, 193, 7, 0.1) !important;
+  }
+
+  .adicional-item {
+    background-color: rgba(76, 175, 80, 0.1) !important;
+  }
+}
+
+/* ====================================== */
+/* IMPRESIÓN */
+/* ====================================== */
+@media print {
+  .header-actions,
+  .acciones-vehiculo {
+    display: none !important;
+  }
+
+  .especificacion-item,
+  .detalle-financiero,
+  .documento-estado-item {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .secciones-vehiculo .mat-expansion-panel {
+    box-shadow: none;
+    border: 1px solid #e0e0e0;
+  }
+
+  .calculadora-financiera {
+    break-before: page;
+  }
+}

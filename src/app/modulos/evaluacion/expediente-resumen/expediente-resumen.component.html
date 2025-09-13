@@ -1,0 +1,547 @@
+<div class="expediente-resumen-container">
+  
+  <!-- ========================================== -->
+  <!-- INFORMACIÓN GENERAL DEL EXPEDIENTE -->
+  <!-- ========================================== -->
+  <div class="seccion-general mb-4">
+    <mat-card class="info-general-card">
+      <mat-card-header>
+        <div mat-card-avatar class="avatar-cliente">
+          <mat-icon>person</mat-icon>
+        </div>
+        <mat-card-title>{{ expediente.titular.nombreCompleto }}</mat-card-title>
+        <mat-card-subtitle>
+          <div class="info-basica">
+            <span>{{ expediente.titular.documentType }}: {{ expediente.titular.documentNumber }}</span>
+            <span class="separator">•</span>
+            <span>{{ expediente.titular.edad }} años</span>
+            <span class="separator">•</span>
+            <span>{{ expediente.titular.ocupacion }}</span>
+          </div>
+        </mat-card-subtitle>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <div class="detalles-grid">
+          <div class="detalle-item">
+            <mat-icon class="detalle-icon">two_wheeler</mat-icon>
+            <div class="detalle-content">
+              <span class="detalle-label">Vehículo</span>
+              <span class="detalle-valor">{{ expediente.vehiculo.descripcionCompleta }}</span>
+            </div>
+          </div>
+          
+          <div class="detalle-item">
+            <mat-icon class="detalle-icon">store</mat-icon>
+            <div class="detalle-content">
+              <span class="detalle-label">Vendedor</span>
+              <span class="detalle-valor">{{ expediente.solicitud.vendedorNombre }} - {{ expediente.solicitud.vendedorTienda }}</span>
+            </div>
+          </div>
+          
+          <div class="detalle-item">
+            <mat-icon class="detalle-icon">calendar_today</mat-icon>
+            <div class="detalle-content">
+              <span class="detalle-label">Fecha Solicitud</span>
+              <span class="detalle-valor">{{ formatearFecha(expediente.solicitud.fechaCreacion) }}</span>
+            </div>
+          </div>
+          
+          <div class="detalle-item">
+            <mat-icon class="detalle-icon">timer</mat-icon>
+            <div class="detalle-content">
+              <span class="detalle-label">Tiempo en Proceso</span>
+              <span class="detalle-valor">{{ tiempoProcesoFormateado }}</span>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- ALERTAS CRÍTICAS -->
+  <!-- ========================================== -->
+  <div *ngIf="alertasCriticas.length > 0" class="seccion-alertas mb-4">
+    <mat-card class="alertas-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar color="warn">warning</mat-icon>
+        <mat-card-title>Alertas Críticas</mat-card-title>
+        <mat-card-subtitle>Requieren atención inmediata</mat-card-subtitle>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <div class="alertas-lista">
+          <div *ngFor="let alerta of alertasCriticas" class="alerta-item">
+            <span>{{ alerta }}</span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MÉTRICAS PRINCIPALES -->
+  <!-- ========================================== -->
+  <div class="seccion-metricas mb-4">
+    <h3 class="seccion-titulo">Métricas del Expediente</h3>
+    
+    <div class="metricas-grid">
+      <mat-card *ngFor="let metrica of metricas" 
+                class="metrica-card"
+                [ngClass]="'metrica-' + metrica.color"
+                (click)="verDetalleMetrica(metrica)">
+        
+        <mat-card-content>
+          <div class="metrica-header">
+            <mat-icon [color]="metrica.color">{{ metrica.icono }}</mat-icon>
+            <span class="metrica-label">{{ metrica.label }}</span>
+          </div>
+          
+          <div class="metrica-valor">
+            {{ formatearValorMetrica(metrica.valor, metrica.tipo) }}
+          </div>
+          
+          <div *ngIf="metrica.porcentaje !== undefined" class="metrica-progreso">
+            <mat-progress-bar 
+              [value]="metrica.porcentaje"
+              [color]="metrica.color"
+              mode="determinate">
+            </mat-progress-bar>
+          </div>
+          
+          <div *ngIf="metrica.descripcion" class="metrica-descripcion">
+            {{ metrica.descripcion }}
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- PROGRESS GENERAL Y SCORES -->
+  <!-- ========================================== -->
+  <div class="seccion-scores mb-4">
+    <div class="scores-container">
+      
+      <!-- Progreso General -->
+      <mat-card class="progreso-general-card">
+        <mat-card-header>
+          <mat-icon mat-card-avatar>timeline</mat-icon>
+          <mat-card-title>Progreso General</mat-card-title>
+          <mat-card-subtitle>{{ porcentajeProgresoGeneral }}% completado</mat-card-subtitle>
+        </mat-card-header>
+        
+        <mat-card-content>
+          <div class="progreso-visual">
+            <mat-progress-bar 
+              [value]="porcentajeProgresoGeneral"
+              color="primary"
+              mode="determinate"
+              class="progreso-principal">
+            </mat-progress-bar>
+            
+            <div class="estado-actual">
+              <mat-chip [color]="obtenerColorEstado(expediente.solicitud.estado)" selected>
+                <mat-icon matChipAvatar>{{ obtenerIconoEstado(expediente.solicitud.estado) }}</mat-icon>
+                {{ estadoConfigActual.label }}
+              </mat-chip>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Scores Detallados -->
+      <mat-card class="scores-detalle-card">
+        <mat-card-header>
+          <mat-icon mat-card-avatar>assessment</mat-icon>
+          <mat-card-title>Scores de Evaluación</mat-card-title>
+          <mat-card-subtitle>
+            Promedio: {{ scorePromedio }}/100
+            <button mat-icon-button (click)="toggleDetallesScore()" class="ml-2">
+              <mat-icon>{{ mostrarDetallesScore ? 'expand_less' : 'expand_more' }}</mat-icon>
+            </button>
+          </mat-card-subtitle>
+        </mat-card-header>
+        
+        <mat-card-content>
+          <div class="scores-lista">
+            
+            <!-- Score Documental -->
+            <div class="score-item" *ngIf="expediente.solicitud.scoreDocumental">
+              <div class="score-info">
+                <span class="score-label">Documental</span>
+                <span class="score-valor">{{ expediente.solicitud.scoreDocumental }}/100</span>
+              </div>
+              <mat-progress-bar 
+                [value]="expediente.solicitud.scoreDocumental"
+                [color]="getColorScore(expediente.solicitud.scoreDocumental)"
+                mode="determinate">
+              </mat-progress-bar>
+            </div>
+
+            <!-- Score Garantes -->
+            <div class="score-item" *ngIf="expediente.solicitud.scoreGarantes">
+              <div class="score-info">
+                <span class="score-label">Garantes</span>
+                <span class="score-valor">{{ expediente.solicitud.scoreGarantes }}/100</span>
+              </div>
+              <mat-progress-bar 
+                [value]="expediente.solicitud.scoreGarantes"
+                [color]="getColorScore(expediente.solicitud.scoreGarantes)"
+                mode="determinate">
+              </mat-progress-bar>
+            </div>
+
+            <!-- Score Entrevistas -->
+            <div class="score-item" *ngIf="expediente.solicitud.scoreEntrevista">
+              <div class="score-info">
+                <span class="score-label">Entrevistas</span>
+                <span class="score-valor">{{ expediente.solicitud.scoreEntrevista }}/100</span>
+              </div>
+              <mat-progress-bar 
+                [value]="expediente.solicitud.scoreEntrevista"
+                [color]="getColorScore(expediente.solicitud.scoreEntrevista)"
+                mode="determinate">
+              </mat-progress-bar>
+            </div>
+
+            <!-- Score Centrales -->
+            <div class="score-item" *ngIf="expediente.solicitud.scoreCentrales">
+              <div class="score-info">
+                <span class="score-label">Centrales de Riesgo</span>
+                <span class="score-valor">{{ expediente.solicitud.scoreCentrales }}/100</span>
+              </div>
+              <mat-progress-bar 
+                [value]="expediente.solicitud.scoreCentrales"
+                [color]="getColorScore(expediente.solicitud.scoreCentrales)"
+                mode="determinate">
+              </mat-progress-bar>
+            </div>
+
+          </div>
+
+          <!-- Detalles Expandidos -->
+          <div *ngIf="mostrarDetallesScore" class="scores-detalles">
+            <mat-divider class="my-3"></mat-divider>
+            
+            <div class="detalles-resumen">
+              <h4>Análisis del Sistema</h4>
+              <div class="analisis-grid">
+                <div class="analisis-item">
+                  <span class="analisis-label">Nivel de Riesgo:</span>
+                  <mat-chip [color]="expediente.resumenEvaluacion.nivelRiesgoCalculado === 'bajo' ? 'primary' : 
+                                   expediente.resumenEvaluacion.nivelRiesgoCalculado === 'medio' ? 'accent' : 'warn'" 
+                            selected>
+                    {{ expediente.resumenEvaluacion.nivelRiesgoCalculado | titlecase }}
+                  </mat-chip>
+                </div>
+                
+                <div class="analisis-item">
+                  <span class="analisis-label">Recomendación:</span>
+                  <mat-chip [color]="expediente.resumenEvaluacion.recomendacionSistema === 'aprobar' ? 'primary' : 
+                                   expediente.resumenEvaluacion.recomendacionSistema === 'revisar' ? 'accent' : 'warn'" 
+                            selected>
+                    {{ expediente.resumenEvaluacion.recomendacionSistema | titlecase }}
+                  </mat-chip>
+                </div>
+              </div>
+            </div>
+
+            <div class="acciones-scores mt-3">
+              <button mat-stroked-button (click)="abrirCalculadoraScore()">
+                <mat-icon>calculate</mat-icon>
+                Ver Calculadora Detallada
+              </button>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- TIMELINE DE PROCESO -->
+  <!-- ========================================== -->
+  <div class="seccion-timeline mb-4">
+    <mat-card class="timeline-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>timeline</mat-icon>
+        <mat-card-title>Historial del Proceso</mat-card-title>
+        <mat-card-subtitle>
+          Seguimiento cronológico del expediente
+          <button mat-icon-button (click)="toggleHistorialCompleto()" class="ml-2">
+            <mat-icon>{{ mostrarHistorialCompleto ? 'compress' : 'expand' }}</mat-icon>
+          </button>
+        </mat-card-subtitle>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <div class="timeline-container">
+          <div *ngFor="let evento of timeline; let ultimo = last" 
+               class="timeline-item"
+               [ngClass]="'timeline-' + evento.estado">
+            
+            <div class="timeline-marker">
+              <mat-icon [color]="evento.color">{{ evento.icono }}</mat-icon>
+            </div>
+            
+            <div class="timeline-content">
+              <div class="timeline-header">
+                <h4 class="timeline-titulo">{{ evento.titulo }}</h4>
+                <span class="timeline-fecha">{{ formatearFecha(evento.fecha) }}</span>
+              </div>
+              
+              <p class="timeline-descripcion">{{ evento.descripcion }}</p>
+              
+              <div *ngIf="evento.estado === 'actual'" class="timeline-estado-actual">
+                <mat-chip color="primary" selected>
+                  <mat-icon matChipAvatar>radio_button_checked</mat-icon>
+                  Estado Actual
+                </mat-chip>
+              </div>
+            </div>
+            
+            <div *ngIf="!ultimo" class="timeline-line"></div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- RECOMENDACIONES DEL SISTEMA -->
+  <!-- ========================================== -->
+  <div *ngIf="recomendaciones.length > 0" class="seccion-recomendaciones mb-4">
+    <mat-card class="recomendaciones-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar color="primary">lightbulb</mat-icon>
+        <mat-card-title>Recomendaciones del Sistema</mat-card-title>
+        <mat-card-subtitle>Sugerencias basadas en el análisis integral</mat-card-subtitle>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <div class="recomendaciones-lista">
+          <div *ngFor="let recomendacion of recomendaciones" class="recomendacion-item">
+            <mat-icon class="recomendacion-icon">arrow_forward</mat-icon>
+            <span class="recomendacion-texto">{{ recomendacion }}</span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- INFORMACIÓN FINANCIERA -->
+  <!-- ========================================== -->
+  <div class="seccion-financiera mb-4">
+    <mat-card class="financiera-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>attach_money</mat-icon>
+        <mat-card-title>Resumen Financiero</mat-card-title>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <div class="financiera-grid">
+          
+          <div class="financiera-item">
+            <div class="financiera-label">Precio del Vehículo</div>
+            <div class="financiera-valor principal">{{ formatearMoneda(expediente.solicitud.precioCompraMoto) }}</div>
+          </div>
+          
+          <div class="financiera-item">
+            <div class="financiera-label">Pago Inicial</div>
+            <div class="financiera-valor">{{ formatearMoneda(expediente.solicitud.inicial) }}</div>
+            <div class="financiera-porcentaje">
+              {{ ((expediente.solicitud.inicial / expediente.solicitud.precioCompraMoto) * 100).toFixed(1) }}%
+            </div>
+          </div>
+          
+          <div class="financiera-item">
+            <div class="financiera-label">Monto Financiado</div>
+            <div class="financiera-valor">{{ formatearMoneda(expediente.solicitud.montoFinanciado) }}</div>
+          </div>
+          
+          <div class="financiera-item">
+            <div class="financiera-label">Cuota Quincenal</div>
+            <div class="financiera-valor">{{ formatearMoneda(expediente.solicitud.montoCuota) }}</div>
+          </div>
+          
+          <div class="financiera-item">
+            <div class="financiera-label">Plazo</div>
+            <div class="financiera-valor">{{ expediente.solicitud.plazoQuincenas }} quincenas</div>
+            <div class="financiera-porcentaje">
+              {{ (expediente.solicitud.plazoQuincenas / 2).toFixed(1) }} meses
+            </div>
+          </div>
+          
+          <div class="financiera-item">
+            <div class="financiera-label">Total a Pagar</div>
+            <div class="financiera-valor destacado">{{ formatearMoneda(expediente.solicitud.totalAPagar) }}</div>
+          </div>
+
+        </div>
+
+        <!-- Información de Aprobación -->
+        <div *ngIf="expediente.solicitud.decisionFinal === 'aprobado'" class="aprobacion-info mt-4">
+          <mat-divider class="mb-3"></mat-divider>
+          <h4>Condiciones Aprobadas</h4>
+          
+          <div class="aprobacion-grid">
+            <div *ngIf="expediente.solicitud.montoAprobado" class="aprobacion-item">
+              <span class="aprobacion-label">Monto Aprobado:</span>
+              <span class="aprobacion-valor">{{ formatearMoneda(expediente.solicitud.montoAprobado) }}</span>
+            </div>
+            
+            <div *ngIf="expediente.solicitud.tasaInteresAprobada" class="aprobacion-item">
+              <span class="aprobacion-label">Tasa de Interés:</span>
+              <span class="aprobacion-valor">{{ expediente.solicitud.tasaInteresAprobada }}% anual</span>
+            </div>
+          </div>
+
+          <div *ngIf="expediente.solicitud.condicionesEspeciales?.length" class="condiciones-especiales mt-3">
+            <h5>Condiciones Especiales:</h5>
+            <ul class="condiciones-lista">
+              <li *ngFor="let condicion of expediente.solicitud.condicionesEspeciales">
+                {{ condicion }}
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Información de Rechazo -->
+        <div *ngIf="expediente.solicitud.decisionFinal === 'rechazado'" class="rechazo-info mt-4">
+          <mat-divider class="mb-3"></mat-divider>
+          <div class="rechazo-contenido">
+            <mat-icon color="warn">cancel</mat-icon>
+            <div class="rechazo-detalles">
+              <h4>Solicitud Rechazada</h4>
+              <p *ngIf="expediente.solicitud.motivoRechazo">
+                <strong>Motivo:</strong> {{ expediente.solicitud.motivoRechazo }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- INFORMACIÓN DE PARTICIPANTES -->
+  <!-- ========================================== -->
+  <div class="seccion-participantes mb-4">
+    <div class="participantes-grid">
+      
+      <!-- Titular -->
+      <mat-card class="participante-card">
+        <mat-card-header>
+          <mat-icon mat-card-avatar>person</mat-icon>
+          <mat-card-title>Titular</mat-card-title>
+        </mat-card-header>
+        
+        <mat-card-content>
+          <div class="participante-info">
+            <h4>{{ expediente.titular.nombreCompleto }}</h4>
+            <p>{{ expediente.titular.documentType }}: {{ expediente.titular.documentNumber }}</p>
+            <p>{{ expediente.titular.edad }} años • {{ expediente.titular.estadoCivil }}</p>
+            <p>{{ expediente.titular.ocupacion }}</p>
+            <p>{{ expediente.titular.direccionCompleta }}</p>
+            
+            <div class="participante-estado mt-2">
+              <mat-chip [color]="getDocumentoColor(expediente.titular.estadoValidacionDocumentos)" selected>
+                {{ expediente.titular.estadoValidacionDocumentos || 'Pendiente' | titlecase }}
+              </mat-chip>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Fiador -->
+      <mat-card *ngIf="expediente.fiador" class="participante-card">
+        <mat-card-header>
+          <mat-icon mat-card-avatar>supervisor_account</mat-icon>
+          <mat-card-title>Fiador</mat-card-title>
+        </mat-card-header>
+        
+        <mat-card-content>
+          <div class="participante-info">
+            <h4>{{ expediente.fiador.nombreCompleto }}</h4>
+            <p>{{ expediente.fiador.documentType }}: {{ expediente.fiador.documentNumber }}</p>
+            <p>{{ expediente.fiador.edad }} años • {{ expediente.fiador.estadoCivil }}</p>
+            <p>{{ expediente.fiador.ocupacion }}</p>
+            
+            <div *ngIf="expediente.fiador.relacionConTitular" class="relacion-info mt-2">
+              <strong>Relación:</strong> {{ expediente.fiador.relacionConTitular }}
+            </div>
+            
+            <div class="participante-estado mt-2">
+              <mat-chip [color]="getDocumentoColor(expediente.fiador.estadoValidacionDocumentos)" selected>
+                {{ expediente.fiador.estadoValidacionDocumentos || 'Pendiente' | titlecase }}
+              </mat-chip>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Referencias -->
+      <mat-card class="participante-card">
+        <mat-card-header>
+          <mat-icon mat-card-avatar>contacts</mat-icon>
+          <mat-card-title>Referencias</mat-card-title>
+          <mat-card-subtitle>{{ expediente.referencias.length }} contactos</mat-card-subtitle>
+        </mat-card-header>
+        
+        <mat-card-content>
+          <div class="referencias-lista">
+            <div *ngFor="let referencia of expediente.referencias" class="referencia-item">
+              <div class="referencia-info">
+                <strong>{{ referencia.nombreCompleto }}</strong>
+                <span class="referencia-parentesco">{{ referencia.parentesco }}</span>
+              </div>
+              
+              <mat-chip [color]="getReferenciasColor(referencia.estadoVerificacion)" selected size="small">
+                {{ referencia.estadoVerificacion || 'Pendiente' | titlecase }}
+              </mat-chip>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- ACCIONES RÁPIDAS -->
+  <!-- ========================================== -->
+  <div class="seccion-acciones">
+    <mat-card class="acciones-card">
+      <mat-card-content>
+        <h3>Acciones Rápidas</h3>
+        <div class="acciones-botones">
+          <button mat-raised-button color="primary" (click)="exportarResumen()">
+            <mat-icon>download</mat-icon>
+            Exportar Resumen
+          </button>
+          
+          <button mat-stroked-button>
+            <mat-icon>print</mat-icon>
+            Imprimir
+          </button>
+          
+          <button mat-stroked-button>
+            <mat-icon>share</mat-icon>
+            Compartir
+          </button>
+          
+          <button mat-stroked-button>
+            <mat-icon>comment</mat-icon>
+            Agregar Nota
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+</div>

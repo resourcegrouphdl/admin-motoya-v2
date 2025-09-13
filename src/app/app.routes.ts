@@ -27,6 +27,9 @@ import { PropuestasListComponent } from './modulos/proposal-management/component
 import { LeadsWebComponent } from './modulos/clientes-potenciales/leads-web/leads-web.component';
 import { DashboardClientesComponent } from './modulos/clientes-potenciales/dashboard-clientes/dashboard-clientes.component';
 import { AdminProposalComponent } from './modulos/proposal-management/components/propuestas/admin-proposal/admin-proposal.component';
+import { ClientesMainComponent } from './modulos/admin-clientes/clientes-main/clientes-main.component';
+import { TablaGeneralComponent } from './modulos/admin-clientes/tabla-general/tabla-general.component';
+import { ExpedienteDetalleComponent } from './modulos/evaluacion/expediente-detalle/expediente-detalle.component';
 
 export const routes: Routes = [
   {
@@ -75,6 +78,29 @@ export const routes: Routes = [
         data: {
           title: 'Vendedores',
         },
+      },
+      {
+        path: 'admin-clientes',
+        component: ClientesMainComponent,
+        children: [
+          {
+            path: '',
+            redirectTo: 'list-clientes',
+            pathMatch: 'full',
+          },
+          {
+            path: 'list-clientes',
+            component: TablaGeneralComponent,
+          
+          },
+          {
+            path: 'evaluacion/expediente/:id',
+            component: ExpedienteDetalleComponent,
+
+          }
+
+        ]
+
       },
       {
         path: 'tiendas',

@@ -1,0 +1,632 @@
+<div class="proceso-entrega-container">
+
+  <!-- ========================================== -->
+  <!-- HEADER DE PROCESO DE ENTREGA -->
+  <!-- ========================================== -->
+  <div class="entrega-header mb-4">
+    <mat-card class="header-card">
+      <mat-card-header>
+        <div mat-card-avatar class="avatar-entrega" 
+             [ngClass]="'avatar-' + (procesoCompletado ? 'completado' : entregaEnProceso ? 'proceso' : 'pendiente')">
+          <mat-icon>{{ procesoCompletado ? 'done_all' : entregaEnProceso ? 'local_shipping' : 'schedule' }}</mat-icon>
+        </div>
+        
+        <mat-card-title>
+          <div class="title-container">
+            <h2>Proceso de Entrega</h2>
+            <div class="subtitle-info">
+              <mat-chip [color]="procesoCompletado ? 'primary' : entregaEnProceso ? 'accent' : 'warn'" selected>
+                {{ procesoCompletado ? 'ENTREGA COMPLETADA' :
+                   entregaEnProceso ? 'ENTREGA EN PROCESO' :
+                   programacionEntrega ? 'ENTREGA PROGRAMADA' :
+                   'PENDIENTE DE PROGRAMAR' }}
+              </mat-chip>
+              
+              <mat-chip [color]="porcentajeCompletitud >= 100 ? 'primary' : 'accent'" selected>
+                <mat-icon matChipAvatar>checklist</mat-icon>
+                {{ itemsCompletados }}/{{ checklistEntrega.length }} Items
+              </mat-chip>
+              
+              <mat-chip color="primary" selected>
+                {{ porcentajeCompletitud }}% Completado
+              </mat-chip>
+            </div>
+          </div>
+        </mat-card-title>
+
+        <div class="header-actions">
+          <button mat-raised-button 
+                  color="primary" 
+                  *ngIf="!programacionEntrega && !procesoCompletado"
+                  (click)="expandirSeccion('programacion')">
+            <mat-icon>event</mat-icon>
+            Programar Entrega
+          </button>
+          
+          <button mat-raised-button 
+                  color="accent" 
+                  *ngIf="programacionEntrega && !entregaEnProceso && !procesoCompletado"
+                  (click)="iniciarProcesEntrega()">
+            <mat-icon>play_arrow</mat-icon>
+            Iniciar Entrega
+          </button>
+          
+          <button mat-raised-button 
+                  color="primary" 
+                  *ngIf="entregaEnProceso"
+                  [disabled]="!validarEntregaCompleta()"
+                  (click)="confirmarEntrega()">
+            <mat-icon>check_circle</mat-icon>
+            Confirmar Entrega
+          </button>
+          
+          <button mat-button 
+                  *ngIf="entregaEnProceso"
+                  (click)="cancelarEntrega()">
+            <mat-icon>cancel</mat-icon>
+            Cancelar
+          </button>
+        </div>
+      </mat-card-header>
+
+      <mat-card-content>
+        <!-- Información de Programación -->
+        <div class="info-programacion" *ngIf="programacionEntrega">
+          <div class="programacion-visual">
+            <div class="programacion-item">
+              <mat-icon color="primary">event</mat-icon>
+              <div class="programacion-detalle">
+                <span class="detalle-label">Fecha y Hora:</span>
+                <span class="detalle-valor">{{ formatearFecha(programacionEntrega.fechaEntrega) }} - {{ programacionEntrega.horaEntrega }}</span>
+              </div>
+            </div>
+            
+            <div class="programacion-item">
+              <mat-icon color="primary">place</mat-icon>
+              <div class="programacion-detalle">
+                <span class="detalle-label">Lugar:</span>
+                <span class="detalle-valor">{{ programacionEntrega.lugarEntrega }}</span>
+              </div>
+            </div>
+            
+            <div class="programacion-item">
+              <mat-icon color="primary">person</mat-icon>
+              <div class="programacion-detalle">
+                <span class="detalle-label">Responsable:</span>
+                <span class="detalle-valor">{{ programacionEntrega.responsableEntrega }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Progreso General -->
+        <div class="progreso-entrega" *ngIf="checklistEntrega.length > 0">
+          <div class="progreso-info">
+            <span class="progreso-label">Progreso de Entrega</span>
+            <span class="progreso-porcentaje">{{ porcentajeCompletitud }}%</span>
+          </div>
+          <mat-progress-bar 
+            [value]="porcentajeCompletitud"
+            [color]="porcentajeCompletitud >= 100 ? 'primary' : 'accent'"
+            class="progreso-bar">
+          </mat-progress-bar>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- SECCIONES EXPANDIBLES -->
+  <!-- ========================================== -->
+  <div class="secciones-entrega">
+
+    <!-- Sección: Programación de Entrega -->
+    <mat-expansion-panel 
+      [expanded]="estaSeccionExpandida('programacion')"
+      (opened)="expandirSeccion('programacion')">
+      
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon [color]="programacionEntrega ? 'primary' : 'accent'">event</mat-icon>
+          <span class="ml-2">Programación de Entrega</span>
+        </mat-panel-title>
+        <mat-panel-description>
+          <mat-chip [color]="programacionEntrega ? 'primary' : 'warn'" selected>
+            {{ programacionEntrega ? 'Programada' : 'Pendiente' }}
+          </mat-chip>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="seccion-content">
+        
+        <!-- Información de Programación Existente -->
+        <div class="programacion-existente" *ngIf="programacionEntrega">
+          <mat-card class="programacion-card">
+            <mat-card-header>
+              <mat-card-title>Entrega Programada</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="programacion-detalles">
+                <div class="detalle-grupo">
+                  <h4>Fecha y Hora</h4>
+                  <p>{{ formatearFecha(programacionEntrega.fechaEntrega) }} a las {{ programacionEntrega.horaEntrega }}</p>
+                </div>
+                
+                <div class="detalle-grupo">
+                  <h4>Lugar de Entrega</h4>
+                  <p>{{ programacionEntrega.lugarEntrega }}</p>
+                  <mat-chip [color]="programacionEntrega.tipoEntrega === 'domicilio' ? 'accent' : 'primary'" selected>
+                    {{ programacionEntrega.tipoEntrega | titlecase }}
+                  </mat-chip>
+                </div>
+                
+                <div class="detalle-grupo">
+                  <h4>Responsable</h4>
+                  <p>{{ programacionEntrega.responsableEntrega }}</p>
+                  <p class="contacto">{{ programacionEntrega.contactoResponsable }}</p>
+                </div>
+                
+                <div class="detalle-grupo" *ngIf="programacionEntrega.instruccionesEspeciales">
+                  <h4>Instrucciones Especiales</h4>
+                  <p>{{ programacionEntrega.instruccionesEspeciales }}</p>
+                </div>
+                
+                <div class="detalle-grupo" *ngIf="programacionEntrega.requiereTransporte">
+                  <h4>Transporte</h4>
+                  <p>Transporte requerido - Costo: {{ programacionEntrega.costoTransporte | currency:'PEN':'symbol':'1.2-2' }}</p>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+        <!-- Formulario de Programación -->
+        <div class="formulario-programacion" *ngIf="!programacionEntrega">
+          <mat-card class="formulario-card">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon color="primary">schedule</mat-icon>
+                Programar Nueva Entrega
+              </mat-card-title>
+            </mat-card-header>
+
+            <mat-card-content>
+              <form [formGroup]="formularioProgramacion" class="programacion-form">
+                
+                <div class="form-row">
+                  <mat-form-field appearance="outline" class="form-field">
+                    <mat-label>Fecha de Entrega</mat-label>
+                    <input matInput 
+                           [matDatepicker]="picker" 
+                           formControlName="fechaEntrega"
+                           [min]="fechaActual">
+                    <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                    <mat-datepicker #picker></mat-datepicker>
+                    <mat-error *ngIf="formularioProgramacion.get('fechaEntrega')?.hasError('required')">
+                      La fecha es requerida
+                    </mat-error>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" class="form-field">
+                    <mat-label>Hora de Entrega</mat-label>
+                    <mat-select formControlName="horaEntrega">
+                      <mat-option *ngFor="let hora of HORARIOS_ENTREGA" [value]="hora">
+                        {{ hora }}
+                      </mat-option>
+                    </mat-select>
+                    <mat-error *ngIf="formularioProgramacion.get('horaEntrega')?.hasError('required')">
+                      La hora es requerida
+                    </mat-error>
+                  </mat-form-field>
+                </div>
+
+                <div class="form-row">
+                  <mat-form-field appearance="outline" class="form-field">
+                    <mat-label>Lugar de Entrega</mat-label>
+                    <mat-select formControlName="lugarEntrega">
+                      <mat-option *ngFor="let lugar of LUGARES_ENTREGA" [value]="lugar.label">
+                        <mat-icon>{{ lugar.tipo === 'tienda' ? 'store' : 
+                                    lugar.tipo === 'domicilio' ? 'home' : 'place' }}</mat-icon>
+                        {{ lugar.label }}
+                      </mat-option>
+                    </mat-select>
+                    <mat-error *ngIf="formularioProgramacion.get('lugarEntrega')?.hasError('required')">
+                      El lugar es requerido
+                    </mat-error>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" class="form-field">
+                    <mat-label>Responsable de Entrega</mat-label>
+                    <mat-select formControlName="responsableEntrega">
+                      <mat-option *ngFor="let responsable of RESPONSABLES_ENTREGA" [value]="responsable.id">
+                        {{ responsable.nombre }} - {{ responsable.cargo }}
+                      </mat-option>
+                    </mat-select>
+                    <mat-error *ngIf="formularioProgramacion.get('responsableEntrega')?.hasError('required')">
+                      El responsable es requerido
+                    </mat-error>
+                  </mat-form-field>
+                </div>
+
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Instrucciones Especiales</mat-label>
+                  <textarea matInput 
+                            formControlName="instruccionesEspeciales"
+                            rows="3"
+                            placeholder="Instrucciones adicionales para la entrega"></textarea>
+                </mat-form-field>
+
+                <div class="form-row">
+                  <mat-checkbox formControlName="requiereTransporte">
+                    Requiere transporte especial
+                  </mat-checkbox>
+                  
+                  <mat-form-field appearance="outline" 
+                                 class="form-field"
+                                 *ngIf="formularioProgramacion.get('requiereTransporte')?.value">
+                    <mat-label>Costo de Transporte</mat-label>
+                    <input matInput type="number" formControlName="costoTransporte" min="0">
+                    <span matTextPrefix>S/ </span>
+                    <mat-error *ngIf="formularioProgramacion.get('costoTransporte')?.hasError('required')">
+                      El costo es requerido
+                    </mat-error>
+                  </mat-form-field>
+                </div>
+
+              </form>
+            </mat-card-content>
+
+            <mat-card-actions align="end">
+              <button mat-raised-button 
+                      color="primary" 
+                      (click)="programarEntrega()"
+                      [disabled]="formularioProgramacion.invalid">
+                <mat-icon>event</mat-icon>
+                Programar Entrega
+              </button>
+            </mat-card-actions>
+          </mat-card>
+        </div>
+
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Sección: Checklist de Entrega -->
+    <mat-expansion-panel 
+      [expanded]="estaSeccionExpandida('checklist')"
+      (opened)="expandirSeccion('checklist')">
+      
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon color="primary">checklist</mat-icon>
+          <span class="ml-2">Lista de Verificación</span>
+        </mat-panel-title>
+        <mat-panel-description>
+          <mat-chip color="primary" selected>
+            {{ itemsCompletados }}/{{ checklistEntrega.length }} completados
+          </mat-chip>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="seccion-content">
+        <div class="checklist-container">
+          
+          <!-- Categorías del Checklist -->
+          <div *ngFor="let categoria of ['documentos', 'vehiculo', 'accesorios', 'seguridad', 'entrega']" 
+               class="categoria-seccion">
+            
+            <div class="categoria-header">
+              <mat-icon [color]="obtenerColorCategoria(categoria)">{{ obtenerIconoCategoria(categoria) }}</mat-icon>
+              <h3>{{ categoria | titlecase }}</h3>
+              <mat-chip [color]="obtenerColorCategoria(categoria)" selected>
+                {{ contarItemsCompletadosPorCategoria(categoria) }}/{{ contarItemsPorCategoria(categoria) }}
+              </mat-chip>
+            </div>
+
+            <div class="items-categoria">
+              <mat-card *ngFor="let item of obtenerItemsPorCategoria(categoria)"
+                        class="item-card"
+                        [ngClass]="'item-' + (item.completado ? 'completado' : 'pendiente')">
+                
+                <mat-card-content>
+                  <div class="item-contenido">
+                    <div class="item-checkbox">
+                      <mat-checkbox 
+                        [checked]="item.completado"
+                        [color]="obtenerColorCategoria(categoria)"
+                        (change)="completarItemChecklist(item)">
+                      </mat-checkbox>
+                    </div>
+                    
+                    <div class="item-info">
+                      <h4 class="item-titulo" [ngClass]="{'completado': item.completado}">
+                        {{ item.item }}
+                        <mat-chip *ngIf="item.esObligatorio" color="warn" class="obligatorio-chip">
+                          Obligatorio
+                        </mat-chip>
+                      </h4>
+                      <p class="item-descripcion">{{ item.descripcion }}</p>
+                      
+                      <div class="item-meta" *ngIf="item.completado">
+                        <span class="meta-info">
+                          <mat-icon>check_circle</mat-icon>
+                          Completado {{ formatearFechaCorta(item.fechaVerificacion!) }} por {{ item.verificadoPor }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Sección: Información de Entrega -->
+    <mat-expansion-panel 
+      *ngIf="entregaEnProceso || procesoCompletado"
+      [expanded]="estaSeccionExpandida('informacion')"
+      (opened)="expandirSeccion('informacion')">
+      
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon color="accent">assignment</mat-icon>
+          <span class="ml-2">Información de Entrega</span>
+        </mat-panel-title>
+        <mat-panel-description>
+          <mat-chip [color]="procesoCompletado ? 'primary' : 'accent'" selected>
+            {{ procesoCompletado ? 'Completada' : 'En Proceso' }}
+          </mat-chip>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="seccion-content">
+        
+        <!-- Formulario de Entrega -->
+        <div class="formulario-entrega" *ngIf="entregaEnProceso && mostrarFormularioEntrega">
+          <mat-card class="formulario-card">
+            <mat-card-header>
+              <mat-card-title>Registro de Entrega</mat-card-title>
+            </mat-card-header>
+
+            <mat-card-content>
+              <form [formGroup]="formularioEntrega" class="entrega-form">
+                
+                <div class="form-section">
+                  <h4>Estado del Vehículo</h4>
+                  
+                  <div class="form-row">
+                    <mat-form-field appearance="outline" class="form-field">
+                      <mat-label>Kilometraje</mat-label>
+                      <input matInput type="number" formControlName="kilometraje" min="0">
+                      <span matTextSuffix>km</span>
+                      <mat-error *ngIf="formularioEntrega.get('kilometraje')?.hasError('required')">
+                        El kilometraje es requerido
+                      </mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="form-field">
+                      <mat-label>Nivel de Combustible</mat-label>
+                      <mat-select formControlName="nivelCombustible">
+                        <mat-option value="lleno">Tanque Lleno</mat-option>
+                        <mat-option value="3/4">3/4 del tanque</mat-option>
+                        <mat-option value="1/2">1/2 tanque</mat-option>
+                        <mat-option value="1/4">1/4 del tanque</mat-option>
+                        <mat-option value="vacio">Vacío</mat-option>
+                      </mat-select>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="form-field">
+                      <mat-label>Estado General</mat-label>
+                      <mat-select formControlName="estadoGeneral">
+                        <mat-option value="excelente">Excelente</mat-option>
+                        <mat-option value="muy_bueno">Muy Bueno</mat-option>
+                        <mat-option value="bueno">Bueno</mat-option>
+                        <mat-option value="regular">Regular</mat-option>
+                        <mat-option value="malo">Malo</mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                </div>
+
+                <div class="form-section">
+                  <h4>Confirmaciones</h4>
+                  
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Observaciones de Entrega</mat-label>
+                    <textarea matInput 
+                              formControlName="observacionesEntrega"
+                              rows="3"
+                              placeholder="Observaciones o comentarios adicionales"></textarea>
+                  </mat-form-field>
+
+                  <div class="confirmaciones">
+                    <mat-checkbox formControlName="clienteSatisfecho" color="primary">
+                      El cliente confirma estar satisfecho con la entrega
+                    </mat-checkbox>
+                  </div>
+                </div>
+
+              </form>
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+        <!-- Registro de Persona de Entrega -->
+        <div class="persona-entrega" *ngIf="entregaEnProceso">
+          <mat-card class="formulario-card">
+            <mat-card-header>
+              <mat-card-title>Persona que Recibe</mat-card-title>
+              <mat-card-subtitle>
+                Si el vehículo no será entregado directamente al titular
+              </mat-card-subtitle>
+            </mat-card-header>
+
+            <mat-card-content>
+              <form [formGroup]="formularioPersonaEntrega" class="persona-form">
+                
+                <div class="form-row">
+                  <mat-form-field appearance="outline" class="form-field">
+                    <mat-label>Nombres</mat-label>
+                    <input matInput formControlName="nombres">
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" class="form-field">
+                    <mat-label>Apellidos</mat-label>
+                    <input matInput formControlName="apellidos">
+                  </mat-form-field>
+                </div>
+
+                <div class="form-row">
+                  <mat-form-field appearance="outline" class="form-field">
+                    <mat-label>Tipo de Documento</mat-label>
+                    <mat-select formControlName="tipoDocumento">
+                      <mat-option value="DNI">DNI</mat-option>
+                      <mat-option value="CE">Carnet de Extranjería</mat-option>
+                      <mat-option value="PASAPORTE">Pasaporte</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" class="form-field">
+                    <mat-label>Número de Documento</mat-label>
+                    <input matInput formControlName="numeroDocumento">
+                  </mat-form-field>
+                </div>
+
+                <div class="form-row">
+                  <mat-form-field appearance="outline" class="form-field">
+                    <mat-label>Parentesco</mat-label>
+                    <mat-select formControlName="parentesco">
+                      <mat-option value="conyuge">Cónyuge</mat-option>
+                      <mat-option value="hijo">Hijo/a</mat-option>
+                      <mat-option value="padre">Padre/Madre</mat-option>
+                      <mat-option value="hermano">Hermano/a</mat-option>
+                      <mat-option value="otro">Otro</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" class="form-field">
+                    <mat-label>Teléfono</mat-label>
+                    <input matInput formControlName="telefono">
+                  </mat-form-field>
+                </div>
+
+              </form>
+            </mat-card-content>
+
+            <mat-card-actions align="end">
+              <button mat-button (click)="registrarPersonaEntrega()">
+                <mat-icon>person_add</mat-icon>
+                Registrar Persona
+              </button>
+            </mat-card-actions>
+          </mat-card>
+        </div>
+
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Sección: Historial de Eventos -->
+    <mat-expansion-panel 
+      [expanded]="estaSeccionExpandida('historial')"
+      (opened)="expandirSeccion('historial')">
+      
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon color="primary">history</mat-icon>
+          <span class="ml-2">Historial de Entrega</span>
+        </mat-panel-title>
+        <mat-panel-description>
+          <mat-chip color="primary" selected>
+            {{ historialEntrega.length }} eventos
+          </mat-chip>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="seccion-content">
+        <div class="historial-timeline">
+          
+          <div *ngFor="let evento of historialEntrega" class="timeline-evento">
+            <div class="evento-marker">
+              <mat-icon color="primary">event</mat-icon>
+            </div>
+            
+            <div class="evento-contenido">
+              <div class="evento-header">
+                <span class="evento-texto">{{ evento.evento }}</span>
+                <span class="evento-fecha">{{ evento.fecha.toLocaleString('es-PE') }}</span>
+              </div>
+              
+              <div class="evento-meta">
+                <span class="evento-usuario">{{ evento.usuario }}</span>
+                <span class="evento-ubicacion" *ngIf="evento.ubicacion">{{ evento.ubicacion }}</span>
+              </div>
+              
+              <div class="evento-observaciones" *ngIf="evento.observaciones">
+                {{ evento.observaciones }}
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </mat-expansion-panel>
+
+  </div>
+
+  <!-- ========================================== -->
+  <!-- RESUMEN FINAL (SI ESTÁ COMPLETADO) -->
+  <!-- ========================================== -->
+  <div class="resumen-final" *ngIf="procesoCompletado">
+    <mat-card class="resumen-card">
+      <mat-card-header>
+        <div mat-card-avatar class="avatar-exito">
+          <mat-icon>check_circle</mat-icon>
+        </div>
+        <mat-card-title>¡Entrega Completada Exitosamente!</mat-card-title>
+        <mat-card-subtitle>
+          El vehículo ha sido entregado al cliente {{ fechaActual }}
+        </mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <div class="resumen-info">
+          <div class="resumen-item">
+            <mat-icon color="primary">two_wheeler</mat-icon>
+            <span>{{ expediente.vehiculo.descripcionCompleta }}</span>
+          </div>
+          
+          <div class="resumen-item">
+            <mat-icon color="primary">person</mat-icon>
+            <span>{{ expediente.titular.nombreCompleto }}</span>
+          </div>
+          
+          <div class="resumen-item" *ngIf="personaEntrega">
+            <mat-icon color="primary">supervisor_account</mat-icon>
+            <span>Recibido por: {{ personaEntrega.nombres }} {{ personaEntrega.apellidos }}</span>
+          </div>
+          
+          <div class="resumen-item">
+            <mat-icon color="primary">place</mat-icon>
+            <span>{{ programacionEntrega?.lugarEntrega }}</span>
+          </div>
+        </div>
+      </mat-card-content>
+
+      <mat-card-actions>
+        <button mat-button color="primary">
+          <mat-icon>print</mat-icon>
+          Imprimir Acta de Entrega
+        </button>
+        <button mat-button color="primary">
+          <mat-icon>email</mat-icon>
+          Enviar Confirmación
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+</div>

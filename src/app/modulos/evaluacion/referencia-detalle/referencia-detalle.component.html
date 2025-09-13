@@ -1,0 +1,641 @@
+<div class="referencias-detalle-container">
+
+  <!-- ========================================== -->
+  <!-- HEADER DE REFERENCIAS -->
+  <!-- ========================================== -->
+  <div class="referencias-header mb-4">
+    <mat-card class="header-card">
+      <mat-card-header>
+        <div mat-card-avatar class="avatar-referencias">
+          <mat-icon>contacts</mat-icon>
+        </div>
+        
+        <mat-card-title>
+          <div class="title-container">
+            <h2>Referencias Personales</h2>
+            <div class="subtitle-info" *ngIf="tieneReferencias">
+              <mat-chip [color]="requisitoEstado.cumple ? 'primary' : 'warn'" selected>
+                {{ requisitoEstado.mensaje }}
+              </mat-chip>
+              
+              <mat-chip color="accent" selected>
+                {{ estadisticas.total }} referencias registradas
+              </mat-chip>
+            </div>
+          </div>
+        </mat-card-title>
+
+        <div class="header-actions">
+          <button mat-icon-button (click)="agregarNuevaReferencia()" matTooltip="Agregar referencia">
+            <mat-icon>person_add</mat-icon>
+          </button>
+          
+          <button mat-icon-button (click)="enviarRecordatorios()" matTooltip="Enviar recordatorios">
+            <mat-icon>notifications</mat-icon>
+          </button>
+          
+          <button mat-icon-button [matMenuTriggerFor]="menuOpciones" matTooltip="Más opciones">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+        </div>
+      </mat-card-header>
+
+      <mat-card-content *ngIf="tieneReferencias">
+        <!-- Progreso de Verificación -->
+        <div class="progreso-verificacion">
+          <div class="progreso-info">
+            <span class="progreso-label">Referencias Verificadas</span>
+            <span class="progreso-valor">{{ calcularPorcentajeVerificacion() }}%</span>
+          </div>
+          <mat-progress-bar 
+            [value]="calcularPorcentajeVerificacion()"
+            [color]="obtenerColorEstadoVerificacion()"
+            mode="determinate">
+          </mat-progress-bar>
+        </div>
+
+        <!-- Estadísticas Rápidas -->
+        <div class="estadisticas-grid">
+          <div class="estadistica-item">
+            <mat-icon color="primary">verified</mat-icon>
+            <div class="estadistica-content">
+              <span class="estadistica-numero">{{ estadisticas.verificadas }}</span>
+              <span class="estadistica-label">Verificadas</span>
+            </div>
+          </div>
+          
+          <div class="estadistica-item">
+            <mat-icon color="accent">schedule</mat-icon>
+            <div class="estadistica-content">
+              <span class="estadistica-numero">{{ estadisticas.pendientes }}</span>
+              <span class="estadistica-label">Pendientes</span>
+            </div>
+          </div>
+          
+          <div class="estadistica-item">
+            <mat-icon color="primary">assessment</mat-icon>
+            <div class="estadistica-content">
+              <span class="estadistica-numero">{{ estadisticas.scorePromedio }}</span>
+              <span class="estadistica-label">Score Promedio</span>
+            </div>
+          </div>
+          
+          <div class="estadistica-item" *ngIf="estadisticas.confiabilidadPromedio > 0">
+            <mat-icon color="primary">thumb_up</mat-icon>
+            <div class="estadistica-content">
+              <span class="estadistica-numero">{{ estadisticas.confiabilidadPromedio }}/10</span>
+              <span class="estadistica-label">Confiabilidad</span>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- CONTENIDO PRINCIPAL -->
+  <!-- ========================================== -->
+  <div *ngIf="!tieneReferencias" class="referencias-vacio">
+    <mat-card class="empty-card">
+      <mat-card-content class="text-center p-5">
+        <mat-icon class="empty-icon" color="accent">contacts</mat-icon>
+        <h3>No hay referencias registradas</h3>
+        <p class="text-muted mb-4">Para continuar con la evaluación, se requieren al menos 2 referencias personales verificadas.</p>
+        <button mat-raised-button color="primary" (click)="agregarNuevaReferencia()">
+          <mat-icon>person_add</mat-icon>
+          Agregar Primera Referencia
+        </button>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- SECCIONES EXPANDIBLES -->
+  <!-- ========================================== -->
+  <div *ngIf="tieneReferencias" class="secciones-referencias">
+
+    <!-- Sección: Resumen General -->
+    <mat-expansion-panel 
+      [expanded]="estaSeccionExpandida('resumen')"
+      (opened)="expandirSeccion('resumen')">
+      
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon color="primary">analytics</mat-icon>
+          <span class="ml-2">Resumen de Verificación</span>
+        </mat-panel-title>
+        <mat-panel-description>
+          <mat-chip [color]="obtenerColorEstadoVerificacion()" selected>
+            {{ estadisticas.verificadas }}/{{ estadisticas.total }} verificadas
+          </mat-chip>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="seccion-content">
+        <!-- Métricas Detalladas -->
+        <div class="metricas-detalladas">
+          <div class="metrica-card">
+            <div class="metrica-header">
+              <mat-icon color="primary">check_circle</mat-icon>
+              <span>Estado de Verificación</span>
+            </div>
+            <div class="metrica-grid">
+              <div class="metrica-item">
+                <span class="metrica-label">Verificadas</span>
+                <mat-chip color="primary" selected>{{ estadisticas.verificadas }}</mat-chip>
+              </div>
+              <div class="metrica-item">
+                <span class="metrica-label">Contactadas</span>
+                <mat-chip color="accent" selected>{{ estadisticas.contactadas }}</mat-chip>
+              </div>
+              <div class="metrica-item">
+                <span class="metrica-label">Pendientes</span>
+                <mat-chip color="warn" selected>{{ estadisticas.pendientes }}</mat-chip>
+              </div>
+              <div class="metrica-item">
+                <span class="metrica-label">No Contactadas</span>
+                <mat-chip color="warn" selected>{{ estadisticas.noContactadas }}</mat-chip>
+              </div>
+            </div>
+          </div>
+
+          <!-- Progreso de Contacto -->
+          <div class="metrica-card">
+            <div class="metrica-header">
+              <mat-icon color="accent">phone</mat-icon>
+              <span>Progreso de Contacto</span>
+            </div>
+            <div class="progreso-contacto">
+              <div class="progreso-info">
+                <span class="progreso-label">Referencias Contactadas</span>
+                <span class="progreso-valor">{{ calcularPorcentajeContacto() }}%</span>
+              </div>
+              <mat-progress-bar 
+                [value]="calcularPorcentajeContacto()"
+                color="accent"
+                mode="determinate">
+              </mat-progress-bar>
+            </div>
+          </div>
+
+          <!-- Evaluación de Calidad -->
+          <div class="metrica-card" *ngIf="estadisticas.scorePromedio > 0">
+            <div class="metrica-header">
+              <mat-icon color="primary">star</mat-icon>
+              <span>Calidad de Referencias</span>
+            </div>
+            <div class="calidad-grid">
+              <div class="calidad-item">
+                <span class="calidad-label">Score Promedio</span>
+                <mat-chip [color]="obtenerColorPuntaje(estadisticas.scorePromedio)" selected>
+                  {{ estadisticas.scorePromedio }}/100
+                </mat-chip>
+              </div>
+              <div class="calidad-item" *ngIf="estadisticas.confiabilidadPromedio > 0">
+                <span class="calidad-label">Confiabilidad</span>
+                <mat-chip color="primary" selected>
+                  {{ estadisticas.confiabilidadPromedio }}/10
+                </mat-chip>
+              </div>
+              <div class="calidad-item">
+                <span class="calidad-label">Referencias Confiables</span>
+                <mat-chip color="primary" selected>
+                  {{ referenciasConfiables.length }}/{{ estadisticas.total }}
+                </mat-chip>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Sección: Referencias por Tipo -->
+    <mat-expansion-panel 
+      *ngFor="let grupo of referenciasAgrupadas"
+      [expanded]="estaSeccionExpandida('grupo-' + grupo.categoria)"
+      (opened)="expandirSeccion('grupo-' + grupo.categoria)">
+      
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon [color]="grupo.color">{{ grupo.icono }}</mat-icon>
+          <span class="ml-2">{{ grupo.label }}</span>
+        </mat-panel-title>
+        <mat-panel-description>
+          <mat-chip color="accent" selected>
+            {{ grupo.referencias.length }} referencia{{ grupo.referencias.length > 1 ? 's' : '' }}
+          </mat-chip>
+          <mat-chip 
+            [color]="obtenerColorVerificacionGrupo(grupo)" 
+            selected>
+            {{ obtenerTextoVerificacionGrupo(grupo) }}
+          </mat-chip>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="seccion-content">
+        <div class="referencias-lista">
+          
+          <mat-card *ngFor="let referencia of grupo.referencias" 
+                    class="referencia-card"
+                    [class.selected]="referenciaSeleccionada?.id === referencia.id"
+                    (click)="seleccionarReferencia(referencia)">
+            
+            <mat-card-header>
+              <div mat-card-avatar class="avatar-referencia">
+                <mat-icon>person</mat-icon>
+              </div>
+              
+              <mat-card-title>
+                <div class="referencia-nombre">
+                  {{ referencia.nombreCompleto }}
+                </div>
+                <div class="referencia-parentesco">
+                  {{ referencia.parentesco }}
+                </div>
+              </mat-card-title>
+              
+              <mat-card-subtitle>
+                <div class="referencia-contacto">
+                  <mat-icon class="icon-small">phone</mat-icon>
+                  <span>{{ formatearTelefono(referencia.telefono) }}</span>
+                </div>
+                <div class="referencia-estado">
+                  <mat-chip 
+                    [color]="ESTADOS_REFERENCIA[referencia.estadoVerificacion || 'pendiente'].color" 
+                    selected>
+                    <mat-icon matChipAvatar>
+                      {{ ESTADOS_REFERENCIA[referencia.estadoVerificacion || 'pendiente'].icono }}
+                    </mat-icon>
+                    {{ ESTADOS_REFERENCIA[referencia.estadoVerificacion || 'pendiente'].label }}
+                  </mat-chip>
+                </div>
+              </mat-card-subtitle>
+
+              <div class="referencia-actions">
+                <button mat-icon-button [matMenuTriggerFor]="menuReferencia" 
+                        (click)="$event.stopPropagation()">
+                  <mat-icon>more_vert</mat-icon>
+                </button>
+                
+                <mat-menu #menuReferencia="matMenu">
+                  <button *ngFor="let accion of obtenerAccionesDisponibles(referencia)" 
+                          mat-menu-item 
+                          [disabled]="!accion.disponible"
+                          (click)="ejecutarAccion(referencia, accion.id)">
+                    <mat-icon [color]="accion.color">{{ accion.icono }}</mat-icon>
+                    <span>{{ accion.label }}</span>
+                  </button>
+                </mat-menu>
+              </div>
+            </mat-card-header>
+
+            <mat-card-content>
+              <!-- Información básica -->
+              <div class="referencia-info">
+                <div class="info-item" *ngIf="referencia.ocupacion">
+                  <mat-icon class="icon-small">work</mat-icon>
+                  <span>{{ referencia.ocupacion }}</span>
+                </div>
+                
+                <div class="info-item" *ngIf="referencia.esReferenciaLaboral">
+                  <mat-icon class="icon-small" color="primary">business</mat-icon>
+                  <span>Referencia Laboral</span>
+                </div>
+                
+                <div class="info-item" *ngIf="referencia.fechaContacto">
+                  <mat-icon class="icon-small">schedule</mat-icon>
+                  <span>Contactado: {{ formatearFecha(referencia.fechaContacto) }}</span>
+                </div>
+              </div>
+
+              <!-- Score y confiabilidad -->
+              <div class="referencia-scores" *ngIf="referencia.puntajeReferencia > 0">
+                <div class="score-item">
+                  <span class="score-label">Puntaje</span>
+                  <mat-chip [color]="obtenerColorPuntaje(referencia.puntajeReferencia)" selected>
+                    {{ referencia.puntajeReferencia }}/100
+                  </mat-chip>
+                </div>
+                
+                <div class="score-item" *ngIf="referencia.resultadoVerificacion?.confiabilidad">
+                  <span class="score-label">Confiabilidad</span>
+                  <mat-chip color="primary" selected>
+                    {{ referencia.resultadoVerificacion?.confiabilidad }}/10
+                  </mat-chip>
+                </div>
+              </div>
+
+              <!-- Resultado de verificación resumido -->
+              <div class="resultado-resumido" *ngIf="referencia.resultadoVerificacion && referencia.estadoVerificacion === 'verificado'">
+                <div class="resultado-header">
+                  <mat-icon color="primary">assessment</mat-icon>
+                  <span>Resultado de Verificación</span>
+                </div>
+                
+                <div class="resultado-items">
+                  <div class="resultado-item">
+                    <mat-icon [color]="referencia.resultadoVerificacion.conoceTitular ? 'primary' : 'warn'">
+                      {{ referencia.resultadoVerificacion.conoceTitular ? 'check' : 'close' }}
+                    </mat-icon>
+                    <span>{{ referencia.resultadoVerificacion.conoceTitular ? 'Conoce al titular' : 'No conoce al titular' }}</span>
+                  </div>
+                  
+                  <div class="resultado-item">
+                    <mat-icon [color]="referencia.resultadoVerificacion.recomendaria ? 'primary' : 'warn'">
+                      {{ referencia.resultadoVerificacion.recomendaria ? 'thumb_up' : 'thumb_down' }}
+                    </mat-icon>
+                    <span>{{ referencia.resultadoVerificacion.recomendaria ? 'Recomendaría' : 'No recomendaría' }}</span>
+                  </div>
+                  
+                  <div class="resultado-item">
+                    <mat-icon color="accent">people</mat-icon>
+                    <span>{{ obtenerDescripcionRelacion(referencia) }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Alertas y observaciones -->
+              <div class="referencia-alertas" *ngIf="referencia.requiereReverificacion">
+                <mat-card class="alerta-card">
+                  <mat-card-content>
+                    <div class="alerta-content">
+                      <mat-icon color="warn">warning</mat-icon>
+                      <span>Esta referencia requiere re-verificación</span>
+                    </div>
+                  </mat-card-content>
+                </mat-card>
+              </div>
+            </mat-card-content>
+          </mat-card>
+
+        </div>
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Sección: Referencias Problemáticas -->
+    <mat-expansion-panel 
+      *ngIf="referenciasProblematicas.length > 0"
+      [expanded]="estaSeccionExpandida('problematicas')"
+      (opened)="expandirSeccion('problematicas')">
+      
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon color="warn">warning</mat-icon>
+          <span class="ml-2">Referencias Problemáticas</span>
+        </mat-panel-title>
+        <mat-panel-description>
+          <mat-chip color="warn" selected>
+            {{ referenciasProblematicas.length }} requieren atención
+          </mat-chip>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="seccion-content">
+        <p class="section-description">
+          Las siguientes referencias requieren atención especial o acciones correctivas:
+        </p>
+        
+        <div class="referencias-problematicas">
+          <mat-card *ngFor="let referencia of referenciasProblematicas" 
+                    class="referencia-problema">
+            <mat-card-content>
+              <div class="problema-header">
+                <div class="problema-info">
+                  <strong>{{ referencia.nombreCompleto }}</strong>
+                  <span class="problema-tipo">{{ referencia.parentesco }}</span>
+                </div>
+                <mat-chip color="warn" selected>
+                  {{ ESTADOS_REFERENCIA[referencia.estadoVerificacion || 'pendiente'].label }}
+                </mat-chip>
+              </div>
+              
+              <div class="problema-descripcion">
+                <mat-icon color="warn">info</mat-icon>
+                <span *ngIf="referencia.estadoVerificacion === 'no_contactado'">
+                  No se ha logrado contactar después de {{ referencia.intentosContacto || 0 }} intentos
+                </span>
+                <span *ngIf="referencia.estadoVerificacion === 'rechazado'">
+                  Referencia rechazada durante el proceso de verificación
+                </span>
+                <span *ngIf="referencia.requiereReverificacion">
+                  Requiere una nueva verificación por inconsistencias detectadas
+                </span>
+              </div>
+              
+              <div class="problema-acciones">
+                <button mat-button color="primary" 
+                        (click)="ejecutarAccion(referencia, 'reintentar_contacto')"
+                        *ngIf="referencia.estadoVerificacion === 'no_contactado'">
+                  <mat-icon>refresh</mat-icon>
+                  Reintentar Contacto
+                </button>
+                
+                <button mat-button color="accent"
+                        (click)="ejecutarAccion(referencia, 'reactivar')"
+                        *ngIf="referencia.estadoVerificacion === 'rechazado'">
+                  <mat-icon>restore</mat-icon>
+                  Reactivar
+                </button>
+                
+                <button mat-button color="primary"
+                        (click)="ejecutarAccion(referencia, 'reverificar')"
+                        *ngIf="referencia.requiereReverificacion">
+                  <mat-icon>update</mat-icon>
+                  Re-verificar
+                </button>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </div>
+    </mat-expansion-panel>
+
+  </div>
+
+  <!-- ========================================== -->
+  <!-- PANEL DE DETALLE COMPLETO -->
+  <!-- ========================================== -->
+  <div class="detalle-completo-overlay" 
+       *ngIf="mostrarDetalleCompleto && referenciaSeleccionada"
+       (click)="mostrarDetalleCompleto = false">
+    
+    <mat-card class="detalle-completo-card" (click)="$event.stopPropagation()">
+      <mat-card-header>
+        <mat-card-title class="d-flex justify-content-between align-items-center w-100">
+          <span>Detalle Completo - {{ referenciaSeleccionada.nombreCompleto }}</span>
+          <button mat-icon-button (click)="mostrarDetalleCompleto = false">
+            <mat-icon>close</mat-icon>
+          </button>
+        </mat-card-title>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <!-- Información personal completa -->
+        <div class="detalle-seccion">
+          <h4>Información Personal</h4>
+          <div class="detalle-grid">
+            <div class="detalle-item">
+              <span class="detalle-label">Nombre Completo:</span>
+              <span class="detalle-valor">{{ referenciaSeleccionada.nombreCompleto }}</span>
+            </div>
+            <div class="detalle-item">
+              <span class="detalle-label">Parentesco:</span>
+              <span class="detalle-valor">{{ referenciaSeleccionada.parentesco }}</span>
+            </div>
+            <div class="detalle-item">
+              <span class="detalle-label">Teléfono Principal:</span>
+              <span class="detalle-valor">{{ formatearTelefono(referenciaSeleccionada.telefono) }}</span>
+            </div>
+            <div class="detalle-item" *ngIf="referenciaSeleccionada.telefonoAlternativo">
+              <span class="detalle-label">Teléfono Alternativo:</span>
+              <span class="detalle-valor">{{ formatearTelefono(referenciaSeleccionada.telefonoAlternativo) }}</span>
+            </div>
+            <div class="detalle-item" *ngIf="referenciaSeleccionada.email">
+              <span class="detalle-label">Email:</span>
+              <span class="detalle-valor">{{ referenciaSeleccionada.email }}</span>
+            </div>
+            <div class="detalle-item" *ngIf="referenciaSeleccionada.ocupacion">
+              <span class="detalle-label">Ocupación:</span>
+              <span class="detalle-valor">{{ referenciaSeleccionada.ocupacion }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Resultado de verificación detallado -->
+        <div class="detalle-seccion" *ngIf="referenciaSeleccionada.resultadoVerificacion">
+          <h4>Resultado de Verificación</h4>
+          <div class="verificacion-detallada">
+            <div class="verificacion-item">
+              <mat-icon [color]="referenciaSeleccionada.resultadoVerificacion.conoceTitular ? 'primary' : 'warn'">
+                {{ referenciaSeleccionada.resultadoVerificacion.conoceTitular ? 'check_circle' : 'cancel' }}
+              </mat-icon>
+              <div class="verificacion-contenido">
+                <strong>Conocimiento del Titular</strong>
+                <p>{{ referenciaSeleccionada.resultadoVerificacion.conoceTitular ? 'Confirma conocer al titular' : 'No conoce al titular' }}</p>
+                <small *ngIf="referenciaSeleccionada.resultadoVerificacion.tiempoConocimiento">
+                  Tiempo de conocimiento: {{ referenciaSeleccionada.resultadoVerificacion.tiempoConocimiento }}
+                </small>
+              </div>
+            </div>
+            
+            <div class="verificacion-item">
+              <mat-icon [color]="referenciaSeleccionada.resultadoVerificacion.recomendaria ? 'primary' : 'warn'">
+                {{ referenciaSeleccionada.resultadoVerificacion.recomendaria ? 'thumb_up' : 'thumb_down' }}
+              </mat-icon>
+              <div class="verificacion-contenido">
+                <strong>Recomendación</strong>
+                <p>{{ referenciaSeleccionada.resultadoVerificacion.recomendaria ? 'Recomendaría al titular' : 'No recomendaría al titular' }}</p>
+              </div>
+            </div>
+            
+            <div class="verificacion-item">
+              <mat-icon color="accent">people</mat-icon>
+              <div class="verificacion-contenido">
+                <strong>Calidad de la Relación</strong>
+                <p>{{ obtenerDescripcionRelacion(referenciaSeleccionada) }}</p>
+              </div>
+            </div>
+            
+            <div class="verificacion-item" *ngIf="referenciaSeleccionada.resultadoVerificacion.confiabilidad">
+              <mat-icon color="primary">star</mat-icon>
+              <div class="verificacion-contenido">
+                <strong>Nivel de Confiabilidad</strong>
+                <p>{{ referenciaSeleccionada.resultadoVerificacion.confiabilidad }}/10</p>
+              </div>
+            </div>
+            
+            <div class="verificacion-item" *ngIf="referenciaSeleccionada.resultadoVerificacion.observaciones">
+              <mat-icon color="accent">note</mat-icon>
+              <div class="verificacion-contenido">
+                <strong>Observaciones</strong>
+                <p>{{ referenciaSeleccionada.resultadoVerificacion.observaciones }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Historial de contacto -->
+        <div class="detalle-seccion">
+          <h4>Historial de Contacto</h4>
+          <div class="historial-contacto">
+            <div class="contacto-item">
+              <span class="contacto-label">Estado:</span>
+              <mat-chip [color]="ESTADOS_REFERENCIA[referenciaSeleccionada.estadoVerificacion || 'pendiente'].color" selected>
+                {{ ESTADOS_REFERENCIA[referenciaSeleccionada.estadoVerificacion || 'pendiente'].label }}
+              </mat-chip>
+            </div>
+            <div class="contacto-item" *ngIf="referenciaSeleccionada.fechaContacto">
+              <span class="contacto-label">Fecha de Contacto:</span>
+              <span class="contacto-valor">{{ formatearFecha(referenciaSeleccionada.fechaContacto) }}</span>
+            </div>
+            <div class="contacto-item" *ngIf="referenciaSeleccionada.intentosContacto">
+              <span class="contacto-label">Intentos de Contacto:</span>
+              <span class="contacto-valor">{{ referenciaSeleccionada.intentosContacto }}</span>
+            </div>
+            <div class="contacto-item" *ngIf="referenciaSeleccionada.verificadoPorId">
+              <span class="contacto-label">Verificado por:</span>
+              <span class="contacto-valor">{{ referenciaSeleccionada.verificadoPorId }}</span>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+      
+      <mat-card-actions class="justify-content-end">
+        <button mat-button (click)="mostrarDetalleCompleto = false">Cerrar</button>
+        <button mat-raised-button color="primary" 
+                (click)="ejecutarAccion(referenciaSeleccionada, 'editar_datos')">
+          Editar Datos
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+</div>
+
+<!-- ========================================== -->
+<!-- MENÚ DE OPCIONES -->
+<!-- ========================================== -->
+<mat-menu #menuOpciones="matMenu">
+  <button mat-menu-item (click)="exportarReferencias()">
+    <mat-icon>download</mat-icon>
+    <span>Exportar Referencias</span>
+  </button>
+  <button mat-menu-item (click)="generarReporteReferencias()">
+    <mat-icon>assessment</mat-icon>
+    <span>Generar Reporte</span>
+  </button>
+  <mat-divider></mat-divider>
+  <button mat-menu-item (click)="enviarRecordatorios()">
+    <mat-icon>notifications</mat-icon>
+    <span>Enviar Recordatorios</span>
+  </button>
+  <button mat-menu-item (click)="agregarNuevaReferencia()">
+    <mat-icon>person_add</mat-icon>
+    <span>Agregar Nueva Referencia</span>
+  </button>
+  <mat-divider></mat-divider>
+  <button mat-menu-item (click)="importarReferencias()">
+    <mat-icon>upload</mat-icon>
+    <span>Importar desde Excel</span>
+  </button>
+  <button mat-menu-item (click)="validarTodasReferencias()" 
+          [disabled]="referenciasPendientes.length === 0">
+    <mat-icon>verified_user</mat-icon>
+    <span>Validar Todas las Pendientes</span>
+  </button>
+  <mat-divider></mat-divider>
+  <button mat-menu-item (click)="configurarRecordatorios()">
+    <mat-icon>schedule</mat-icon>
+    <span>Configurar Recordatorios</span>
+  </button>
+  <button mat-menu-item (click)="verHistorialCompleto()">
+    <mat-icon>history</mat-icon>
+    <span>Ver Historial Completo</span>
+  </button>
+  <mat-divider></mat-divider>
+  <button mat-menu-item (click)="ayudaReferencias()">
+    <mat-icon>help</mat-icon>
+    <span>Ayuda y Guías</span>
+  </button>
+</mat-menu>
+                

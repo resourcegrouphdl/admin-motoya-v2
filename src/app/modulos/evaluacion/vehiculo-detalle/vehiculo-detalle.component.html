@@ -1,0 +1,584 @@
+<div class="vehiculo-detalle-container">
+  <!-- ========================================== -->
+  <!-- HEADER DEL VEHÍCULO -->
+  <!-- ========================================== -->
+  <div class="vehiculo-header mb-4">
+    <mat-card class="header-card">
+      <mat-card-header>
+        <div mat-card-avatar class="avatar-vehiculo">
+          <mat-icon>two_wheeler</mat-icon>
+        </div>
+
+        <mat-card-title>
+          <div class="title-container">
+            <h2>{{ obtenerDescripcionCompleta() }}</h2>
+            <div class="subtitle-info" *ngIf="vehiculo">
+              <mat-chip
+                *ngIf="vehiculo.condicion"
+                [color]="obtenerColorCondicion()"
+                selected
+              >
+                {{ formatearCondicion(vehiculo.condicion) }}
+              </mat-chip>
+
+              <mat-chip *ngIf="!esVehiculoNuevo()" color="accent" selected>
+                {{ obtenerEdadVehiculo() }} año(s) de antigüedad
+              </mat-chip>
+
+              <mat-chip
+                [color]="
+                  disponibilidadStock === 'disponible' ? 'primary' : 'warn'
+                "
+                selected
+              >
+                {{
+                  disponibilidadStock === "disponible"
+                    ? "Disponible"
+                    : disponibilidadStock === "agotado"
+                    ? "Agotado"
+                    : "Stock Limitado"
+                }}
+              </mat-chip>
+            </div>
+          </div>
+        </mat-card-title>
+
+        <div class="header-actions">
+          <button
+            mat-icon-button
+            (click)="verImagenesVehiculo()"
+            matTooltip="Ver imágenes"
+          >
+            <mat-icon>photo_library</mat-icon>
+          </button>
+
+          <button
+            mat-icon-button
+            (click)="descargarFichaVehiculo()"
+            matTooltip="Descargar ficha técnica"
+          >
+            <mat-icon>download</mat-icon>
+          </button>
+
+          <button
+            mat-icon-button
+            (click)="compararPrecios()"
+            matTooltip="Comparar precios"
+          >
+            <mat-icon>compare</mat-icon>
+          </button>
+        </div>
+      </mat-card-header>
+
+      <mat-card-content>
+        <!-- Progreso General -->
+        <div class="progreso-general">
+          <div class="progreso-info">
+            <span class="progreso-label">Información Completa</span>
+            <span class="progreso-valor"
+              >{{ porcentajeCompletitudGeneral.toFixed(0) }}%</span
+            >
+          </div>
+          <mat-progress-bar
+            [value]="porcentajeCompletitudGeneral"
+            [color]="porcentajeCompletitudGeneral >= 80 ? 'primary' : 'accent'"
+            mode="determinate"
+          >
+          </mat-progress-bar>
+        </div>
+
+        <!-- Información Rápida -->
+        <div class="info-rapida-grid">
+          <div class="info-item">
+            <mat-icon>schedule</mat-icon>
+            <div class="info-content">
+              <span class="info-label">Tiempo de Entrega</span>
+              <span class="info-valor">{{ tiempoEstimadoEntrega }}</span>
+            </div>
+          </div>
+
+          <div class="info-item">
+            <mat-icon>attach_money</mat-icon>
+            <div class="info-content">
+              <span class="info-label">Precio de Venta</span>
+              <span class="info-valor">{{
+                formatearMoneda(solicitud.precioCompraMoto)
+              }}</span>
+            </div>
+          </div>
+
+          <div class="info-item" *ngIf="vehiculo.garantiaMeses">
+            <mat-icon>shield</mat-icon>
+            <div class="info-content">
+              <span class="info-label">Garantía</span>
+              <span class="info-valor">{{ vehiculo.garantiaMeses }} meses</span>
+            </div>
+          </div>
+
+          <div class="info-item" *ngIf="tieneDocumentacionCompleta()">
+            <mat-icon color="primary">verified</mat-icon>
+            <div class="info-content">
+              <span class="info-label">Documentación</span>
+              <span class="info-valor">Completa</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alertas -->
+        <div class="alertas-vehiculo" *ngIf="requiereMantenimiento">
+          <mat-card class="alerta-card">
+            <mat-card-content>
+              <div class="alerta-content">
+                <mat-icon color="warn">build</mat-icon>
+                <span
+                  >Este vehículo requiere mantenimiento antes de la
+                  entrega</span
+                >
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- SECCIONES EXPANDIBLES -->
+  <!-- ========================================== -->
+  <div class="secciones-vehiculo">
+    <!-- Sección: Información Básica -->
+    <mat-expansion-panel
+      [expanded]="estaSeccionExpandida('informacion-basica')"
+      (opened)="expandirSeccion('informacion-basica')"
+    >
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon [color]="secciones[0]?.completada ? 'primary' : 'accent'">
+            {{ secciones[0]?.icono }}
+          </mat-icon>
+          <span class="ml-2">{{ secciones[0]?.titulo }}</span>
+        </mat-panel-title>
+        <mat-panel-description>
+          <mat-icon *ngIf="secciones[0]?.completada" color="primary"
+            >check_circle</mat-icon
+          >
+          <span *ngIf="!secciones[0]?.completada" class="incompleto"
+            >Incompleto</span
+          >
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="seccion-content">
+        <div class="especificaciones-grid">
+          <div
+            *ngFor="let spec of obtenerEspecificacionesPorCategoria('basico')"
+            class="especificacion-item"
+          >
+            <div class="spec-header">
+              <mat-icon>{{ spec.icono }}</mat-icon>
+              <span class="spec-nombre">{{ spec.nombre }}</span>
+            </div>
+            <div class="spec-valor">{{ spec.valor }}</div>
+          </div>
+        </div>
+
+        <!-- Descripción del vehículo -->
+        <div
+          class="descripcion-vehiculo mt-3"
+          *ngIf="vehiculo.descripcionCompleta"
+        >
+          <h4>Descripción</h4>
+          <p>{{ vehiculo.descripcionCompleta }}</p>
+        </div>
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Sección: Especificaciones Técnicas -->
+    <mat-expansion-panel
+      [expanded]="estaSeccionExpandida('especificaciones-tecnicas')"
+      (opened)="expandirSeccion('especificaciones-tecnicas')"
+    >
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon [color]="secciones[1]?.completada ? 'primary' : 'accent'">
+            {{ secciones[1]?.icono }}
+          </mat-icon>
+          <span class="ml-2">{{ secciones[1]?.titulo }}</span>
+        </mat-panel-title>
+        <mat-panel-description>
+          <mat-icon *ngIf="secciones[1]?.completada" color="primary"
+            >check_circle</mat-icon
+          >
+          <span *ngIf="!secciones[1]?.completada" class="incompleto"
+            >Incompleto</span
+          >
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="seccion-content">
+        <!-- Especificaciones Técnicas -->
+        <div class="especificaciones-grid">
+          <div
+            *ngFor="let spec of obtenerEspecificacionesPorCategoria('tecnico')"
+            class="especificacion-item tecnica"
+          >
+            <div class="spec-header">
+              <mat-icon>{{ spec.icono }}</mat-icon>
+              <span class="spec-nombre">{{ spec.nombre }}</span>
+            </div>
+            <div class="spec-valor">{{ spec.valor }}</div>
+          </div>
+        </div>
+
+        <!-- Información Adicional -->
+        <div class="info-adicional mt-4" *ngIf="tieneInformacionAdicional">
+          <h4>Información Adicional</h4>
+
+          <div class="adicional-grid">
+            <div class="adicional-item" *ngIf="vehiculo.seguroIncluido">
+              <mat-icon color="primary">security</mat-icon>
+              <span>Seguro Incluido</span>
+            </div>
+
+            <div class="adicional-item" *ngIf="vehiculo.tramiteDocumentario">
+              <mat-icon color="primary">description</mat-icon>
+              <span>Trámite Documentario Incluido</span>
+            </div>
+
+            <div
+              class="adicional-item"
+              *ngIf="vehiculo.accesoriosIncluidos?.length"
+            >
+              <mat-icon color="primary">build</mat-icon>
+              <span
+                >{{ vehiculo.accesoriosIncluidos?.length }} Accesorios
+                Incluidos</span
+              >
+            </div>
+          </div>
+
+          <!-- Lista de Accesorios -->
+          <div
+            class="accesorios-lista mt-3"
+            *ngIf="vehiculo.accesoriosIncluidos?.length"
+          >
+            <h5>Accesorios Incluidos:</h5>
+            <div class="accesorios-chips">
+              <mat-chip
+                *ngFor="let accesorio of vehiculo.accesoriosIncluidos"
+                color="primary"
+                selected
+              >
+                {{ accesorio }}
+              </mat-chip>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Sección: Información Financiera -->
+    <mat-expansion-panel
+      [expanded]="estaSeccionExpandida('informacion-financiera')"
+      (opened)="expandirSeccion('informacion-financiera')"
+    >
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon [color]="secciones[2].completada ? 'primary' : 'accent'">
+            {{ secciones[2].icono }}
+          </mat-icon>
+          <span class="ml-2">{{ secciones[2].titulo }}</span>
+        </mat-panel-title>
+        <mat-panel-description>
+          <button
+            mat-icon-button
+            (click)="toggleCalculadoraFinanciera(); $event.stopPropagation()"
+            matTooltip="Calculadora financiera"
+          >
+            <mat-icon>calculate</mat-icon>
+          </button>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="seccion-content">
+        <!-- Detalles Financieros -->
+        <div class="financiera-grid">
+          <mat-card
+            *ngFor="let detalle of detallesFinancieros"
+            class="detalle-financiero"
+            [ngClass]="{ destacado: detalle.destacado }"
+          >
+            <mat-card-content>
+              <div class="detalle-header">
+                <span class="detalle-concepto">{{ detalle.concepto }}</span>
+              </div>
+
+              <div class="detalle-valor">
+                {{ formatearValor(detalle) }}
+              </div>
+
+              <div class="detalle-descripcion" *ngIf="detalle.descripcion">
+                <small>{{ detalle.descripcion }}</small>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+        <!-- Calculadora Financiera -->
+        <div
+          class="calculadora-financiera mt-4"
+          *ngIf="mostrarCalculadoraFinanciera"
+        >
+          <mat-card class="calculadora-card">
+            <mat-card-header>
+              <mat-card-title>Calculadora Financiera</mat-card-title>
+            </mat-card-header>
+
+            <mat-card-content>
+              <div class="calculadora-grid">
+                <div class="calculo-item">
+                  <span class="calculo-label">Cuota Mensual Aproximada:</span>
+                  <span class="calculo-valor">
+                    {{ formatearMoneda(solicitud.montoCuota * 2) }}
+                  </span>
+                </div>
+
+                <div class="calculo-item">
+                  <span class="calculo-label">Total de Intereses:</span>
+                  <span class="calculo-valor">
+                    {{
+                      formatearMoneda(
+                        solicitud.totalAPagar -
+                          solicitud.inicial -
+                          solicitud.montoFinanciado
+                      )
+                    }}
+                  </span>
+                </div>
+
+                <div
+                  class="calculo-item"
+                  *ngIf="!esVehiculoNuevo() && vehiculo.precioReferencial"
+                >
+                  <span class="calculo-label">Depreciación Acumulada:</span>
+                  <span class="calculo-valor">
+                    {{ formatearMoneda(calcularDepreciacion()) }}
+                  </span>
+                </div>
+
+                <div class="calculo-item" *ngIf="!esVehiculoNuevo()">
+                  <span class="calculo-label">Valor Actual Estimado:</span>
+                  <span class="calculo-valor">
+                    {{ formatearMoneda(obtenerValorActualEstimado()) }}
+                  </span>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+        <!-- Comparación de Precios -->
+        <div
+          class="comparacion-precios mt-3"
+          *ngIf="
+            vehiculo.precioReferencial &&
+            vehiculo.precioReferencial !== solicitud.precioCompraMoto
+          "
+        >
+          <mat-card class="comparacion-card">
+            <mat-card-content>
+              <h5>Comparación de Precios</h5>
+              <div class="comparacion-items">
+                <div class="precio-item">
+                  <span class="precio-label">Precio de Mercado:</span>
+                  <span class="precio-valor">{{
+                    formatearMoneda(vehiculo.precioReferencial)
+                  }}</span>
+                </div>
+
+                <div class="precio-item">
+                  <span class="precio-label">Precio de Venta:</span>
+                  <span class="precio-valor">{{
+                    formatearMoneda(solicitud.precioCompraMoto)
+                  }}</span>
+                </div>
+
+                <div class="precio-item diferencia">
+                  <span class="precio-label">Diferencia:</span>
+                  <span
+                    class="precio-valor"
+                    [ngClass]="esAhorro() ? 'ahorro' : 'sobrecosto'"
+                  >
+                    {{ formatearMoneda(calcularDiferenciaPrecio()) }}
+                    {{ esAhorro() ? "(Ahorro)" : "(Sobrecosto)" }}
+                  </span>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Sección: Documentación -->
+    <mat-expansion-panel
+      [expanded]="estaSeccionExpandida('documentacion-vehiculo')"
+      (opened)="expandirSeccion('documentacion-vehiculo')"
+    >
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon [color]="secciones[3].completada ? 'primary' : 'accent'">
+            {{ secciones[3].icono }}
+          </mat-icon>
+          <span class="ml-2">{{ secciones[3].titulo }}</span>
+        </mat-panel-title>
+        <mat-panel-description>
+          <mat-icon *ngIf="secciones[3]?.completada" color="primary"
+            >check_circle</mat-icon
+          >
+          <span *ngIf="!secciones[3]?.completada" class="incompleto"
+            >Incompleto</span
+          >
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="seccion-content">
+        <!-- Especificaciones Adicionales -->
+        <div class="documentacion-grid">
+          <div
+            *ngFor="
+              let spec of obtenerEspecificacionesPorCategoria('adicional')
+            "
+            class="especificacion-item adicional"
+          >
+            <div class="spec-header">
+              <mat-icon>{{ spec.icono }}</mat-icon>
+              <span class="spec-nombre">{{ spec.nombre }}</span>
+            </div>
+            <div class="spec-valor">{{ spec.valor }}</div>
+          </div>
+        </div>
+
+        <!-- Estado de Documentación -->
+        <div class="estado-documentacion mt-4">
+          <h4>Estado de la Documentación</h4>
+
+          <div class="documentos-estado">
+            <div class="documento-estado-item">
+              <mat-icon [color]="vehiculo.numeroSerie ? 'primary' : 'warn'">
+                {{ vehiculo.numeroSerie ? "check_circle" : "error" }}
+              </mat-icon>
+              <span>Número de Serie</span>
+              <mat-chip
+                [color]="vehiculo.numeroSerie ? 'primary' : 'warn'"
+                selected
+              >
+                {{ vehiculo.numeroSerie ? "Registrado" : "Pendiente" }}
+              </mat-chip>
+            </div>
+
+            <div class="documento-estado-item">
+              <mat-icon [color]="vehiculo.numeroMotor ? 'primary' : 'warn'">
+                {{ vehiculo.numeroMotor ? "check_circle" : "error" }}
+              </mat-icon>
+              <span>Número de Motor</span>
+              <mat-chip
+                [color]="vehiculo.numeroMotor ? 'primary' : 'warn'"
+                selected
+              >
+                {{ vehiculo.numeroMotor ? "Registrado" : "Pendiente" }}
+              </mat-chip>
+            </div>
+
+            <div class="documento-estado-item">
+              <mat-icon [color]="vehiculo.placas ? 'primary' : 'accent'">
+                {{ vehiculo.placas ? "check_circle" : "schedule" }}
+              </mat-icon>
+              <span>Placas</span>
+              <mat-chip
+                [color]="vehiculo.placas ? 'primary' : 'accent'"
+                selected
+              >
+                {{ vehiculo.placas ? "Asignadas" : "Por asignar" }}
+              </mat-chip>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fechas Importantes -->
+        <div class="fechas-importantes mt-4">
+          <h4>Información de Registro</h4>
+
+          <div class="fechas-grid">
+            <div class="fecha-item">
+              <mat-icon>event</mat-icon>
+              <div class="fecha-content">
+                <span class="fecha-label">Fecha de Registro</span>
+                <span class="fecha-valor">
+                  {{
+                    vehiculo.fechaCreacion
+                      ? (vehiculo.fechaCreacion | date : "dd/MM/yyyy")
+                      : "No disponible"
+                  }}
+                </span>
+              </div>
+            </div>
+
+            <div class="fecha-item">
+              <mat-icon>update</mat-icon>
+              <div class="fecha-content">
+                <span class="fecha-label">Última Actualización</span>
+                <span class="fecha-valor">
+                  {{
+                    vehiculo.fechaActualizacion
+                      ? (vehiculo.fechaActualizacion | date : "dd/MM/yyyy")
+                      : "No disponible"
+                  }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-expansion-panel>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- ACCIONES RÁPIDAS -->
+  <!-- ========================================== -->
+  <div class="acciones-vehiculo mt-4">
+    <mat-card class="acciones-card">
+      <mat-card-content>
+        <h3>Acciones Disponibles</h3>
+        <div class="acciones-botones">
+          <button
+            mat-raised-button
+            color="primary"
+            (click)="verImagenesVehiculo()"
+          >
+            <mat-icon>photo_library</mat-icon>
+            Ver Galería
+          </button>
+
+          <button mat-stroked-button (click)="descargarFichaVehiculo()">
+            <mat-icon>download</mat-icon>
+            Ficha Técnica
+          </button>
+
+          <button mat-stroked-button (click)="compararPrecios()">
+            <mat-icon>compare</mat-icon>
+            Comparar Precios
+          </button>
+
+          <button mat-stroked-button (click)="toggleCalculadoraFinanciera()">
+            <mat-icon>calculate</mat-icon>
+            {{
+              mostrarCalculadoraFinanciera ? "Ocultar" : "Mostrar"
+            }}
+            Calculadora
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

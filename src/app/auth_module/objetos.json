@@ -1,0 +1,33 @@
+
+
+{
+  "id": "ABC123DEF456GHI789",
+  "createdAt": {
+    "_seconds": 1725325339,
+    "_nanoseconds": 0
+  },
+  "estado": "pendiente",
+  "fiadorId": "V2vGGP6WOUg4VEQkciFu",
+  "inicial": 1000,
+  "mensajeOpcional": "APRUEBALO Y TE CAE TU COMISIÓN",
+  "montoCuota": 541.6666666666666,
+  "plazoQuincenas": "12",
+  "precioCompraMoto": 7500,
+  "referenciasIds": [
+    "0uywQKTPG5NjHZsYPWXw"
+  ],
+  "titularId": "CQk0rOvu1iPRHYxvQJCF",
+  "updatedAt": {
+    "_seconds": 1725325339,
+    "_nanoseconds": 0
+  },
+  "vehiculoId": "qUDGnywQl6Bn2J2qP0RZ",
+  "vendedor": {
+    "id": "555",
+    "nombre": "MOISES",
+    "tienda": "MOTO YA"
+  },
+  "vendedorId": "555",
+  "vendedorNombre": "MOISES",
+  "vendedorTienda": "MOTO YA"
+}

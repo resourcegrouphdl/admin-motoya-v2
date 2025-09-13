@@ -1,0 +1,366 @@
+<!-- src/app/modules/evaluacion/components/expediente-detalle/expediente-detalle.component.html -->
+
+<div class="expediente-detalle-container" *ngIf="!cargando && expediente">
+  <!-- ======================================== -->
+  <!-- HEADER DEL EXPEDIENTE -->
+  <!-- ======================================== -->
+  <mat-card class="header-card mb-4">
+    <mat-card-header>
+      <div mat-card-avatar class="avatar-estado" 
+           [ngClass]="'bg-' + obtenerColorEstado(expediente.solicitud.estado)">
+        <mat-icon>{{ obtenerIconoEstado(expediente.solicitud.estado) }}</mat-icon>
+      </div>
+      
+      <mat-card-title class="d-flex align-items-center justify-content-between w-100">
+        <div>
+          <h2 class="mb-1">{{ expediente.solicitud.numeroSolicitud }}</h2>
+          <div class="d-flex align-items-center gap-2">
+            <mat-chip [color]="obtenerColorEstado(expediente.solicitud.estado)" selected>
+              {{ configEstadoActual?.label }}
+            </mat-chip>
+            <mat-chip *ngIf="expediente.solicitud.prioridad === 'Alta'" color="warn" selected>
+              <mat-icon matChipAvatar>priority_high</mat-icon>
+              Alta Prioridad
+            </mat-chip>
+          </div>
+        </div>
+        
+        <div class="header-actions">
+          <button mat-icon-button (click)="regresarAlDashboard()" 
+                  matTooltip="Regresar al Dashboard">
+            <mat-icon>arrow_back</mat-icon>
+          </button>
+          <button mat-icon-button matTooltip="Actualizar">
+            <mat-icon>refresh</mat-icon>
+          </button>
+          <button mat-button [matMenuTriggerFor]="menuAcciones" 
+                  [disabled]="accionesDisponibles.length === 0">
+            Acciones
+            <mat-icon>arrow_drop_down</mat-icon>
+          </button>
+        </div>
+      </mat-card-title>
+      
+      <mat-card-subtitle>
+        <div class="info-grid">
+          <div class="info-item">
+            <mat-icon class="text-muted">person</mat-icon>
+            <span>{{ expediente.titular.nombreCompleto }}</span>
+          </div>
+          <div class="info-item">
+            <mat-icon class="text-muted">store</mat-icon>
+            <span>{{ expediente.solicitud.vendedorTienda }}</span>
+          </div>
+          <div class="info-item">
+            <mat-icon class="text-muted">two_wheeler</mat-icon>
+            <span>{{ expediente.vehiculo.descripcionCompleta }}</span>
+          </div>
+          <div class="info-item">
+            <mat-icon class="text-muted">payments</mat-icon>
+            <span>{{ formatearMoneda(expediente.solicitud.precioCompraMoto) }}</span>
+          </div>
+        </div>
+      </mat-card-subtitle>
+    </mat-card-header>
+    
+    <!-- Progreso del expediente -->
+    <mat-card-content class="pt-3">
+      <div class="progress-section">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="progress-label">Progreso del proceso</span>
+          <span class="progress-percentage">{{ expediente.solicitud.porcentajeProgreso }}%</span>
+        </div>
+        <mat-progress-bar 
+          [value]="expediente.solicitud.porcentajeProgreso"
+          [color]="obtenerColorProgreso()"
+          class="mb-2">
+        </mat-progress-bar>
+        
+        <!-- Tiempo restante -->
+        <div *ngIf="tiempoRestante !== null" class="tiempo-restante">
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="time-label">Tiempo restante:</span>
+            <span [ngClass]="'time-value text-' + obtenerColorTiempo()">
+              {{ tiempoRestanteFormateado }}
+            </span>
+          </div>
+          <mat-progress-bar 
+            [value]="progresoLinealTiempo"
+            [color]="obtenerColorTiempo()"
+            class="mt-1">
+          </mat-progress-bar>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+  
+  <!-- ======================================== -->
+  <!-- ALERTAS Y NOTIFICACIONES -->
+  <!-- ======================================== -->
+  <div *ngIf="alertas.length > 0" class="alertas-section mb-4">
+    <mat-card *ngFor="let alerta of alertas" 
+              [ngClass]="'alert-' + alerta.tipo" 
+              class="alert-card mb-2">
+      <mat-card-content class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center">
+          <mat-icon [ngClass]="'icon-' + alerta.tipo">
+            {{ alerta.tipo === 'error' ? 'error' : 
+               alerta.tipo === 'warning' ? 'warning' : 
+               alerta.tipo === 'info' ? 'info' : 'check_circle' }}
+          </mat-icon>
+          <span class="ml-3">{{ alerta.mensaje }}</span>
+        </div>
+        <button *ngIf="alerta.accion" mat-button color="primary">
+          {{ alerta.accion }}
+        </button>
+      </mat-card-content>
+    </mat-card>
+  </div>
+  
+  <!-- ======================================== -->
+  <!-- NAVEGACIÓN POR PESTAÑAS -->
+  <!-- ======================================== -->
+  <div class="tabs-section">
+    <mat-tab-group 
+      [(selectedIndex)]="tabActiva" 
+      (selectedTabChange)="cambiarTab($event.tab.textLabel)"
+      animationDuration="300ms"
+      class="expediente-tabs">
+      
+      <mat-tab *ngFor="let tab of tabs" 
+               [label]="tab.label"
+               [disabled]="!tab.disponible">
+        
+        <ng-template mat-tab-label>
+          <div class="tab-label">
+            <mat-icon [ngClass]="{'completed': tab.completado}">{{ tab.icon }}</mat-icon>
+            <span>{{ tab.label }}</span>
+            <mat-chip *ngIf="tab.badge" 
+                     [color]="tab.color || 'primary'" 
+                     class="tab-badge">
+              {{ tab.badge }}
+            </mat-chip>
+          </div>
+        </ng-template>
+        
+        <!-- ======================================== -->
+        <!-- CONTENIDO DE CADA TAB -->
+        <!-- ======================================== -->
+        
+        <!-- TAB: RESUMEN -->
+        <div *ngIf="tab.id === 'resumen'" class="tab-content">
+          <app-expediente-resumen 
+            [expediente]="expediente">
+          </app-expediente-resumen>
+        </div>
+        
+        <!-- TAB: TITULAR -->
+        <div *ngIf="tab.id === 'titular'" class="tab-content">
+          <app-cliente-detalle 
+            [cliente]="expediente.titular"
+            [tipo]="'titular'"
+            [solicitudId]="expediente.solicitud.id">
+          </app-cliente-detalle>
+        </div>
+        
+        <!-- TAB: FIADOR -->
+        <div *ngIf="tab.id === 'fiador' && expediente.fiador" class="tab-content">
+          <app-cliente-detalle 
+            [cliente]="expediente.fiador"
+            [tipo]="'fiador'"
+            [solicitudId]="expediente.solicitud.id">
+          </app-cliente-detalle>
+        </div>
+        
+        <!-- TAB: VEHÍCULO -->
+        <div *ngIf="tab.id === 'vehiculo'" class="tab-content">
+          <app-vehiculo-detalle 
+            [vehiculo]="expediente.vehiculo"
+            [solicitud]="expediente.solicitud">
+          </app-vehiculo-detalle>
+        </div>
+        
+        <!-- TAB: REFERENCIAS -->
+        <div *ngIf="tab.id === 'referencias'" class="tab-content">
+          <app-referencia-detalle 
+            [referencias]="expediente.referencias"
+            [solicitudId]="expediente.solicitud.id">
+          </app-referencia-detalle>
+        </div>
+        
+        <!-- TAB: DOCUMENTOS -->
+        <div *ngIf="tab.id === 'documentos'" class="tab-content">
+          <app-documentos-proceso 
+            [documentos]="expediente.documentosProceso ?? []"
+            [solicitudId]="expediente.solicitud.id"
+            [estado]="expediente.solicitud.estado">
+          </app-documentos-proceso>
+        </div>
+        
+        <!-- TAB: ENTREVISTAS -->
+        <div *ngIf="tab.id === 'entrevistas'" class="tab-content">
+          <app-entrevistas-detalle 
+            [evaluaciones]="expediente.evaluaciones"
+            [referencias]="expediente.referencias"
+            [solicitudId]="expediente.solicitud.id"
+            [estado]="expediente.solicitud.estado">
+          </app-entrevistas-detalle>
+        </div>
+        
+        <!-- TAB: EVALUACIÓN -->
+        <div *ngIf="tab.id === 'evaluacion'" class="tab-content">
+          <app-evaluacion-integral 
+            [expediente]="expediente">
+          </app-evaluacion-integral>
+        </div>
+        
+        <!-- TAB: DECISIÓN -->
+        <div *ngIf="tab.id === 'decision'" class="tab-content">
+          <app-decision-final 
+            [expediente]="expediente">
+          </app-decision-final>
+        </div>
+        
+        <!-- TAB: DOCUMENTACIÓN -->
+        <div *ngIf="tab.id === 'documentacion'" class="tab-content">
+          <app-documentacion-legal 
+            [expediente]="expediente">
+          </app-documentacion-legal>
+        </div>
+        
+        <!-- TAB: ENTREGA -->
+        <div *ngIf="tab.id === 'entrega'" class="tab-content">
+          <app-proceso-entrega 
+            [expediente]="expediente">
+          </app-proceso-entrega>
+        </div>
+        
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+</div>
+
+<!-- ======================================== -->
+<!-- ESTADO DE CARGA -->
+<!-- ======================================== -->
+<div *ngIf="cargando" class="loading-container">
+  <mat-card class="loading-card">
+    <mat-card-content class="text-center p-5">
+      <mat-spinner class="mb-3"></mat-spinner>
+      <h3>Cargando expediente...</h3>
+      <p class="text-muted">Obteniendo información completa del proceso</p>
+    </mat-card-content>
+  </mat-card>
+</div>
+
+<!-- ======================================== -->
+<!-- ESTADO DE ERROR -->
+<!-- ======================================== -->
+<div *ngIf="error && !cargando" class="error-container">
+  <mat-card class="error-card">
+    <mat-card-content class="text-center p-5">
+      <mat-icon color="warn" class="error-icon">error_outline</mat-icon>
+      <h3>Error al cargar expediente</h3>
+      <p class="text-muted mb-4">{{ error }}</p>
+      <div class="error-actions">
+        <button mat-raised-button color="primary" (click)="regresarAlDashboard()">
+          <mat-icon>arrow_back</mat-icon>
+          Regresar al Dashboard
+        </button>
+        <button mat-button (click)="inicializarComponente()">
+          <mat-icon>refresh</mat-icon>
+          Reintentar
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
+
+<!-- ======================================== -->
+<!-- MENÚ DE ACCIONES -->
+<!-- ======================================== -->
+<mat-menu #menuAcciones="matMenu">
+  <button *ngFor="let accion of accionesDisponibles" 
+          mat-menu-item 
+          (click)="ejecutarAccion(accion)">
+    <mat-icon>
+      {{ accion.includes('Aprobar') ? 'check_circle' :
+         accion.includes('Rechazar') ? 'cancel' :
+         accion.includes('Observar') ? 'error' :
+         accion.includes('Generar') ? 'description' :
+         accion.includes('Programar') ? 'event' :
+         accion.includes('Confirmar') ? 'verified' :
+         accion.includes('Asignar') ? 'person_add' :
+         'play_arrow' }}
+    </mat-icon>
+    <span>{{ accion }}</span>
+  </button>
+  
+  <mat-divider></mat-divider>
+  
+  <button mat-menu-item [matMenuTriggerFor]="menuSecundario">
+    <mat-icon>more_horiz</mat-icon>
+    <span>Más opciones</span>
+  </button>
+</mat-menu>
+
+<mat-menu #menuSecundario="matMenu">
+  <button mat-menu-item>
+    <mat-icon>print</mat-icon>
+    <span>Imprimir expediente</span>
+  </button>
+  <button mat-menu-item>
+    <mat-icon>download</mat-icon>
+    <span>Exportar PDF</span>
+  </button>
+  <button mat-menu-item>
+    <mat-icon>share</mat-icon>
+    <span>Compartir</span>
+  </button>
+  <mat-divider></mat-divider>
+  <button mat-menu-item>
+    <mat-icon>history</mat-icon>
+    <span>Ver historial completo</span>
+  </button>
+  <button mat-menu-item>
+    <mat-icon>comment</mat-icon>
+    <span>Agregar comentario</span>
+  </button>
+</mat-menu>
+
+<!-- ======================================== -->
+<!-- PANEL LATERAL DE OBSERVACIONES (OPCIONAL) -->
+<!-- ======================================== -->
+<div class="observaciones-panel" *ngIf="expediente" [class.panel-visible]="mostrarPanelObservaciones">
+  <mat-card class="h-100">
+    <mat-card-header>
+      <mat-card-title class="d-flex align-items-center justify-content-between">
+        <span>Observaciones</span>
+        <button mat-icon-button (click)="mostrarPanelObservaciones = false">
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-card-title>
+    </mat-card-header>
+    
+    <mat-card-content class="observaciones-content">
+      <div class="observacion-item" 
+           *ngFor="let obs of expediente.historialEstados | slice:0:10">
+        <div class="observacion-header">
+          <span class="observacion-fecha">{{ formatearFecha(obs.fechaCambio) }}</span>
+          <span class="observacion-usuario">{{ obs.usuarioNombre }}</span>
+        </div>
+        <div class="observacion-contenido">
+          <strong>{{ obs.estadoNuevo | titlecase }}</strong>
+          <p *ngIf="obs.observaciones">{{ obs.observaciones }}</p>
+        </div>
+      </div>
+    </mat-card-content>
+    
+    <mat-card-actions>
+      <button mat-button color="primary">
+        <mat-icon>add</mat-icon>
+        Agregar observación
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</div>
