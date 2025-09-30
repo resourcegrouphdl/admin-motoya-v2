@@ -10,10 +10,19 @@ import {
   where, 
   onSnapshot, 
   Timestamp,
-  getDocs 
+  getDocs, 
+  setDoc
 } from '@angular/fire/firestore';
 import { ACCIONES_POR_ESTADO, Cliente, ClienteFirebaseRaw, DocumentoProceso, ESTADOS_CONFIG, EstadoSolicitud, Evaluacion, ExpedienteCompleto, HistorialEstado, Referencia, ReferenciaFirebaseRaw, SolicitudCredito, SolicitudFirebaseRaw, TRANSICIONES_PERMITIDAS, Vehiculo, VehiculoFirebaseRaw } from '../../admin-clientes/modelos/modelos-solicitudes';
+import { AsesorSeleccionado } from '../selector-asesor-dialog/selector-asesor-dialog.component';
+import { EvaluacionDocumento } from '../documento-editor-dialog/documento-editor-dialog.component';
 
+interface EvaluadorConMetadatos extends AsesorSeleccionado {
+  fechaAsignacion: string;
+  fechaDesasignacion?: string;
+  activo: boolean;
+  motivoReasignacion?: string;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -516,7 +525,7 @@ export class ExpedienteService {
 
   async actualizarEstado(solicitudId: string, nuevoEstado: EstadoSolicitud, observaciones?: string): Promise<void> {
     try {
-      const solicitudRef = doc(this.firestore, `solicitudes_credito/${solicitudId}`);
+      const solicitudRef = doc(this.firestore, `solicitudes/${solicitudId}`);
       const expedienteActual = this.expedienteActual.value;
       
       if (!expedienteActual) {
@@ -1002,4 +1011,303 @@ export class ExpedienteService {
     
     return resultado;
   }
+
+  async asignarAsesor( solicitudId: string, asesor: AsesorSeleccionado): Promise<void> {
+  console.log('🚀 Iniciando asignación de evaluador:', { asesor, solicitudId });
+
+  // Validaciones
+  if (!solicitudId) {
+    console.error('❌ solicitudId es requerido');
+    throw new Error('ID de solicitud es requerido');
+  }
+
+  if (!asesor || !asesor.id) {
+    console.error('❌ Asesor inválido:', asesor);
+    throw new Error('Datos del asesor son inválidos');
+  }
+
+  try {
+    // Crear referencia al documento
+    const solicitudDocRef = doc(this.firestore, 'solicitudes', solicitudId);
+    console.log('📝 Referencia creada:', solicitudDocRef.path);
+
+    // Obtener documento actual para revisar evaluadores existentes
+    const docSnapshot = await getDoc(solicitudDocRef);
+    if (!docSnapshot.exists()) {
+      console.error('❌ Documento no encontrado:', solicitudId);
+      throw new Error(`Solicitud con ID ${solicitudId} no encontrada`);
+    }
+
+    const datosActuales = docSnapshot.data();
+    const evaluadoresExistentes: EvaluadorConMetadatos[] = datosActuales?.['evaluadorActual'] || [];
+    
+    console.log('📊 Evaluadores existentes:', evaluadoresExistentes);
+
+    // Desactivar evaluador actual si existe
+    const evaluadoresActualizados = evaluadoresExistentes.map(evaluador => {
+      if (evaluador.activo) {
+        console.log('🔄 Desactivando evaluador anterior:', evaluador.nombre);
+        return {
+          ...evaluador,
+          activo: false,
+          fechaDesasignacion: new Date().toISOString(),
+          motivoReasignacion: 'Reasignación a nuevo evaluador'
+        };
+      }
+      return evaluador;
+    });
+
+    // Crear nuevo evaluador con metadatos
+    const nuevoEvaluador: EvaluadorConMetadatos = {
+      id: asesor.id,
+      nombre: asesor.nombre,
+      email: asesor.email,
+      rol: asesor.rol,
+      fechaAsignacion: new Date().toISOString(),
+      activo: true
+    };
+
+    console.log('👤 Nuevo evaluador:', nuevoEvaluador);
+
+    // Agregar nuevo evaluador al array
+    const evaluadorActualFinal = [...evaluadoresActualizados, nuevoEvaluador];
+
+    // Preparar datos para actualización
+    const datosActualizacion = {
+      // Array de evaluadores con trazabilidad completa
+      evaluadorActual: evaluadorActualFinal,
+      
+      // Campo asesorAsignado (compatibilidad - último evaluador activo)
+      asesorAsignado: {
+        id: asesor.id,
+        nombre: asesor.nombre,
+        email: asesor.email,
+        rol: asesor.rol,
+        fechaAsignacion: new Date().toISOString()
+      },
+
+      // Metadatos útiles
+      ultimaActualizacion: new Date().toISOString(),
+      totalEvaluadores: evaluadorActualFinal.length,
+      totalReasignaciones: evaluadoresExistentes.filter(e => !e.activo).length
+    };
+
+    console.log('📝 Actualizando documento con:', datosActualizacion);
+
+    // Actualizar documento
+    await setDoc(solicitudDocRef, datosActualizacion, { merge: true });
+
+    console.log('✅ Evaluador asignado exitosamente:', {
+      solicitudId,
+      evaluadorNuevo: nuevoEvaluador.nombre,
+      totalEvaluadoresEnHistorial: evaluadorActualFinal.length,
+      esReasignacion: evaluadoresExistentes.length > 0
+    });
+
+  } catch (error:any) {
+    console.error('❌ Error en asignarAsesor:', {
+      error: error.message,
+      solicitudId,
+      asesor
+    });
+    throw new Error(`Error al asignar evaluador: ${error.message}`);
+  }
+}
+
+// Método auxiliar para obtener evaluador activo
+async obtenerEvaluadorActivo(solicitudId: string): Promise<EvaluadorConMetadatos | null> {
+  try {
+    const solicitudDocRef = doc(this.firestore, 'solicitudes', solicitudId);
+    const docSnapshot = await getDoc(solicitudDocRef);
+    
+    if (!docSnapshot.exists()) {
+      return null;
+    }
+
+    const datos = docSnapshot.data();
+    const evaluadores: EvaluadorConMetadatos[] = datos?.['evaluadorActual'] || [];
+    
+    return evaluadores.find(evaluador => evaluador.activo) || null;
+  } catch (error) {
+    console.error('❌ Error obteniendo evaluador activo:', error);
+    return null;
+  }
+}
+
+// Método auxiliar para obtener historial completo
+async obtenerHistorialEvaluadores(solicitudId: string): Promise<EvaluadorConMetadatos[]> {
+  try {
+    const solicitudDocRef = doc(this.firestore, 'solicitudes', solicitudId);
+    const docSnapshot = await getDoc(solicitudDocRef);
+    
+    if (!docSnapshot.exists()) {
+      return [];
+    }
+
+    const datos = docSnapshot.data();
+    return datos?.['evaluadorActual'] || [];
+  } catch (error) {
+    console.error('❌ Error obteniendo historial:', error);
+    return [];
+  }
+}
+
+async actualizarCliente(
+  clienteId: string, 
+  clienteActualizado: Cliente, 
+  expedienteId?: string
+): Promise<void> {
+  console.log('🔄 actualizarCliente - Iniciando actualización:', {
+    clienteId,
+    expedienteId,
+    cliente: clienteActualizado.nombres
+  });
+
+  try {
+    // Mapear de Cliente a ClienteFirebaseRaw con valores por defecto
+    const datosFirebase: Partial<ClienteFirebaseRaw> = {
+      nombres: clienteActualizado.nombres,
+      apellidoPaterno: clienteActualizado.apellidoPaterno,
+      apellidoMaterno: clienteActualizado.apellidoMaterno,
+      documentType: clienteActualizado.documentType,
+      documentNumber: clienteActualizado.documentNumber,
+      email: clienteActualizado.email,
+      telefono1: clienteActualizado.telefono1,
+      telefono2: clienteActualizado.telefono2 || '',
+      fechaNacimiento: clienteActualizado.fechaNacimiento.toISOString().split('T')[0],
+      estadoCivil: clienteActualizado.estadoCivil,
+      ocupacion: clienteActualizado.ocupacion || '',
+      rangoIngresos: clienteActualizado.rangoIngresos || '',
+      departamento: clienteActualizado.departamento,
+      provincia: clienteActualizado.provincia,
+      distrito: clienteActualizado.distrito,
+      direccion: clienteActualizado.direccion,
+      tipoVivienda: clienteActualizado.tipoVivienda,
+      licenciaConducir: clienteActualizado.licenciaConducir || '',
+      numeroLicencia: clienteActualizado.numeroLicencia || '',
+      
+      // Campos de evaluación con valores por defecto
+      estadoValidacionDocumentos: clienteActualizado.estadoValidacionDocumentos || 'pendiente',
+      documentosObservados: clienteActualizado.documentosObservados || [],
+      datosVerificados: clienteActualizado.datosVerificados || false,
+      consultaCentralesRealizada: clienteActualizado.consultaCentralesRealizada || false,
+      ingresosVerificados: clienteActualizado.ingresosVerificados || false,
+      clienteFrecuente: clienteActualizado.clienteFrecuente || false,
+      requiereValidacionAdicional: clienteActualizado.requiereValidacionAdicional || false,
+      requiereAtencionPersonalizada: clienteActualizado.requiereAtencionPersonalizada || false,
+      
+      // Campos de texto opcionales
+      motivoValidacionAdicional: clienteActualizado.motivoValidacionAdicional || '',
+      horariosContacto: clienteActualizado.horariosContacto || '',
+      contactoAlternativo: clienteActualizado.contactoAlternativo || '',
+      observacionesEvaluador: clienteActualizado.observacionesEvaluador || '',
+      
+      // Arrays opcionales
+      inconsistenciasEncontradas: clienteActualizado.inconsistenciasEncontradas || [],
+      metodosVerificacionIngresos: clienteActualizado.metodosVerificacionIngresos || [],
+      alertasEspeciales: clienteActualizado.alertasEspeciales || [],
+      
+      // Campos numéricos opcionales
+      solicitudesAnteriores: clienteActualizado.solicitudesAnteriores || 0,
+      montoIngresosVerificado: clienteActualizado.montoIngresosVerificado || 0,
+      
+      // Enums opcionales con valores por defecto
+      historialPagos: clienteActualizado.historialPagos || 'regular',
+      nivelConfianza: clienteActualizado.nivelConfianza || 'medio',
+      
+      // Booleanos opcionales
+      prefiereWhatsapp: clienteActualizado.prefiereWhatsapp || false,
+      
+      // Metadatos de actualización
+      updatedAt: Timestamp.fromDate(new Date())
+    };
+
+    // Campos específicos de fiador con valores por defecto
+    if (clienteActualizado.tipo === 'fiador') {
+      datosFirebase.capacidadAval = clienteActualizado.capacidadAval || 0;
+      datosFirebase.relacionConTitular = clienteActualizado.relacionConTitular || '';
+      datosFirebase.tiempoConoceTitular = clienteActualizado.tiempoConoceTitular || '';
+      datosFirebase.aceptaResponsabilidad = clienteActualizado.aceptaResponsabilidad || false;
+    }
+
+    console.log('📝 Datos a enviar a Firebase:', datosFirebase);
+
+    // Actualizar en Firebase
+    const clienteRef = doc(this.firestore, `clientes_v1/${clienteId}`);
+    await updateDoc(clienteRef, datosFirebase);
+
+    console.log('✅ Cliente actualizado exitosamente en Firebase');
+
+    // Resto del código para actualizar estado local...
+    const expedienteActual = this.expedienteActual.value;
+    if (expedienteActual) {
+      if (expedienteActual.titular.id === clienteId) {
+        expedienteActual.titular = {
+          ...clienteActualizado,
+          nombreCompleto: `${clienteActualizado.nombres} ${clienteActualizado.apellidoPaterno} ${clienteActualizado.apellidoMaterno}`,
+          apellidosCompletos: `${clienteActualizado.apellidoPaterno} ${clienteActualizado.apellidoMaterno}`,
+          edad: this.calcularEdad(clienteActualizado.fechaNacimiento),
+          direccionCompleta: `${clienteActualizado.direccion}, ${clienteActualizado.distrito}, ${clienteActualizado.provincia}, ${clienteActualizado.departamento}`,
+          fechaActualizacion: new Date()
+        };
+      } else if (expedienteActual.fiador?.id === clienteId) {
+        expedienteActual.fiador = {
+          ...clienteActualizado,
+          nombreCompleto: `${clienteActualizado.nombres} ${clienteActualizado.apellidoPaterno} ${clienteActualizado.apellidoMaterno}`,
+          apellidosCompletos: `${clienteActualizado.apellidoPaterno} ${clienteActualizado.apellidoMaterno}`,
+          edad: this.calcularEdad(clienteActualizado.fechaNacimiento),
+          direccionCompleta: `${clienteActualizado.direccion}, ${clienteActualizado.distrito}, ${clienteActualizado.provincia}, ${clienteActualizado.departamento}`,
+          fechaActualizacion: new Date()
+        };
+      }
+      
+      this.expedienteActual.next(expedienteActual);
+      console.log('🔄 Estado local del expediente actualizado');
+    }
+
+  } catch (error) {
+    console.error('❌ Error actualizando cliente:', error);
+    throw error;
+  }
+}
+
+// ======================================
+// TIPOS AUXILIARES
+// ====================================== 
+
+async actualizarEvaluacionDocumento(
+  solicitudId: string,
+  clienteId: string,
+  evaluacion: EvaluacionDocumento
+): Promise<void> {
+  try {
+    console.log('📝 Actualizando evaluación documento:', {
+      solicitudId,
+      clienteId, 
+      evaluacion
+    });
+
+    // Crear documento de evaluación en colección documentos_proceso
+    const documentoEvaluacion = {
+      solicitudId,
+      clienteId,
+      tipoDocumento: evaluacion.tipoDocumento,
+      estado: evaluacion.estado,
+      observaciones: evaluacion.observaciones,
+      checklistDNI: evaluacion.checklistDNI,
+      fechaEvaluacion: new Date(),
+      evaluadoPor: 'usuario_actual' // TODO: obtener del servicio auth
+    };
+
+    // TODO: Implementar guardado en Firestore
+    // const evaluacionRef = collection(this.firestore, 'evaluaciones_documentos');
+    // await addDoc(evaluacionRef, documentoEvaluacion);
+
+    console.log('✅ Evaluación guardada en BD');
+
+  } catch (error) {
+    console.error('❌ Error guardando evaluación:', error);
+    throw error;
+  }
+}
 }

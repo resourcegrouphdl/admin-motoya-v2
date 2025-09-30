@@ -1,0 +1,71 @@
+<h2 mat-dialog-title>
+      <mat-icon>person_add</mat-icon>
+      Seleccionar Asesor Financiero
+    </h2>
+
+    <mat-dialog-content>
+      <div *ngIf="cargando" class="loading-container">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Cargando lista de asesores...</p>
+      </div>
+
+      <div *ngIf="!cargando && error" class="error-container">
+        <mat-icon color="warn">error_outline</mat-icon>
+        <p>{{ error }}</p>
+        <button mat-button color="primary" (click)="cargarAsesores()">
+          <mat-icon>refresh</mat-icon>
+          Reintentar
+        </button>
+      </div>
+
+      <div *ngIf="!cargando && !error">
+        <!-- Filtro de búsqueda -->
+        <mat-form-field class="w-100 mb-3">
+          <mat-label>Buscar asesor</mat-label>
+          <input matInput 
+                 [(ngModel)]="filtro" 
+                 (input)="filtrarAsesores()"
+                 placeholder="Nombre o email del asesor">
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+
+        <!-- Lista de asesores -->
+        <mat-selection-list #asesorList 
+                            (selectionChange)="onSelectionChange($event)"
+                            [multiple]="false">
+          <mat-list-option *ngFor="let asesor of asesoresFiltrados" 
+                           [value]="asesor"
+                           [disabled]="!asesor.isActive">
+            <div class="asesor-item">
+              <div class="asesor-info">
+                <h4 class="asesor-nombre">{{ asesor.firstName }}</h4>
+                <p class="asesor-email">{{ asesor.email }}</p>
+                <span class="asesor-rol">{{ asesor.userType }}</span>
+              </div>
+              <div class="asesor-status">
+                <mat-icon *ngIf="asesor.isActive" color="primary">check_circle</mat-icon>
+                <mat-icon *ngIf="!asesor.isActive" color="warn">cancel</mat-icon>
+              </div>
+            </div>
+          </mat-list-option>
+        </mat-selection-list>
+
+        <div *ngIf="asesoresFiltrados.length === 0" class="no-results">
+          <mat-icon>person_off</mat-icon>
+          <p>No se encontraron asesores disponibles</p>
+        </div>
+      </div>
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end">
+      <button mat-button (click)="cancelar()">
+        Cancelar
+      </button>
+      <button mat-raised-button 
+              color="primary" 
+              (click)="confirmar()"
+              [disabled]="!asesorSeleccionado">
+        <mat-icon>person_add</mat-icon>
+        Asignar Asesor
+      </button>
+    </mat-dialog-actions>

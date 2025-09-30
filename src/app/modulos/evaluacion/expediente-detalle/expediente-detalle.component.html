@@ -159,7 +159,8 @@
           <app-cliente-detalle 
             [cliente]="expediente.titular"
             [tipo]="'titular'"
-            [solicitudId]="expediente.solicitud.id">
+            [solicitudId]="expediente.solicitud.id"
+            (clienteActualizado)="onClienteActualizado($event)">
           </app-cliente-detalle>
         </div>
         

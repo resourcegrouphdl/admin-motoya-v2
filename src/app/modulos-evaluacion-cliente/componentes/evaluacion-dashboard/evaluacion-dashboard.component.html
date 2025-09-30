@@ -1,0 +1,760 @@
+<div class="evaluacion-dashboard p-6 bg-gray-50 min-h-screen">
+  <!-- Header OTOYA -->
+  <div class="mb-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">
+          Dashboard de Evaluación OTOYA
+        </h1>
+        <p class="text-gray-600">
+          Sistema de evaluación crediticia con modelo estructurado OTOYA 2.0
+        </p>
+      </div>
+
+      <!-- Indicador de versión y estado -->
+      <div class="flex items-center gap-3">
+        @if (sistemaOTOYAListo()) {
+        <mat-chip class="bg-green-100 text-green-800">
+          <mat-icon matChipIcon>verified</mat-icon>
+          OTOYA 2.0 Activo
+        </mat-chip>
+        }
+
+        <!-- Métricas rápidas -->
+        @if (estadisticasOTOYA()) {
+        <div class="text-right text-sm text-gray-600">
+          <div>
+            Integridad: {{ estadisticasOTOYA()!.calidad.integridadDatos }}%
+          </div>
+          <div>
+            {{
+              estadisticasOTOYA()!.migracion.entidadesCreadas.solicitudes
+            }}
+            expedientes
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Proceso de Migración OTOYA (mejorado) -->
+  @if (procesoMigracionOTOYA().estado !== 'inactivo') {
+  <mat-card
+    class="mb-6 border-l-4"
+    [ngClass]="{
+      'border-blue-500 bg-blue-50':
+        procesoMigracionOTOYA().estado === 'verificando',
+      'border-indigo-500 bg-indigo-50':
+        procesoMigracionOTOYA().estado === 'migrando',
+      'border-purple-500 bg-purple-50':
+        procesoMigracionOTOYA().estado === 'validando',
+      'border-green-500 bg-green-50':
+        procesoMigracionOTOYA().estado === 'completado',
+      'border-red-500 bg-red-50': procesoMigracionOTOYA().estado === 'error'
+    }"
+  >
+    <mat-card-content class="p-4">
+      <div class="flex items-center gap-4">
+        @switch (procesoMigracionOTOYA().estado) { @case ('verificando') {
+        <mat-spinner diameter="24"></mat-spinner>
+        } @case ('migrando') {
+        <mat-spinner diameter="24" class="text-indigo-600"></mat-spinner>
+        } @case ('validando') {
+        <mat-spinner diameter="24" class="text-purple-600"></mat-spinner>
+        } @case ('completado') {
+        <mat-icon class="text-green-600">check_circle</mat-icon>
+        } @case ('error') {
+        <mat-icon class="text-red-600">error</mat-icon>
+        } }
+
+        <div class="flex-1">
+          <div class="font-medium text-gray-900">
+            {{ procesoMigracionOTOYA().mensaje }}
+          </div>
+
+          <!-- Detalles del proceso OTOYA -->
+          @if (procesoMigracionOTOYA().detalles &&
+          procesoMigracionOTOYA().estado === 'migrando') {
+          <div class="text-sm text-gray-600 mt-1">
+            Procesando:
+            {{
+              procesoMigracionOTOYA().detalles!.solicitudesProcesadas
+            }}
+            solicitudes →
+            {{ procesoMigracionOTOYA().detalles!.entidadesCreadas }} entidades
+            OTOYA
+          </div>
+          <mat-progress-bar
+            mode="indeterminate"
+            class="mt-2"
+          ></mat-progress-bar>
+          } @if (procesoMigracionOTOYA().estado === 'completado' &&
+          estadisticasMigracion()!.totalMigrados > 0) {
+          <div class="text-sm text-gray-600 mt-1">
+            ✅ Migración OTOYA completada:
+            {{ estadisticasMigracion()?.totalMigrados || 0 }} expedientes listos
+          </div>
+          }
+
+          <!-- Información adicional de entidades creadas -->
+          @if (estadisticasOTOYA() && procesoMigracionOTOYA().estado ===
+          'completado') {
+          <div class="text-xs text-gray-500 mt-2 grid grid-cols-5 gap-2">
+            <span
+              >{{
+                estadisticasOTOYA()!.migracion.entidadesCreadas.personas
+              }}
+              personas</span
+            >
+            <span
+              >{{
+                estadisticasOTOYA()!.migracion.entidadesCreadas.vehiculos
+              }}
+              vehículos</span
+            >
+            <span
+              >{{
+                estadisticasOTOYA()!.migracion.entidadesCreadas.documentos
+              }}
+              documentos</span
+            >
+            <span
+              >{{
+                estadisticasOTOYA()!.migracion.entidadesCreadas.referencias
+              }}
+              referencias</span
+            >
+          </div>
+          }
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+  }
+
+  <!-- Contenido principal -->
+  @if (!sistemaOTOYAListo()) {
+  <!-- Estado de carga OTOYA -->
+  <div class="flex justify-center items-center min-h-96">
+    <div class="text-center">
+      <mat-spinner diameter="60" class="mx-auto mb-4"></mat-spinner>
+      <h3 class="text-lg font-medium text-gray-900 mb-2">
+        Inicializando Sistema OTOYA
+      </h3>
+      <p class="text-gray-600">
+        Preparando modelo estructurado y validando integridad de datos...
+      </p>
+    </div>
+  </div>
+  } @else {
+  <!-- Dashboard OTOYA completo -->
+
+  
+  <!-- Alertas del Sistema OTOYA -->
+  @if (estadisticasOTOYA()?.alertasActivas &&
+  estadisticasOTOYA()!.alertasActivas.length > 0) {
+  <mat-card class="mb-6 border-l-4 border-yellow-500 bg-yellow-50">
+    <mat-card-content class="p-4">
+      <div class="flex items-start gap-3">
+        <mat-icon class="text-yellow-600 mt-1">warning</mat-icon>
+        <div class="flex-1">
+          <h4 class="font-medium text-gray-900 mb-2">Alertas del Sistema</h4>
+          <div class="space-y-1">
+            @for (alerta of estadisticasOTOYA()!.alertasActivas.slice(0, 3);
+            track $index) {
+            <div class="text-sm text-yellow-800">• {{ alerta }}</div>
+            } @if (estadisticasOTOYA()!.alertasActivas.length > 3) {
+            <div class="text-xs text-yellow-700">
+              +{{ estadisticasOTOYA()!.alertasActivas.length - 3 }} alertas más
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+  }
+
+  <!-- Pestañas de Estado OTOYA -->
+  <mat-card>
+    <mat-tab-group (selectedTabChange)="cambiarTab($event.index)">
+      <!-- Tab Expedientes Pendientes -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="mr-2">schedule</mat-icon>
+          Expedientes Pendientes ({{ expedientesPendientes().length }})
+        </ng-template>
+
+        <div class="p-6">
+          <div
+            class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4"
+          >
+            <h3 class="text-lg font-semibold">
+              Expedientes OTOYA Pendientes de Evaluación
+            </h3>
+            <div class="flex flex-wrap gap-2">
+              <button
+                mat-raised-button
+                color="primary"
+                (click)="refrescarDatos()"
+                [disabled]="cargando()"
+              >
+                <mat-icon>refresh</mat-icon>
+                Actualizar
+              </button>
+             
+              
+            </div>
+          </div>
+
+          @if (expedientesPendientes().length === 0 && !cargando()) {
+          <div class="text-center py-16 text-gray-500">
+            <mat-icon class="text-6xl mb-4 text-gray-300">inbox</mat-icon>
+            <p class="text-lg font-medium mb-2">
+              No hay expedientes pendientes de evaluación
+            </p>
+            @if (estadisticasMigracion()) {
+            <p class="text-sm text-gray-500">
+              {{ estadisticasMigracion()!.totalMigrados }} expedientes OTOYA
+              disponibles en el sistema
+            </p>
+            }
+          </div>
+          } @else if (cargando()) {
+          <div class="flex justify-center py-16">
+            <div class="text-center">
+              <mat-spinner diameter="40" class="mb-4"></mat-spinner>
+              <p class="text-gray-600">Cargando expedientes OTOYA...</p>
+            </div>
+          </div>
+          } @else {
+          <div class="overflow-x-auto">
+            <table
+              mat-table
+              [dataSource]="expedientesPendientes()"
+              class="w-full"
+            >
+              <!-- Columna Expediente -->
+              <ng-container matColumnDef="expediente">
+                <th
+                  mat-header-cell
+                  *matHeaderCellDef
+                  class="font-medium text-left"
+                >
+                  Expediente
+                </th>
+                <td mat-cell *matCellDef="let expediente" class="py-4">
+                  <div>
+                    <div class="font-semibold text-gray-900">
+                      {{
+                        expediente.datosBasicos?.nombreCompleto || "Sin nombre"
+                      }}
+                    </div>
+                    <div class="text-sm text-gray-600">
+                      DNI:
+                      {{ expediente.datosBasicos?.documentNumber || "Sin DNI" }}
+                    </div>
+                    <div class="text-xs text-blue-600">
+                      {{
+                        expediente.datosBasicos?.tipoSolicitud ||
+                          "Crédito Vehicular"
+                      }}
+                    </div>
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- Columna Información Personal -->
+              <ng-container matColumnDef="datos">
+                <th
+                  mat-header-cell
+                  *matHeaderCellDef
+                  class="font-medium text-left"
+                >
+                  Información
+                </th>
+                <td mat-cell *matCellDef="let expediente" class="py-4">
+                  <div class="text-sm">
+                    <div>{{ expediente.datosBasicos?.edad || 0 }} años</div>
+                    <div class="text-gray-600">
+                      {{
+                        expediente.datosBasicos?.ocupacion || "Sin ocupación"
+                      }}
+                    </div>
+                    <div class="text-gray-600">
+                      {{
+                        expediente.datosBasicos?.rangoIngresos || "Sin rango"
+                      }}
+                    </div>
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- Columna Datos Financieros OTOYA -->
+              <ng-container matColumnDef="financiero">
+                <th
+                  mat-header-cell
+                  *matHeaderCellDef
+                  class="font-medium text-left"
+                >
+                  Financiero
+                </th>
+                <td mat-cell *matCellDef="let expediente" class="py-4">
+                  <div class="text-sm">
+                    <div class="font-medium">
+                      {{
+                        formatearMoneda(
+                          expediente.financiero?.precioVehiculo || 0
+                        )
+                      }}
+                    </div>
+                    <div class="text-gray-600">
+                      Inicial:
+                      {{
+                        formatearMoneda(
+                          expediente.financiero?.montoInicial || 0
+                        )
+                      }}
+                    </div>
+                    <div class="text-gray-600">
+                      {{ expediente.financiero?.numeroCuotas || 0 }} cuotas de
+                      {{
+                        formatearMoneda(expediente.financiero?.montoCuota || 0)
+                      }}
+                    </div>
+                    <!-- Vehículo -->
+                    <div class="text-xs text-gray-500 mt-1">
+                      {{
+                        expediente.vehiculo?.descripcion ||
+                          "Vehículo no especificado"
+                      }}
+                    </div>
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- Columna Prioridad -->
+              <ng-container matColumnDef="prioridad">
+                <th
+                  mat-header-cell
+                  *matHeaderCellDef
+                  class="font-medium text-left"
+                >
+                  Prioridad
+                </th>
+                <td mat-cell *matCellDef="let expediente" class="py-4">
+                  <mat-chip
+                    [ngClass]="
+                      getPrioridadColor(
+                        expediente.evaluacion?.prioridad || 'media'
+                      )
+                    "
+                  >
+                    {{ expediente.evaluacion?.prioridad || "media" }}
+                  </mat-chip>
+                  <!-- Etapa OTOYA -->
+                  <div class="text-xs text-gray-500 mt-1">
+                    Etapa {{ expediente.evaluacion?.etapaActual || 1 }}:
+                    {{
+                      getDescripcionEtapa(
+                        expediente.evaluacion?.etapaActual || 1
+                      )
+                    }}
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- Columna Fecha -->
+              <ng-container matColumnDef="fecha">
+                <th
+                  mat-header-cell
+                  *matHeaderCellDef
+                  class="font-medium text-left"
+                >
+                  Fecha
+                </th>
+                <td mat-cell *matCellDef="let expediente" class="py-4">
+                  <div class="text-sm text-gray-600">
+                    {{
+                      expediente.metadatos?.fechaCreacion | date : "dd/MM/yyyy"
+                    }}
+                  </div>
+                  <div class="text-xs text-gray-500">
+                    {{ expediente.metadatos?.versionModelo || "OTOYA-2.0" }}
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- Columna Acciones -->
+              <ng-container matColumnDef="acciones">
+                <th
+                  mat-header-cell
+                  *matHeaderCellDef
+                  class="font-medium text-left"
+                >
+                  Acciones
+                </th>
+                <td mat-cell *matCellDef="let expediente" class="py-4">
+                  <div class="flex gap-2">
+                    <button
+                      mat-mini-fab
+                      color="primary"
+                      (click)="iniciarEvaluacionExpediente(expediente.id)"
+                      [matTooltip]="'Iniciar Evaluación OTOYA'"
+                    >
+                      <mat-icon>play_arrow</mat-icon>
+                    </button>
+                    <button
+                      mat-mini-fab
+                      (click)="verDetalleExpediente(expediente.id)"
+                      [matTooltip]="'Ver Expediente Completo'"
+                    >
+                      <mat-icon>description</mat-icon>
+                    </button>
+                  </div>
+                </td>
+              </ng-container>
+
+              <tr
+                mat-header-row
+                *matHeaderRowDef="displayedColumnsPendientes"
+              ></tr>
+              <tr
+                mat-row
+                *matRowDef="let row; columns: displayedColumnsPendientes"
+                class="hover:bg-gray-50 transition-colors cursor-pointer"
+                (click)="verDetalleExpediente(row.id)"
+              ></tr>
+            </table>
+          </div>
+          }
+        </div>
+      </mat-tab>
+
+      <!-- Tab Expedientes En Proceso -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="mr-2">pending_actions</mat-icon>
+          En Proceso ({{ expedientesEnProceso().length }})
+        </ng-template>
+
+        <div class="p-6">
+          <div
+            class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4"
+          >
+            <h3 class="text-lg font-semibold">Evaluaciones OTOYA en Proceso</h3>
+            
+          </div>
+
+          @if (expedientesEnProceso().length === 0) {
+          <div class="text-center py-16 text-gray-500">
+            <mat-icon class="text-6xl mb-4 text-gray-300">work</mat-icon>
+            <p class="text-lg font-medium mb-2">
+              No hay evaluaciones en proceso
+            </p>
+            <p class="text-sm text-gray-500">
+              Todas las evaluaciones están completadas o pendientes
+            </p>
+          </div>
+          } @else {
+          <div class="overflow-x-auto">
+            <table
+              mat-table
+              [dataSource]="expedientesEnProceso()"
+              class="w-full"
+            >
+              <!-- Columna Expediente -->
+              <ng-container matColumnDef="expediente">
+                <th
+                  mat-header-cell
+                  *matHeaderCellDef
+                  class="font-medium text-left"
+                >
+                  Expediente
+                </th>
+                <td mat-cell *matCellDef="let expediente" class="py-4">
+                  <div>
+                    <div class="font-semibold text-gray-900">
+                      {{
+                        expediente.datosBasicos?.nombreCompleto || "Sin nombre"
+                      }}
+                    </div>
+                    <div class="text-sm text-gray-600">
+                      DNI:
+                      {{ expediente.datosBasicos?.documentNumber || "Sin DNI" }}
+                    </div>
+                    <div class="text-xs text-blue-600">
+                      {{
+                        expediente.vehiculo?.descripcion ||
+                          "Vehículo no especificado"
+                      }}
+                    </div>
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- Columna Evaluador -->
+              <ng-container matColumnDef="evaluador">
+                <th
+                  mat-header-cell
+                  *matHeaderCellDef
+                  class="font-medium text-left"
+                >
+                  Evaluador
+                </th>
+                <td mat-cell *matCellDef="let expediente" class="py-4">
+                  <div class="text-sm">
+                    @if (expediente.evaluacion?.asignadoA) {
+                    <span class="font-medium text-blue-600">{{
+                      expediente.evaluacion.asignadoA
+                    }}</span>
+                    } @else {
+                    <span class="text-gray-500 italic">Sin asignar</span>
+                    }
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- Columna Progreso OTOYA -->
+              <ng-container matColumnDef="progreso">
+                <th
+                  mat-header-cell
+                  *matHeaderCellDef
+                  class="font-medium text-left"
+                >
+                  Progreso
+                </th>
+                <td mat-cell *matCellDef="let expediente" class="py-4">
+                  <div class="text-sm">
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="text-xs"
+                        >Etapa
+                        {{ expediente.evaluacion?.etapaActual || 1 }}</span
+                      >
+                      <div class="flex-1 bg-gray-200 rounded-full h-2">
+                        <div
+                          class="bg-blue-600 h-2 rounded-full"
+                          [style.width.%]="
+                            expediente.evaluacion?.porcentajeProgreso || 0
+                          "
+                        ></div>
+                      </div>
+                      <span class="text-xs"
+                        >{{
+                          expediente.evaluacion?.porcentajeProgreso || 0
+                        }}%</span
+                      >
+                    </div>
+                    <div class="text-xs text-gray-600">
+                      {{
+                        getDescripcionEtapa(
+                          expediente.evaluacion?.etapaActual || 1
+                        )
+                      }}
+                    </div>
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- Columna Score -->
+              <ng-container matColumnDef="score">
+                <th
+                  mat-header-cell
+                  *matHeaderCellDef
+                  class="font-medium text-left"
+                >
+                  Score
+                </th>
+                <td mat-cell *matCellDef="let expediente" class="py-4">
+                  <div class="flex items-center gap-2">
+                    <span class="text-sm font-medium w-8">{{
+                      expediente.evaluacion?.scoreTotal || 0
+                    }}</span>
+                    <div class="w-20">
+                      <mat-progress-bar
+                        [value]="expediente.evaluacion?.scoreTotal || 0"
+                        [color]="
+                          getScoreColor(expediente.evaluacion?.scoreTotal || 0)
+                        "
+                      >
+                      </mat-progress-bar>
+                    </div>
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- Columna Alertas -->
+              <ng-container matColumnDef="alertas">
+                <th
+                  mat-header-cell
+                  *matHeaderCellDef
+                  class="font-medium text-left"
+                >
+                  Alertas
+                </th>
+                <td mat-cell *matCellDef="let expediente" class="py-4">
+                  <div class="flex items-center gap-1">
+                    @if (expediente.evaluacion?.alertasActivas &&
+                    expediente.evaluacion.alertasActivas.length > 0) {
+                    <mat-icon
+                      class="text-red-500 text-sm"
+                      [matTooltip]="
+                        expediente.evaluacion.alertasActivas.join('; ')
+                      "
+                    >
+                      warning
+                    </mat-icon>
+                    <span
+                      class="text-xs bg-red-100 text-red-800 px-2 py-1 rounded"
+                    >
+                      {{ expediente.evaluacion.alertasActivas.length }}
+                    </span>
+                    } @if (expediente.evaluacion?.requiereRevisionManual) {
+                    <mat-icon
+                      class="text-yellow-500 text-sm ml-1"
+                      [matTooltip]="'Requiere revisión manual'"
+                    >
+                      flag
+                    </mat-icon>
+                    } @if (!expediente.evaluacion?.alertasActivas?.length &&
+                    !expediente.evaluacion?.requiereRevisionManual) {
+                    <span class="text-gray-400 text-xs">Sin alertas</span>
+                    }
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- Columna Acciones -->
+              <ng-container matColumnDef="acciones">
+                <th
+                  mat-header-cell
+                  *matHeaderCellDef
+                  class="font-medium text-left"
+                >
+                  Acciones
+                </th>
+                <td mat-cell *matCellDef="let expediente" class="py-4">
+                  <div class="flex gap-2">
+                    <button
+                      mat-mini-fab
+                      color="primary"
+                      (click)="
+                        continuarEvaluacionExpediente(expediente.id);
+                        $event.stopPropagation()
+                      "
+                      [matTooltip]="'Continuar Evaluación'"
+                    >
+                      <mat-icon>edit</mat-icon>
+                    </button>
+                    <button
+                      mat-mini-fab
+                      color="accent"
+                      (click)="
+                        completarEvaluacion(expediente.id);
+                        $event.stopPropagation()
+                      "
+                      [matTooltip]="'Completar Evaluación'"
+                    >
+                      <mat-icon>check</mat-icon>
+                    </button>
+                    <button
+                      mat-mini-fab
+                      (click)="
+                        verDetalleExpediente(expediente.id);
+                        $event.stopPropagation()
+                      "
+                      [matTooltip]="'Ver Expediente Completo'"
+                    >
+                      <mat-icon>description</mat-icon>
+                    </button>
+                  </div>
+                </td>
+              </ng-container>
+
+              <tr
+                mat-header-row
+                *matHeaderRowDef="displayedColumnsEnProceso"
+              ></tr>
+              <tr
+                mat-row
+                *matRowDef="let row; columns: displayedColumnsEnProceso"
+                class="hover:bg-gray-50 transition-colors cursor-pointer"
+                (click)="continuarEvaluacionExpediente(row.id)"
+              ></tr>
+            </table>
+          </div>
+          }
+        </div>
+      </mat-tab>
+
+      <!-- Tab Completadas OTOYA -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="mr-2">done_all</mat-icon>
+          Completadas ({{ estadisticas()?.totalCompletadas || 0 }})
+        </ng-template>
+
+        <div class="p-6">
+          <div class="text-center py-16 text-gray-500">
+            <mat-icon class="text-6xl mb-4 text-gray-300">analytics</mat-icon>
+            <p class="text-lg font-medium mb-2">
+              Historial de Expedientes OTOYA
+            </p>
+            <p class="text-sm text-gray-500 mb-4">
+              Esta sección mostrará el historial completo de evaluaciones
+              completadas con métricas OTOYA
+            </p>
+
+            <!-- Vista previa de funcionalidades -->
+            <div class="bg-white rounded-lg p-6 max-w-md mx-auto text-left">
+              <h4 class="font-medium text-gray-900 mb-3">
+                Próximas funcionalidades:
+              </h4>
+              <ul class="text-sm text-gray-600 space-y-2">
+                <li class="flex items-center gap-2">
+                  <mat-icon class="text-xs text-green-600"
+                    >check_circle_outline</mat-icon
+                  >
+                  Historial de decisiones crediticias
+                </li>
+                <li class="flex items-center gap-2">
+                  <mat-icon class="text-xs text-green-600"
+                    >check_circle_outline</mat-icon
+                  >
+                  Métricas de rendimiento por evaluador
+                </li>
+                <li class="flex items-center gap-2">
+                  <mat-icon class="text-xs text-green-600"
+                    >check_circle_outline</mat-icon
+                  >
+                  Análisis de patrones de aprobación
+                </li>
+                <li class="flex items-center gap-2">
+                  <mat-icon class="text-xs text-green-600"
+                    >check_circle_outline</mat-icon
+                  >
+                  Reportes de calidad OTOYA
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- Tab Métricas OTOYA (nuevo) -->
+      
+    </mat-tab-group>
+  </mat-card>
+
+  <!-- Footer con información del sistema -->
+  <div class="mt-6 text-center text-sm text-gray-500">
+    <p>
+      Sistema OTOYA 2.0 - Modelo Estructurado de Evaluación Crediticia @if
+      (estadisticasOTOYA()) { • Última actualización:
+      {{ estadisticasOTOYA()!.ultimaActualizacion | date : "dd/MM/yyyy HH:mm" }}
+      }
+    </p>
+  </div>
+  }
+</div>

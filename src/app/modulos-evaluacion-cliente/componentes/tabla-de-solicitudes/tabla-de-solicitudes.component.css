@@ -1,0 +1,37 @@
+.compact-table .mat-cell,
+  .compact-table .mat-header-cell {
+    padding: 8px 12px !important;
+  }
+  
+  .compact-table .mat-cell {
+    font-size: 13px !important;
+  }
+  
+  .selected-row {
+    background-color: rgba(59, 130, 246, 0.1) !important;
+    border-left: 3px solid #3b82f6;
+  }
+  
+  .animate-fade-in-up {
+    animation: fadeInUp 0.3s ease-out;
+  }
+  
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translate(-50%, 100%);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+  }
+  
+  .animate-spin {
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }

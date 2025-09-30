@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, inject, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { Cliente, EstadoDocumento, TipoDocumento } from '../../admin-clientes/modelos/modelos-solicitudes';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -16,6 +16,8 @@ import { MatDatepicker, MatDatepickerModule } from '@angular/material/datepicker
 import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import {  DocumentoEditorDialogComponent, DocumentoEvaluadorData, EvaluacionDocumento } from '../documento-editor-dialog/documento-editor-dialog.component';
+import { Storage1Service } from '../services/storage1.service';
 
 interface SeccionCliente {
   id: string;
@@ -25,6 +27,7 @@ interface SeccionCliente {
   requerida: boolean;
   alerta?: string;
 }
+
 
 interface DocumentoCliente {
   tipo: TipoDocumento;
@@ -61,6 +64,9 @@ interface ValidacionAutomatica {
   styleUrl: './cliente-detalle.component.css'
 })
 export class ClienteDetalleComponent implements OnInit, OnChanges {
+
+  procesandoDocumento: TipoDocumento | null = null;
+
 @Input() cliente!: Cliente;
   @Input() tipo!: 'titular' | 'fiador';
   @Input() solicitudId!: string;
@@ -74,6 +80,8 @@ export class ClienteDetalleComponent implements OnInit, OnChanges {
   clienteForm!: FormGroup;
   modoEdicion = false;
   guardando = false;
+
+  storageService = inject(Storage1Service);
 
   // Secciones del cliente
   secciones: SeccionCliente[] = [];
@@ -780,71 +788,8 @@ export class ClienteDetalleComponent implements OnInit, OnChanges {
   // GESTIÓN DE DOCUMENTOS
   // ======================================
 
-  async subirDocumento(tipo: TipoDocumento, event: Event): Promise<void> {
-    console.log('📤 subirDocumento - Iniciando subida:', { tipo });
-
-    const input = event.target as HTMLInputElement;
-    if (!input.files || input.files.length === 0) {
-      console.warn('📤 subirDocumento - No se seleccionó archivo');
-      return;
-    }
-
-    const archivo = input.files[0];
-    console.log('📤 subirDocumento - Archivo seleccionado:', {
-      name: archivo.name,
-      size: archivo.size,
-      type: archivo.type
-    });
-    
-    // Validar tipo de archivo
-    if (!this.validarTipoArchivo(archivo)) {
-      console.error('📤 subirDocumento - Tipo de archivo inválido:', archivo.type);
-      this.mostrarError('Solo se permiten imágenes (JPG, PNG) o archivos PDF');
-      return;
-    }
-
-    // Validar tamaño
-    if (!this.validarTamañoArchivo(archivo)) {
-      console.error('📤 subirDocumento - Archivo muy grande:', `${(archivo.size / 1024 / 1024).toFixed(2)}MB`);
-      this.mostrarError('El archivo no debe superar los 5MB');
-      return;
-    }
-
-    try {
-      console.log('📤 subirDocumento - Emitiendo evento documentoSubido');
-      // Emitir evento para subir archivo
-      this.documentoSubido.emit({ tipo, archivo });
-      
-      // Actualizar estado del documento
-      const documento = this.documentos.find(d => d.tipo === tipo);
-      if (documento) {
-        documento.estado = 'pendiente';
-        documento.fechaSubida = new Date();
-        console.log('📤 subirDocumento - Documento actualizado:', {
-          tipo: documento.tipo,
-          estado: documento.estado,
-          fechaSubida: documento.fechaSubida
-        });
-      }
-
-      this.mostrarExito('Documento subido correctamente');
-      this.evaluarCompletitud();
-
-    } catch (error) {
-      console.error('❌ subirDocumento - ERROR:', error);
-      this.mostrarError('Error al subir el documento');
-    }
-  }
-
-  verDocumento(documento: DocumentoCliente): void {
-    console.log('👁️ verDocumento - Abriendo documento:', documento.tipo);
-    if (documento.url) {
-      // TODO: Implementar visor de documentos
-      window.open(documento.url, '_blank');
-    } else {
-      console.warn('👁️ verDocumento - Sin URL para mostrar');
-    }
-  }
+ 
+  
 
   eliminarDocumento(tipo: TipoDocumento): void {
     console.log('🗑️ eliminarDocumento - Eliminando:', tipo);
@@ -1174,4 +1119,229 @@ export class ClienteDetalleComponent implements OnInit, OnChanges {
     });
     return puedeEditar;
   }
+
+  // Reemplazar el método verDocumento existente
+
+
+
+// NUEVO MÉTODO para abrir el modal de edición
+
+
+private debugearDocumentos(): void {
+  console.log('🔍 DEBUG: Estado actual de documentos:');
+  this.documentos.forEach((doc, index) => {
+    console.log(`📄 Documento ${index + 1}:`, {
+      tipo: doc.tipo,
+      nombre: doc.nombre,
+      url: doc.url,
+      estado: doc.estado,
+      requerido: doc.requerido,
+      tieneUrl: !!doc.url,
+      longitudUrl: doc.url?.length || 0
+    });
+  });
+  
+  console.log('👤 Cliente archivos:', this.cliente.archivos);
+}
+
+
+
+
+verDocumentoEnNuevaTab(documento: DocumentoCliente): void {
+  if (documento.url) {
+    window.open(documento.url, '_blank');
+  }
+}
+
+
+/**
+ * Evaluar un documento existente
+ */
+evaluarDocumento(documento: DocumentoCliente): void {
+  console.log('📋 Evaluando documento:', documento.tipo);
+  
+  if (!documento.url) {
+    this.mostrarError('No hay documento para evaluar');
+    return;
+  }
+
+  this.abrirEvaluadorDocumento(documento);
+}
+
+/**
+ * Ver documento en modo solo lectura
+ */
+verDocumentoSoloLectura(documento: DocumentoCliente): void {
+  console.log('👁️ Viendo documento:', documento.tipo);
+  
+  if (!documento.url) {
+    this.mostrarError('No hay documento para visualizar');
+    return;
+  }
+
+  this.abrirEvaluadorDocumento(documento, true);
+}
+
+/**
+ * Abrir el evaluador de documentos
+ */
+private abrirEvaluadorDocumento(documento: DocumentoCliente, readonly: boolean = false): void {
+  console.log('🎯 Abriendo evaluador de documento:', {
+    tipo: documento.tipo,
+    readonly,
+    url: documento.url
+  });
+
+  const dialogData: DocumentoEvaluadorData = {
+    tipoDocumento: documento.tipo,
+    nombreDocumento: documento.nombre,
+    urlDocumento: documento.url!,
+    estadoActual: documento.estado,
+    clienteId: this.cliente.id,
+    solicitudId: this.solicitudId,
+    clienteNombre: this.cliente.nombreCompleto,
+    readonly
+  };
+
+  console.log('📦 Datos enviados al evaluador:', dialogData);
+
+  const dialogRef = this.dialog.open(DocumentoEditorDialogComponent, {
+    width: '1200px',
+    height: '800px',
+    maxWidth: '95vw',
+    maxHeight: '90vh',
+    disableClose: false,
+    data: dialogData
+  });
+
+  dialogRef.afterClosed().subscribe(async (evaluacion: EvaluacionDocumento) => {
+    if (evaluacion && !readonly) {
+      console.log('📄 Evaluación recibida:', evaluacion);
+      await this.procesarEvaluacionDocumento(documento, evaluacion);
+    } else {
+      console.log('❌ Modal cerrado sin evaluación o en modo readonly');
+    }
+  });
+}
+
+/**
+ * Procesar la evaluación del documento
+ */
+private async procesarEvaluacionDocumento(
+  documento: DocumentoCliente,
+  evaluacion: EvaluacionDocumento
+): Promise<void> {
+  console.log('⚙️ Procesando evaluación documento:', documento.tipo);
+
+  try {
+    this.guardando = true;
+
+    // Actualizar documento localmente
+    documento.estado = evaluacion.estado;
+    documento.fechaSubida = new Date(); // Fecha de evaluación
+    documento.observaciones = evaluacion.observaciones;
+
+    // Actualizar cliente con nuevo estado del documento
+    const clienteActualizado = { ...this.cliente };
+    
+    // Actualizar estado de validación general
+    clienteActualizado.estadoValidacionDocumentos = this.calcularEstadoGeneralDocumentos();
+    clienteActualizado.fechaValidacionDocumentos = new Date();
+    
+    // Manejar documentos observados
+    if (evaluacion.estado === 'observado') {
+      if (!clienteActualizado.documentosObservados) {
+        clienteActualizado.documentosObservados = [];
+      }
+      if (!clienteActualizado.documentosObservados.includes(documento.tipo)) {
+        clienteActualizado.documentosObservados.push(documento.tipo);
+      }
+    } else {
+      // Remover de observados si ya no está observado
+      if (clienteActualizado.documentosObservados) {
+        clienteActualizado.documentosObservados = clienteActualizado.documentosObservados
+          .filter(tipo => tipo !== documento.tipo);
+      }
+    }
+
+    console.log('📡 Emitiendo cliente actualizado...');
+    this.clienteActualizado.emit(clienteActualizado);
+
+    // Re-evaluar completitud
+    this.evaluarCompletitud();
+
+    const mensaje = this.obtenerMensajeEvaluacion(evaluacion.estado);
+    this.mostrarExito(mensaje);
+
+  } catch (error) {
+    console.error('❌ Error procesando evaluación:', error);
+    this.mostrarError('Error al procesar la evaluación del documento');
+  } finally {
+    this.guardando = false;
+  }
+}
+
+/**
+ * Calcular estado general de documentos basado en evaluaciones
+ */
+private calcularEstadoGeneralDocumentos(): EstadoDocumento {
+  const documentosRequeridos = this.documentos.filter(d => d.requerido);
+  const documentosAprobados = documentosRequeridos.filter(d => d.estado === 'aprobado');
+  const documentosObservados = documentosRequeridos.filter(d => d.estado === 'observado');
+  const documentosRechazados = documentosRequeridos.filter(d => d.estado === 'rechazado');
+
+  if (documentosRechazados.length > 0) return 'rechazado';
+  if (documentosObservados.length > 0) return 'observado';
+  if (documentosAprobados.length === documentosRequeridos.length) return 'aprobado';
+  return 'pendiente';
+}
+
+/**
+ * Obtener mensaje según el estado de evaluación
+ */
+private obtenerMensajeEvaluacion(estado: EstadoDocumento): string {
+  const mensajes = {
+    aprobado: 'Documento aprobado correctamente',
+    observado: 'Documento marcado como observado',
+    rechazado: 'Documento rechazado',
+    pendiente: 'Estado del documento actualizado'
+  };
+  return mensajes[estado] || 'Evaluación procesada';
+}
+
+
+// Fin de la clase
+
+obtenerDocumentosAprobados(): number {
+  if (!this.documentos || !Array.isArray(this.documentos)) {
+    return 0;
+  }
+  return this.documentos.filter(d => d.estado === 'aprobado').length;
+}
+
+obtenerDocumentosObservados(): number {
+  if (!this.documentos || !Array.isArray(this.documentos)) {
+    return 0;
+  }
+  return this.documentos.filter(d => d.estado === 'observado').length;
+}
+
+obtenerDocumentosRechazados(): number {
+  if (!this.documentos || !Array.isArray(this.documentos)) {
+    return 0;
+  }
+  return this.documentos.filter(d => d.estado === 'rechazado').length;
+}
+
+obtenerDocumentosPendientes(): number {
+  if (!this.documentos || !Array.isArray(this.documentos)) {
+    return 0;
+  }
+  return this.documentos.filter(d => d.estado === 'pendiente').length;
+}
+
+// Métodos ya existentes que debes verificar que estén presentes
+
+
+
 }

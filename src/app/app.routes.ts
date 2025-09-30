@@ -30,6 +30,9 @@ import { AdminProposalComponent } from './modulos/proposal-management/components
 import { ClientesMainComponent } from './modulos/admin-clientes/clientes-main/clientes-main.component';
 import { TablaGeneralComponent } from './modulos/admin-clientes/tabla-general/tabla-general.component';
 import { ExpedienteDetalleComponent } from './modulos/evaluacion/expediente-detalle/expediente-detalle.component';
+import { EvaluacionDashboardComponent } from './modulos-evaluacion-cliente/componentes/evaluacion-dashboard/evaluacion-dashboard.component';
+import { TablaDeSolicitudesComponent } from './modulos-evaluacion-cliente/componentes/tabla-de-solicitudes/tabla-de-solicitudes.component';
+
 
 export const routes: Routes = [
   {
@@ -90,7 +93,7 @@ export const routes: Routes = [
           },
           {
             path: 'list-clientes',
-            component: TablaGeneralComponent,
+            component: TablaDeSolicitudesComponent
           
           },
           {

@@ -1,0 +1,90 @@
+<div class="dialog-container">
+  <!-- Encabezado -->
+  <div class="dialog-header">
+    <h2 mat-dialog-title>
+      <mat-icon *ngIf="!errorCarga && !migracionCompletada">sync</mat-icon>
+      <mat-icon *ngIf="errorCarga" class="error-icon">error</mat-icon>
+      <mat-icon *ngIf="migracionCompletada" class="success-icon">check_circle</mat-icon>
+      Migración de Solicitud
+    </h2>
+  </div>
+
+  <!-- Contenido -->
+  <div mat-dialog-content class="dialog-content">
+    
+    <!-- Barra de progreso -->
+    <mat-progress-bar 
+      *ngIf="estaCargando" 
+      mode="indeterminate"
+      class="progress-bar">
+    </mat-progress-bar>
+
+    <!-- Estado de carga -->
+    <div class="estado-container">
+      <p class="estado-mensaje" [ngClass]="{
+        'cargando': estaCargando,
+        'error': errorCarga,
+        'exito': migracionCompletada,
+        'listo': solicitudCargada && !estaCargando && !errorCarga
+      }">
+        {{ mensajeEstado }}
+      </p>
+    </div>
+
+    <!-- Información de la solicitud -->
+    <div *ngIf="solicitudCargada && !errorCarga" class="solicitud-info">
+      <p><strong>ID:</strong> {{ idSemilla }}</p>
+      <p *ngIf="solicitudPadre">
+        <strong>Titular:</strong> 
+        {{ solicitudPadre.formTitular.nombre }} {{ solicitudPadre.formTitular.apellido }}
+      </p>
+    </div>
+
+    <!-- Mensaje de error con opción de reintentar -->
+    <div *ngIf="errorCarga" class="error-container">
+      <p class="error-detalle">{{ mensajeError }}</p>
+      <button 
+        mat-raised-button 
+        color="accent" 
+        (click)="reintentar()"
+        [disabled]="cargandoSolicitud">
+        <mat-icon>refresh</mat-icon>
+        Reintentar
+      </button>
+    </div>
+
+    <!-- Mensaje de confirmación -->
+    <div *ngIf="solicitudCargada && !errorCarga && !ejecutandoMigracion && !migracionCompletada" 
+         class="confirmacion-mensaje">
+      <p>¿Está seguro de que desea migrar esta solicitud?</p>
+      <p class="advertencia">Esta acción creará una nueva solicitud en el sistema.</p>
+    </div>
+
+    <!-- Mensaje de éxito -->
+    <div *ngIf="migracionCompletada" class="exito-container">
+      <mat-icon class="icono-grande">check_circle_outline</mat-icon>
+      <p>La solicitud se ha migrado correctamente</p>
+    </div>
+
+  </div>
+
+  <!-- Acciones -->
+  <div mat-dialog-actions class="dialog-actions">
+    <button 
+      mat-button 
+      (click)="onCancel()"
+      [disabled]="ejecutandoMigracion || migracionCompletada">
+      Cancelar
+    </button>
+    
+    <button 
+      mat-raised-button 
+      color="primary"
+      (click)="onConfirm()"
+      [disabled]="!puedeConfirmar">
+      <mat-icon *ngIf="!ejecutandoMigracion">check</mat-icon>
+      <mat-icon *ngIf="ejecutandoMigracion" class="spinning">sync</mat-icon>
+      {{ ejecutandoMigracion ? 'Migrando...' : 'Confirmar' }}
+    </button>
+  </div>
+</div>

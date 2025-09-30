@@ -1,0 +1,23 @@
+
+.document-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.no-document-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #f57c00;
+  font-size: 14px;
+  padding: 8px;
+  background: #fff3e0;
+  border-radius: 4px;
+}
+
+.no-document-message mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}

@@ -1,0 +1,194 @@
+<div class="documento-evaluador-dialog">
+      <!-- Header -->
+      <div class="dialog-header">
+        <div class="header-content">
+          <mat-icon class="document-icon">{{ obtenerIconoDocumento() }}</mat-icon>
+          <div class="header-text">
+            <h2 class="document-title">{{ data.nombreDocumento }}</h2>
+            <p class="client-info">Cliente: {{ data.clienteNombre }}</p>
+            <p class="document-info">Estado actual: 
+              <span class="estado-badge" [ngClass]="'estado-' + data.estadoActual">
+                {{ data.estadoActual | titlecase }}
+              </span>
+            </p>
+          </div>
+        </div>
+        <button mat-icon-button (click)="cerrar()" [disabled]="guardando">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <!-- Content -->
+      <mat-dialog-content class="dialog-content">
+        <!-- Vista de imagen -->
+        <div class="imagen-container">
+          <div class="imagen-wrapper">
+            <img 
+              [src]="data.urlDocumento" 
+              [alt]="data.nombreDocumento"
+              class="documento-imagen"
+              (load)="onImageLoad()"
+              (error)="onImageError()"
+              [class.loading]="cargandoImagen">
+            
+            <!-- Loading overlay -->
+            <div class="loading-overlay" *ngIf="cargandoImagen">
+              <mat-spinner diameter="40"></mat-spinner>
+              <p>Cargando imagen...</p>
+            </div>
+
+            <!-- Error overlay -->
+            <div class="error-overlay" *ngIf="errorCargaImagen">
+              <mat-icon color="warn">error</mat-icon>
+              <p>Error al cargar la imagen</p>
+              <button mat-stroked-button (click)="recargarImagen()">
+                <mat-icon>refresh</mat-icon>
+                Reintentar
+              </button>
+            </div>
+          </div>
+
+          <!-- Controles de imagen -->
+          <div class="imagen-controles" *ngIf="!cargandoImagen && !errorCargaImagen">
+            <button mat-icon-button (click)="abrirEnNuevaTab()" matTooltip="Abrir en nueva pestaña">
+              <mat-icon>open_in_new</mat-icon>
+            </button>
+            <button mat-icon-button (click)="descargarImagen()" matTooltip="Descargar imagen">
+              <mat-icon>download</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <!-- Formulario de evaluación -->
+        <div class="evaluacion-container" *ngIf="!data.readonly">
+          <form [formGroup]="evaluacionForm" class="evaluacion-form">
+            
+            <!-- Estado del documento -->
+            <mat-form-field appearance="outline" class="campo-completo">
+              <mat-label>Estado del documento</mat-label>
+              <mat-select formControlName="estado" (selectionChange)="onEstadoChange()">
+                <mat-option value="aprobado">
+                  <mat-icon class="option-icon aprobar">check_circle</mat-icon>
+                  Aprobado
+                </mat-option>
+                <mat-option value="observado">
+                  <mat-icon class="option-icon observar">warning</mat-icon>
+                  Observado
+                </mat-option>
+                <mat-option value="rechazado">
+                  <mat-icon class="option-icon rechazar">cancel</mat-icon>
+                  Rechazado
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <!-- Observaciones -->
+            <mat-form-field 
+              appearance="outline" 
+              class="campo-completo"
+              *ngIf="requiereObservaciones()">
+              <mat-label>Observaciones</mat-label>
+              <textarea 
+                matInput 
+                formControlName="observaciones"
+                rows="4"
+                placeholder="Describe las observaciones o motivos del rechazo...">
+              </textarea>
+              <mat-error *ngIf="evaluacionForm.get('observaciones')?.hasError('required')">
+                Las observaciones son requeridas
+              </mat-error>
+              <mat-error *ngIf="evaluacionForm.get('observaciones')?.hasError('minlength')">
+                Mínimo 10 caracteres requeridos
+              </mat-error>
+            </mat-form-field>
+
+            <!-- Checklist específico para DNI -->
+            <div 
+              class="dni-checklist" 
+              *ngIf="esDocumentoDNI() && evaluacionForm.get('estado')?.value === 'aprobado'">
+              <h4 class="checklist-title">
+                <mat-icon class="checklist-icon">fact_check</mat-icon>
+                Checklist de validación DNI
+              </h4>
+              <div class="checklist-items">
+                <mat-checkbox formControlName="textoLegible">
+                  Texto completamente legible
+                </mat-checkbox>
+                <mat-checkbox formControlName="fotoClara">
+                  Fotografía clara y sin sombras
+                </mat-checkbox>
+                <mat-checkbox formControlName="datosCompletos">
+                  Todos los datos visibles
+                </mat-checkbox>
+                <mat-checkbox formControlName="documentoIntegro">
+                  Documento íntegro (sin cortes)
+                </mat-checkbox>
+                <mat-checkbox formControlName="sinAlteraciones">
+                  Sin alteraciones aparentes
+                </mat-checkbox>
+              </div>
+              
+              <div class="checklist-warning" *ngIf="!validarChecklistDNI()">
+                <mat-icon color="warn">warning</mat-icon>
+                Debe completar todos los ítems del checklist para aprobar un DNI
+              </div>
+            </div>
+
+            <!-- Información del documento -->
+            <div class="documento-metadata">
+              <h4 class="metadata-title">Información del documento</h4>
+              <div class="metadata-grid">
+                <div class="metadata-item">
+                  <span class="metadata-label">Tipo:</span>
+                  <span class="metadata-value">{{ data.nombreDocumento }}</span>
+                </div>
+                <div class="metadata-item">
+                  <span class="metadata-label">Cliente:</span>
+                  <span class="metadata-value">{{ data.clienteNombre }}</span>
+                </div>
+                <div class="metadata-item">
+                  <span class="metadata-label">Solicitud ID:</span>
+                  <span class="metadata-value">{{ data.solicitudId }}</span>
+                </div>
+                <div class="metadata-item">
+                  <span class="metadata-label">Estado actual:</span>
+                  <span class="metadata-value estado-badge" [ngClass]="'estado-' + data.estadoActual">
+                    {{ data.estadoActual | titlecase }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Vista solo lectura -->
+        <div class="readonly-info" *ngIf="data.readonly">
+          <div class="readonly-header">
+            <mat-icon>visibility</mat-icon>
+            <h4>Vista de solo lectura</h4>
+          </div>
+          <p>Este documento está en modo de solo lectura. No se pueden realizar cambios.</p>
+        </div>
+      </mat-dialog-content>
+
+      <!-- Footer -->
+      <div class="dialog-footer">
+        <button 
+          mat-button 
+          (click)="cerrar()"
+          [disabled]="guardando">
+          {{ data.readonly ? 'Cerrar' : 'Cancelar' }}
+        </button>
+        
+        <button 
+          mat-raised-button 
+          color="primary"
+          (click)="guardarEvaluacion()"
+          [disabled]="!puedeGuardar() || guardando"
+          *ngIf="!data.readonly">
+          <mat-spinner *ngIf="guardando" diameter="16" class="spinner-button"></mat-spinner>
+          <mat-icon *ngIf="!guardando">save</mat-icon>
+          {{ guardando ? 'Guardando...' : 'Guardar evaluación' }}
+        </button>
+      </div>
+    </div>

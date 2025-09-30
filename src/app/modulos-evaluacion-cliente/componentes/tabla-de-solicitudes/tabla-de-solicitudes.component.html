@@ -1,0 +1,329 @@
+<!-- tabla-de-solicitudes.component.html -->
+<div class="min-h-screen bg-gray-50 p-4">
+  <div class="max-w-7xl mx-auto">
+    
+    <!-- Header -->
+    <mat-toolbar class="bg-white shadow-sm rounded-lg mb-6 border border-gray-200">
+      <mat-icon class="text-blue-600 mr-3">credit_card</mat-icon>
+      <span class="text-xl font-semibold text-gray-800">Solicitudes de Crédito - MotoYa</span>
+      <span class="flex-1"></span>
+      
+      <!-- Estadísticas desde signals computados -->
+      <div class="flex items-center gap-4 text-sm">
+        <span class="text-gray-600">Total: <strong class="text-gray-800">{{ stats().total }}</strong></span>
+        <span class="text-yellow-600">Pendientes: <strong>{{ stats().pending }}</strong></span>
+        <span class="text-blue-600">En proceso: <strong>{{ stats().inProgress }}</strong></span>
+        <span class="text-green-600">Aprobadas: <strong>{{ stats().approved }}</strong></span>
+      </div>
+      
+      <!-- Controles -->
+      <div class="flex items-center gap-2 ml-4">
+        
+        <!-- Filtro por estado -->
+        <mat-form-field appearance="outline" class="w-36" subscriptSizing="dynamic">
+          <mat-label>Estado</mat-label>
+          <mat-select [value]="statusFilter()" 
+                      (selectionChange)="onStatusFilterChange($event.value)">
+            <mat-option value="all">Todos</mat-option>
+            <mat-option value="pending">Pendientes</mat-option>
+            <mat-option value="in-progress">En Proceso</mat-option>
+            <mat-option value="approved">Aprobados</mat-option>
+            <mat-option value="rejected">Rechazados</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Búsqueda con signal binding -->
+        <mat-form-field appearance="outline" class="w-64" subscriptSizing="dynamic">
+          <mat-label>Buscar</mat-label>
+          <mat-icon matPrefix class="text-gray-400">search</mat-icon>
+          <input matInput 
+                 placeholder="Cliente, documento, vendedor..."
+                 [value]="searchTerm()"
+                 (input)="onSearchInput($event)"
+                 #searchInput>
+          <button matSuffix 
+                  mat-icon-button 
+                  *ngIf="searchTerm()"
+                  (click)="clearSearch(); searchInput.focus()"
+                  matTooltip="Limpiar búsqueda">
+            <mat-icon>clear</mat-icon>
+          </button>
+        </mat-form-field>
+        
+        <!-- Acciones -->
+        <button mat-stroked-button 
+                (click)="exportData()" 
+                matTooltip="Exportar datos"
+                [disabled]="isServiceLoading()">
+          <mat-icon>download</mat-icon>
+          Exportar
+        </button>
+        
+        <button mat-icon-button 
+                (click)="refreshData()" 
+                matTooltip="Actualizar datos" 
+                [disabled]="isServiceLoading()">
+          <mat-icon [class.animate-spin]="isServiceLoading()">refresh</mat-icon>
+        </button>
+      </div>
+    </mat-toolbar>
+
+    <!-- Contenido Principal -->
+    <mat-card class="shadow-lg border-0">
+      <mat-card-content class="p-0">
+        
+        <!-- Loading State -->
+        <div *ngIf="isServiceLoading()" class="flex flex-col justify-center items-center py-16">
+          <mat-spinner diameter="50"></mat-spinner>
+          <div class="mt-4 text-center">
+            <p class="text-lg text-gray-600 font-medium">Cargando solicitudes</p>
+            <p class="text-sm text-gray-500">Conectando con Firebase...</p>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="!isServiceLoading() && filteredRequests().length === 0" 
+             class="text-center py-16">
+          <div class="mx-auto w-32 h-32 bg-gray-100 rounded-full flex items-center justify-center mb-6">
+            <mat-icon class="text-6xl text-gray-400">
+              {{ searchTerm() ? 'search_off' : 'inbox' }}
+            </mat-icon>
+          </div>
+          <h3 class="text-xl font-medium text-gray-600 mb-2">
+            {{ searchTerm() ? 'No se encontraron resultados' : 'No hay solicitudes' }}
+          </h3>
+          <p class="text-gray-500 mb-6 max-w-md mx-auto">
+            {{ searchTerm() 
+                ? 'Prueba con otros términos de búsqueda' 
+                : 'No se encontraron solicitudes de crédito.' }}
+          </p>
+          <button *ngIf="searchTerm()" 
+                  mat-stroked-button 
+                  (click)="clearSearch()">
+            <mat-icon>clear</mat-icon>
+            Limpiar Búsqueda
+          </button>
+        </div>
+
+        <!-- Tabla de Datos -->
+        <div *ngIf="!isServiceLoading() && filteredRequests().length > 0">
+          
+          <!-- Info de resultados -->
+          <div class="flex justify-between items-center p-4 bg-gray-50 border-b">
+            <div class="text-sm text-gray-600">
+              Mostrando {{ filteredRequests().length }} 
+              {{ filteredRequests().length === 1 ? 'solicitud' : 'solicitudes' }}
+              <span *ngIf="searchTerm() || statusFilter() !== 'all'" 
+                    class="text-blue-600">(filtradas de {{ stats().total }} total)</span>
+            </div>
+          </div>
+
+          <!-- Tabla -->
+          <div class="overflow-x-auto">
+            <table mat-table 
+                   [dataSource]="dataSource" 
+                   matSort
+                   (matSortChange)="onSortChange($event)"
+                   class="w-full">
+              
+              <!-- Cliente -->
+              <ng-container matColumnDef="clientName">
+                <th mat-header-cell *matHeaderCellDef 
+                    mat-sort-header
+                    class="bg-gray-50 text-sm font-semibold text-gray-700 py-4 px-6">
+                  Cliente
+                </th>
+                <td mat-cell *matCellDef="let request" 
+                    class="py-4 px-6 border-b border-gray-100">
+                  <div class="flex items-center">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center mr-3">
+                      <span class="text-white font-semibold text-sm">
+                        {{ getInitials(request.clientName) }}
+                      </span>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <div class="font-medium text-gray-900">{{ request.clientName }}</div>
+                      <div class="text-sm text-gray-500 flex items-center">
+                        <mat-icon class="text-xs mr-1">phone</mat-icon>
+                        {{ request.telefono }}
+                      </div>
+                      <div class="text-xs text-gray-400 flex items-center">
+                        <mat-icon class="text-xs mr-1">email</mat-icon>
+                        {{ request.email }}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- Fecha -->
+              <ng-container matColumnDef="registrationDate">
+                <th mat-header-cell *matHeaderCellDef 
+                    mat-sort-header
+                    class="bg-gray-50 text-sm font-semibold text-gray-700 py-4 px-6">
+                  Fecha de Registro
+                </th>
+                <td mat-cell *matCellDef="let request" 
+                    class="py-4 px-6 border-b border-gray-100">
+                  <div class="text-sm">
+                    <div class="font-medium text-gray-900">
+                      {{ formatDate(request.registrationDate) }}
+                    </div>
+                    <div class="text-xs text-blue-600">
+                      {{ getTimeAgo(request.registrationDate) }}
+                    </div>
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- Vendedor -->
+              <ng-container matColumnDef="sellerName">
+                <th mat-header-cell *matHeaderCellDef 
+                    mat-sort-header
+                    class="bg-gray-50 text-sm font-semibold text-gray-700 py-4 px-6">
+                  Vendedor & Vehículo
+                </th>
+                <td mat-cell *matCellDef="let request" 
+                    class="py-4 px-6 border-b border-gray-100">
+                  <div class="flex items-center">
+                    <div class="w-8 h-8 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center mr-3">
+                      <mat-icon class="text-white text-sm">person</mat-icon>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <div class="text-gray-900 font-medium">{{ request.sellerName }}</div>
+                      <div class="text-xs text-gray-500">
+                        <mat-icon class="text-xs mr-1">store</mat-icon>
+                        {{ request.puntoVenta }}
+                      </div>
+                      <div class="text-xs text-blue-600">
+                        <mat-icon class="text-xs mr-1">motorcycle</mat-icon>
+                        {{ request.vehiculo }}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- Monto -->
+              <ng-container matColumnDef="amount">
+                <th mat-header-cell *matHeaderCellDef 
+                    mat-sort-header
+                    class="bg-gray-50 text-sm font-semibold text-gray-700 py-4 px-6">
+                  Monto
+                </th>
+                <td mat-cell *matCellDef="let request" 
+                    class="py-4 px-6 border-b border-gray-100">
+                  <div class="text-right">
+                    <div class="text-lg font-semibold text-green-600">
+                      {{ formatAmount(request.amount) }}
+                    </div>
+                    <div class="text-xs text-gray-500">
+                      Prioridad: 
+                      <span [ngClass]="getPriorityClass(request.priority)">
+                        {{ request.priority | titlecase }}
+                      </span>
+                    </div>
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- Estado -->
+              <ng-container matColumnDef="status">
+                <th mat-header-cell *matHeaderCellDef 
+                    mat-sort-header
+                    class="bg-gray-50 text-sm font-semibold text-gray-700 py-4 px-6">
+                  Estado
+                </th>
+                <td mat-cell *matCellDef="let request" 
+                    class="py-4 px-6 border-b border-gray-100">
+                  <div class="space-y-2">
+                    <span [ngClass]="getStatusClass(request.status)" 
+                          class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border">
+                      <mat-icon class="text-xs mr-1">{{ getStatusIcon(request.status) }}</mat-icon>
+                      {{ getStatusText(request.status) }}
+                    </span>
+                    
+                    <!-- Progress bar -->
+                    <div *ngIf="request.status === 'in-progress' && request.progress" class="w-full bg-gray-200 rounded-full h-1">
+                      <div class="bg-blue-600 h-1 rounded-full transition-all duration-300" 
+                           [style.width]="request.progress + '%'">
+                      </div>
+                    </div>
+                    
+                    <!-- Nota del estado -->
+                    <div *ngIf="request.statusNote" 
+                         class="text-xs text-gray-500 max-w-32" 
+                         [matTooltip]="request.statusNote">
+                      {{ request.statusNote }}
+                    </div>
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- Acciones -->
+              <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef 
+                    class="bg-gray-50 text-sm font-semibold text-gray-700 py-4 px-6">
+                  Acciones
+                </th>
+                <td mat-cell *matCellDef="let request" 
+                    class="py-4 px-6 border-b border-gray-100">
+                  <div class="flex items-center gap-1">
+                    
+                    <!-- Iniciar Proceso -->
+                    <button mat-icon-button 
+                            [disabled]="request.status !== 'pending'"
+                            (click)="abrirDialogoMigracion(request.id); $event.stopPropagation()"
+                            matTooltip="Iniciar Proceso"
+                            [class]="request.status === 'pending' 
+                              ? 'text-green-600 hover:bg-green-50' 
+                              : 'text-gray-400'">
+                      <mat-icon>play_arrow</mat-icon>
+                    </button>
+
+                    <!-- Ver Detalles -->
+                    <button mat-icon-button 
+                            (click)="viewDetails(request); $event.stopPropagation()"
+                            matTooltip="Ver Detalles"
+                            class="text-blue-600 hover:bg-blue-50">
+                      <mat-icon>visibility</mat-icon>
+                    </button>
+
+                    <!-- Editar -->
+                    <button mat-icon-button 
+                            (click)="editRequest(request); $event.stopPropagation()"
+                            matTooltip="Editar Solicitud"
+                            class="text-orange-600 hover:bg-orange-50"
+                            [disabled]="request.status === 'approved' || request.status === 'rejected'">
+                      <mat-icon>edit</mat-icon>
+                    </button>
+
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- Headers y rows -->
+              <tr mat-header-row *matHeaderRowDef="displayedColumns" class="bg-gray-50"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns;" 
+                  class="hover:bg-blue-50 transition-colors duration-200 cursor-pointer"
+                  (click)="viewDetails(row)"></tr>
+
+            </table>
+          </div>
+
+          <!-- Paginación -->
+          <mat-paginator 
+            [length]="filteredRequests().length"
+            [pageSize]="25"
+            [pageSizeOptions]="[10, 25, 50, 100]"
+            [showFirstLastButtons]="true"
+            class="border-t border-gray-200">
+          </mat-paginator>
+
+        </div>
+
+      </mat-card-content>
+    </mat-card>
+
+  </div>
+</div>

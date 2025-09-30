@@ -1,547 +1,650 @@
-.expediente-detalle-container {
-  padding: 1rem;
-  background-color: #f5f5f5;
-  min-height: 100vh;
+/* expediente-detalle.component.css */
 
+/* ======================================
+   VARIABLES CSS CUSTOM
+   ====================================== */
+:root {
+  --otoya-primary: #1976d2;
+  --otoya-accent: #ff6b6b;
+  --otoya-warn: #f44336;
+  --otoya-success: #4caf50;
+  --otoya-info: #2196f3;
+  --otoya-warning: #ff9800;
   
-  .header-card {
-    background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
-    border: 1px solid #e0e0e0;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+  
+  --border-radius: 8px;
+  --transition: all 0.3s ease;
+}
 
-    .avatar-estado {
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: bold;
+/* ======================================
+   LAYOUT PRINCIPAL
+   ====================================== */
+.expediente-detalle-container {
+  @apply min-h-screen bg-gray-50;
+}
 
-      &.bg-grey { background-color: #9e9e9e; }
-      &.bg-blue { background-color: #2196f3; }
-      &.bg-orange { background-color: #ff9800; }
-      &.bg-red { background-color: #f44336; }
-      &.bg-purple { background-color: #9c27b0; }
-      &.bg-indigo { background-color: #3f51b5; }
-      &.bg-green { background-color: #4caf50; }
-      &.bg-amber { background-color: #ffc107; }
-      &.bg-cyan { background-color: #00bcd4; }
+.container {
+  @apply mx-auto px-4 py-6;
+  max-width: 1400px;
+}
 
-      mat-icon {
-        font-size: 28px;
-        width: 28px;
-        height: 28px;
-      }
-    }
+/* ======================================
+   HEADER DEL EXPEDIENTE
+   ====================================== */
+.header-card {
+  @apply bg-white rounded-lg shadow-md border-0;
+  box-shadow: var(--shadow-md);
+  transition: var(--transition);
+}
 
-    mat-card-title {
-      h2 {
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: #212529;
-        margin: 0;
-      }
+.header-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-1px);
+}
 
-      .header-actions {
-        display: flex;
-        gap: 0.5rem;
-        align-items: center;
-      }
-    }
+.avatar-estado {
+  @apply w-12 h-12 rounded-full flex items-center justify-center text-white;
+  transition: var(--transition);
+}
 
-    .info-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-      margin-top: 1rem;
+.avatar-estado.bg-primary {
+  background: linear-gradient(135deg, var(--otoya-primary), #1565c0);
+}
 
-      .info-item {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        color: #6c757d;
-        font-size: 0.9rem;
+.avatar-estado.bg-accent {
+  background: linear-gradient(135deg, var(--otoya-accent), #e65100);
+}
 
-        mat-icon {
-          font-size: 18px;
-          width: 18px;
-          height: 18px;
-        }
-      }
-    }
+.avatar-estado.bg-warn {
+  background: linear-gradient(135deg, var(--otoya-warn), #d32f2f);
+}
 
-    .progress-section {
-      margin-top: 1rem;
+.header-actions {
+  @apply flex items-center gap-2;
+}
 
-      .progress-label {
-        font-size: 0.9rem;
-        color: #6c757d;
-        font-weight: 500;
-      }
+.header-actions button {
+  @apply transition-all duration-200;
+}
 
-      .progress-percentage {
-        font-size: 0.9rem;
-        font-weight: 600;
-        color: #495057;
-      }
+.header-actions button:hover {
+  @apply scale-105;
+}
 
-      .tiempo-restante {
-        margin-top: 1rem;
-        padding: 0.75rem;
-        background-color: rgba(0,0,0,0.02);
-        border-radius: 4px;
+.info-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4;
+}
 
-        .time-label {
-          font-size: 0.85rem;
-          color: #6c757d;
-        }
+.info-item {
+  @apply flex items-center gap-2 text-sm text-gray-600;
+}
 
-        .time-value {
-          font-size: 0.9rem;
-          font-weight: 600;
+.info-item mat-icon {
+  @apply text-base text-gray-400;
+}
 
-          &.text-primary { color: #007bff; }
-          &.text-accent { color: #ff9800; }
-          &.text-warn { color: #f44336; }
-        }
-      }
-    }
+/* ======================================
+   PROGRESO Y TIEMPO
+   ====================================== */
+.progress-section {
+  @apply space-y-3;
+}
+
+.progress-label {
+  @apply text-sm font-medium text-gray-700;
+}
+
+.progress-percentage {
+  @apply text-sm font-bold text-blue-600;
+}
+
+.tiempo-restante {
+  @apply space-y-2 p-3 bg-gray-50 rounded-lg;
+}
+
+.time-label {
+  @apply text-xs text-gray-600;
+}
+
+.time-value {
+  @apply text-xs font-bold;
+}
+
+.time-value.text-primary {
+  @apply text-blue-600;
+}
+
+.time-value.text-accent {
+  @apply text-orange-600;
+}
+
+.time-value.text-warn {
+  @apply text-red-600;
+}
+
+/* Estilos para mat-progress-bar */
+::ng-deep .mat-mdc-progress-bar {
+  @apply rounded-full overflow-hidden;
+}
+
+::ng-deep .mat-mdc-progress-bar .mdc-linear-progress__bar-inner {
+  @apply rounded-full;
+}
+
+/* ======================================
+   ALERTAS
+   ====================================== */
+.alertas-section {
+  @apply space-y-2;
+}
+
+.alert-card {
+  @apply border-0 rounded-lg;
+  transition: var(--transition);
+}
+
+.alert-card:hover {
+  @apply shadow-md;
+  transform: translateX(2px);
+}
+
+.alert-card.alert-error {
+  @apply border-l-4 border-red-500 bg-red-50;
+}
+
+.alert-card.alert-warning {
+  @apply border-l-4 border-yellow-500 bg-yellow-50;
+}
+
+.alert-card.alert-info {
+  @apply border-l-4 border-blue-500 bg-blue-50;
+}
+
+.alert-card.alert-critical {
+  @apply border-l-4 border-red-600 bg-red-100;
+  animation: pulse-alert 2s infinite;
+}
+
+.icon-error {
+  @apply text-red-600;
+}
+
+.icon-warning {
+  @apply text-yellow-600;
+}
+
+.icon-info {
+  @apply text-blue-600;
+}
+
+.icon-critical {
+  @apply text-red-700;
+}
+
+@keyframes pulse-alert {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+/* ======================================
+   PESTAÑAS DEL EXPEDIENTE
+   ====================================== */
+.expediente-tabs {
+  @apply bg-white rounded-lg shadow-md overflow-hidden;
+}
+
+::ng-deep .expediente-tabs .mat-mdc-tab-group {
+  @apply bg-transparent;
+}
+
+::ng-deep .expediente-tabs .mat-mdc-tab-header {
+  @apply bg-white border-b border-gray-200;
+}
+
+::ng-deep .expediente-tabs .mat-mdc-tab {
+  @apply min-w-0 opacity-70 transition-all duration-300;
+}
+
+::ng-deep .expediente-tabs .mat-mdc-tab:hover {
+  @apply opacity-90 bg-gray-50;
+}
+
+::ng-deep .expediente-tabs .mat-mdc-tab.mdc-tab--active {
+  @apply opacity-100;
+}
+
+::ng-deep .expediente-tabs .mat-mdc-tab-label-container {
+  @apply overflow-visible;
+}
+
+.tab-label {
+  @apply flex items-center gap-2 px-2 py-1;
+}
+
+.tab-label mat-icon {
+  @apply text-lg transition-colors duration-300;
+}
+
+.tab-label mat-icon.completed {
+  @apply text-green-600;
+}
+
+.tab-badge {
+  @apply text-xs h-5 min-h-5 leading-5;
+}
+
+.tab-content {
+  @apply p-6;
+  min-height: 400px;
+}
+
+/* ======================================
+   CHIPS Y BADGES
+   ====================================== */
+::ng-deep .mat-mdc-chip {
+  @apply transition-all duration-200;
+}
+
+::ng-deep .mat-mdc-chip:hover {
+  @apply scale-105;
+}
+
+::ng-deep .mat-mdc-chip.mat-primary {
+  background: linear-gradient(135deg, var(--otoya-primary), #1565c0);
+}
+
+::ng-deep .mat-mdc-chip.mat-accent {
+  background: linear-gradient(135deg, var(--otoya-accent), #e65100);
+}
+
+::ng-deep .mat-mdc-chip.mat-warn {
+  background: linear-gradient(135deg, var(--otoya-warn), #d32f2f);
+}
+
+/* ======================================
+   BOTONES
+   ====================================== */
+::ng-deep .mat-mdc-button,
+::ng-deep .mat-mdc-raised-button,
+::ng-deep .mat-mdc-icon-button {
+  @apply transition-all duration-200;
+}
+
+::ng-deep .mat-mdc-button:hover,
+::ng-deep .mat-mdc-raised-button:hover {
+  @apply scale-105;
+}
+
+::ng-deep .mat-mdc-icon-button:hover {
+  @apply scale-110;
+}
+
+::ng-deep .mat-mdc-raised-button.mat-primary {
+  background: linear-gradient(135deg, var(--otoya-primary), #1565c0);
+  @apply shadow-md;
+}
+
+::ng-deep .mat-mdc-raised-button.mat-primary:hover {
+  @apply shadow-lg;
+}
+
+/* ======================================
+   MENÚS
+   ====================================== */
+::ng-deep .mat-mdc-menu-panel {
+  @apply rounded-lg shadow-lg border border-gray-200;
+  box-shadow: var(--shadow-lg);
+}
+
+::ng-deep .mat-mdc-menu-item {
+  @apply transition-colors duration-200;
+}
+
+::ng-deep .mat-mdc-menu-item:hover {
+  @apply bg-blue-50;
+}
+
+::ng-deep .mat-mdc-menu-item mat-icon {
+  @apply mr-3 text-gray-600;
+}
+
+/* ======================================
+   CARDS
+   ====================================== */
+::ng-deep .mat-mdc-card {
+  @apply rounded-lg border-0 transition-all duration-300;
+  box-shadow: var(--shadow-sm);
+}
+
+::ng-deep .mat-mdc-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+::ng-deep .mat-mdc-card-header {
+  @apply pb-4;
+}
+
+::ng-deep .mat-mdc-card-title {
+  @apply text-xl font-bold text-gray-800;
+}
+
+::ng-deep .mat-mdc-card-subtitle {
+  @apply text-gray-600 mt-2;
+}
+
+::ng-deep .mat-mdc-card-content {
+  @apply text-gray-700 leading-relaxed;
+}
+
+::ng-deep .mat-mdc-card-actions {
+  @apply pt-4 flex gap-2;
+}
+
+/* ======================================
+   ESTADOS DE CARGA Y ERROR
+   ====================================== */
+.loading-container,
+.error-container {
+  @apply flex items-center justify-center min-h-96 p-8;
+}
+
+.loading-card,
+.error-card {
+  @apply max-w-md w-full;
+}
+
+.loading-card mat-card-content,
+.error-card mat-card-content {
+  @apply text-center p-8;
+}
+
+.error-icon {
+  @apply text-6xl mb-4;
+}
+
+.error-actions {
+  @apply flex flex-col sm:flex-row gap-2 justify-center;
+}
+
+/* ======================================
+   ANIMACIONES
+   ====================================== */
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.slide-in-right {
+  animation: slideInRight 0.3s ease-out;
+}
+
+.bounce-in {
+  animation: bounceIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInRight {
+  from { 
+    opacity: 0; 
+    transform: translateX(20px); 
   }
+  to { 
+    opacity: 1; 
+    transform: translateX(0); 
+  }
+}
 
+@keyframes bounceIn {
+  0% { 
+    opacity: 0; 
+    transform: scale(0.3); 
+  }
+  50% { 
+    opacity: 1; 
+    transform: scale(1.05); 
+  }
+  70% { 
+    transform: scale(0.9); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: scale(1); 
+  }
+}
+
+/* ======================================
+   SPINNER PERSONALIZADO
+   ====================================== */
+::ng-deep .mat-mdc-progress-spinner {
+  @apply mx-auto;
+}
+
+::ng-deep .mat-mdc-progress-spinner circle {
+  stroke: var(--otoya-primary);
+}
+
+/* ======================================
+   SNACKBAR PERSONALIZADO
+   ====================================== */
+::ng-deep .success-snackbar {
+  --mdc-snackbar-container-color: var(--otoya-success);
+  --mdc-snackbar-supporting-text-color: white;
+}
+
+::ng-deep .error-snackbar {
+  --mdc-snackbar-container-color: var(--otoya-warn);
+  --mdc-snackbar-supporting-text-color: white;
+}
+
+::ng-deep .info-snackbar {
+  --mdc-snackbar-container-color: var(--otoya-info);
+  --mdc-snackbar-supporting-text-color: white;
+}
+
+::ng-deep .warning-snackbar {
+  --mdc-snackbar-container-color: var(--otoya-warning);
+  --mdc-snackbar-supporting-text-color: white;
+}
+
+/* ======================================
+   UTILIDADES RESPONSIVAS
+   ====================================== */
+@media (max-width: 768px) {
+  .container {
+    @apply px-2 py-4;
+  }
+  
+  .header-card mat-card-title {
+    @apply flex-col items-start gap-4;
+  }
+  
+  .header-actions {
+    @apply w-full justify-end;
+  }
+  
+  .info-grid {
+    @apply grid-cols-1 gap-2;
+  }
+  
+  .tab-content {
+    @apply p-4;
+  }
+  
+  .error-actions {
+    @apply flex-col;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-card mat-card-header {
+    @apply pb-2;
+  }
+  
+  .tab-label {
+    @apply px-1;
+  }
+  
+  .tab-label span {
+    @apply hidden;
+  }
   
   .alertas-section {
-    .alert-card {
-      border-left: 4px solid;
-      margin-bottom: 0.5rem;
-
-      &.alert-error {
-        border-left-color: #f44336;
-        background-color: #ffebee;
-
-        .icon-error {
-          color: #f44336;
-        }
-      }
-
-      &.alert-warning {
-        border-left-color: #ff9800;
-        background-color: #fff3e0;
-
-        .icon-warning {
-          color: #ff9800;
-        }
-      }
-
-      &.alert-info {
-        border-left-color: #2196f3;
-        background-color: #e3f2fd;
-
-        .icon-info {
-          color: #2196f3;
-        }
-      }
-
-      &.alert-success {
-        border-left-color: #4caf50;
-        background-color: #e8f5e8;
-
-        .icon-success {
-          color: #4caf50;
-        }
-      }
-
-      mat-card-content {
-        padding: 1rem !important;
-      }
-    }
+    @apply space-y-1;
   }
-
   
-  .tabs-section {
-    .expediente-tabs {
-      background-color: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-
-      ::ng-deep {
-        .mat-mdc-tab-header {
-          border-bottom: 1px solid #e0e0e0;
-        }
-
-        .mat-mdc-tab-label {
-          padding: 0 16px;
-          min-width: 120px;
-
-          .tab-label {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.9rem;
-
-            mat-icon {
-              font-size: 18px;
-              width: 18px;
-              height: 18px;
-              color: #6c757d;
-
-              &.completed {
-                color: #4caf50;
-              }
-            }
-
-            .tab-badge {
-              font-size: 0.75rem;
-              height: 18px;
-              min-height: 18px;
-              padding: 0 6px;
-            }
-          }
-        }
-
-        .mat-mdc-tab-body-wrapper {
-          .mat-mdc-tab-body {
-            .mat-mdc-tab-body-content {
-              padding: 0;
-            }
-          }
-        }
-      }
-    }
-
-    .tab-content {
-      padding: 1.5rem;
-      min-height: 400px;
-    }
+  .alert-card mat-card-content {
+    @apply flex-col items-start gap-2;
   }
+}
 
- 
-  .loading-container,
-  .error-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 60vh;
-
-    .loading-card,
-    .error-card {
-      max-width: 400px;
-      width: 100%;
-
-      .error-icon {
-        font-size: 48px;
-        width: 48px;
-        height: 48px;
-        margin-bottom: 1rem;
-      }
-
-      .error-actions {
-        display: flex;
-        gap: 1rem;
-        justify-content: center;
-        flex-wrap: wrap;
-      }
-    }
+/* ======================================
+   ACCESIBILIDAD
+   ====================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
+}
 
+.sr-only {
+  @apply absolute w-px h-px p-0 -m-px overflow-hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ======================================
+   FOCUS STATES
+   ====================================== */
+::ng-deep .mat-mdc-button:focus,
+::ng-deep .mat-mdc-icon-button:focus,
+::ng-deep .mat-mdc-tab:focus {
+  @apply outline-none ring-2 ring-blue-500 ring-offset-2;
+}
+
+::ng-deep .mat-mdc-menu-item:focus {
+  @apply outline-none bg-blue-50;
+}
+
+/* ======================================
+   ESTADOS HOVER MEJORADOS
+   ====================================== */
+.avatar-estado:hover {
+  @apply scale-110;
+  filter: brightness(1.1);
+}
+
+.tab-label:hover mat-icon {
+  @apply scale-110;
+}
+
+.alert-card:hover .icon-error,
+.alert-card:hover .icon-warning,
+.alert-card:hover .icon-info,
+.alert-card:hover .icon-critical {
+  @apply scale-110;
+}
+
+/* ======================================
+   ESTADOS ESPECIALES
+   ====================================== */
+.estado-critico {
+  @apply border-2 border-red-500;
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+  animation: pulse-critical 2s infinite;
+}
+
+.estado-urgente {
+  @apply border-2 border-yellow-500;
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.3);
+}
+
+.estado-completado {
+  @apply border-2 border-green-500;
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
+}
+
+@keyframes pulse-critical {
+  0%, 100% { 
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+  }
+  50% { 
+    box-shadow: 0 0 30px rgba(239, 68, 68, 0.6);
+  }
+}
+
+/* ======================================
+   TOOLTIPS PERSONALIZADOS
+   ====================================== */
+::ng-deep .mat-mdc-tooltip {
+  @apply bg-gray-800 text-white text-xs rounded-md px-2 py-1;
+  box-shadow: var(--shadow-md);
+}
+
+/* ======================================
+   SCROLLBAR PERSONALIZADO
+   ====================================== */
+.tab-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.tab-content::-webkit-scrollbar-track {
+  @apply bg-gray-100 rounded-full;
+}
+
+.tab-content::-webkit-scrollbar-thumb {
+  @apply bg-gray-400 rounded-full;
+}
+
+.tab-content::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-600;
+}
+
+/* ======================================
+   DARK MODE SUPPORT (OPCIONAL)
+   ====================================== */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --otoya-primary: #64b5f6;
+    --otoya-accent: #ff8a65;
+    --otoya-warn: #e57373;
+    --otoya-success: #81c784;
+    --otoya-info: #64b5f6;
+    --otoya-warning: #ffb74d;
+  }
   
-  .observaciones-panel {
-    position: fixed;
-    top: 0;
-    right: -400px;
-    width: 400px;
-    height: 100vh;
-    z-index: 1000;
-    transition: right 0.3s ease-in-out;
-    background-color: white;
-    box-shadow: -2px 0 8px rgba(0,0,0,0.1);
-
-    &.panel-visible {
-      right: 0;
-    }
-
-    .observaciones-content {
-      max-height: calc(100vh - 200px);
-      overflow-y: auto;
-      padding: 1rem 0;
-
-      .observacion-item {
-        border-bottom: 1px solid #e0e0e0;
-        padding: 1rem 0;
-
-        &:last-child {
-          border-bottom: none;
-        }
-
-        .observacion-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 0.5rem;
-
-          .observacion-fecha {
-            font-size: 0.8rem;
-            color: #6c757d;
-          }
-
-          .observacion-usuario {
-            font-size: 0.8rem;
-            color: #495057;
-            font-weight: 500;
-          }
-        }
-
-        .observacion-contenido {
-          strong {
-            font-size: 0.9rem;
-            color: #495057;
-          }
-
-          p {
-            margin: 0.5rem 0 0 0;
-            font-size: 0.85rem;
-            color: #6c757d;
-            line-height: 1.4;
-          }
-        }
-      }
-    }
+  .expediente-detalle-container {
+    @apply bg-gray-900;
   }
-
   
-  .d-flex {
-    display: flex;
+  ::ng-deep .mat-mdc-card {
+    @apply bg-gray-800 text-gray-100;
   }
-
-  .align-items-center {
-    align-items: center;
-  }
-
-  .justify-content-between {
-    justify-content: space-between;
-  }
-
-  .justify-content-center {
-    justify-content: center;
-  }
-
-  .gap-2 {
-    gap: 0.5rem;
-  }
-
-  .w-100 {
-    width: 100%;
-  }
-
-  .mb-1 {
-    margin-bottom: 0.25rem;
-  }
-
-  .mb-2 {
-    margin-bottom: 0.5rem;
-  }
-
-  .mb-3 {
-    margin-bottom: 1rem;
-  }
-
-  .mb-4 {
-    margin-bottom: 1.5rem;
-  }
-
-  .mt-1 {
-    margin-top: 0.25rem;
-  }
-
-  .ml-3 {
-    margin-left: 1rem;
-  }
-
-  .pt-3 {
-    padding-top: 1rem;
-  }
-
-  .p-5 {
-    padding: 3rem;
-  }
-
-  .text-center {
-    text-align: center;
-  }
-
-  .text-muted {
-    color: #6c757d;
-  }
-
-  .h-100 {
-    height: 100%;
-  }
-
   
-  @media (max-width: 768px) {
-    padding: 0.5rem;
-
-    .header-card {
-      mat-card-title {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
-
-        .header-actions {
-          align-self: flex-end;
-        }
-      }
-
-      .info-grid {
-        grid-template-columns: 1fr;
-        gap: 0.5rem;
-      }
-    }
-
-    .tabs-section {
-      .expediente-tabs {
-        ::ng-deep {
-          .mat-mdc-tab-label {
-            min-width: 80px;
-            padding: 0 8px;
-
-            .tab-label {
-              flex-direction: column;
-              gap: 0.25rem;
-              font-size: 0.8rem;
-
-              span {
-                display: none;
-              }
-
-              mat-icon {
-                font-size: 20px;
-                width: 20px;
-                height: 20px;
-              }
-            }
-          }
-        }
-      }
-
-      .tab-content {
-        padding: 1rem;
-      }
-    }
-
-    .observaciones-panel {
-      width: 100vw;
-      right: -100vw;
-
-      &.panel-visible {
-        right: 0;
-      }
-    }
+  .header-card {
+    @apply bg-gray-800;
   }
-
-  @media (max-width: 480px) {
-    .header-card {
-      mat-card-header {
-        flex-direction: column;
-        align-items: flex-start;
-
-        .mat-mdc-card-avatar {
-          margin-bottom: 1rem;
-        }
-      }
-    }
-
-    .alertas-section {
-      .alert-card {
-        mat-card-content {
-          flex-direction: column;
-          align-items: flex-start;
-          gap: 1rem;
-        }
-      }
-    }
+  
+  .tiempo-restante {
+    @apply bg-gray-700;
   }
-
- 
-  .header-card,
-  .alert-card,
-  .expediente-tabs {
-    animation: fadeInUp 0.4s ease-out;
+  
+  .info-item {
+    @apply text-gray-300;
   }
-
-  @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
- 
-  @media (prefers-color-scheme: dark) {
-    background-color: #121212;
-
-    .header-card,
-    .expediente-tabs,
-    .observaciones-panel {
-      background-color: #1e1e1e;
-      color: #ffffff;
-    }
-
-    .alert-card {
-      &.alert-error {
-        background-color: rgba(244, 67, 54, 0.1);
-      }
-
-      &.alert-warning {
-        background-color: rgba(255, 152, 0, 0.1);
-      }
-
-      &.alert-info {
-        background-color: rgba(33, 150, 243, 0.1);
-      }
-
-      &.alert-success {
-        background-color: rgba(76, 175, 80, 0.1);
-      }
-    }
-
-    .text-muted {
-      color: #b0b0b0;
-    }
-  }
-
-
-  @media print {
-    .header-actions,
-    .observaciones-panel,
-    mat-menu {
-      display: none !important;
-    }
-
-    .expediente-tabs {
-      ::ng-deep {
-        .mat-mdc-tab-header {
-          display: none;
-        }
-
-        .mat-mdc-tab-body-wrapper {
-          .mat-mdc-tab-body {
-            &:not(.mat-mdc-tab-body-active) {
-              display: block !important;
-            }
-          }
-        }
-      }
-    }
-
-    .tab-content {
-      break-inside: avoid;
-      page-break-inside: avoid;
-    }
+  
+  .info-item mat-icon {
+    @apply text-gray-400;
   }
 }

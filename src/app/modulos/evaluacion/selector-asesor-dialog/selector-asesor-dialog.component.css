@@ -1,0 +1,60 @@
+.loading-container {
+      text-align: center;
+      padding: 20px;
+    }
+
+    .error-container {
+      text-align: center;
+      padding: 20px;
+      color: #f44336;
+    }
+
+    .asesor-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      padding: 8px 0;
+    }
+
+    .asesor-info {
+      flex: 1;
+    }
+
+    .asesor-nombre {
+      margin: 0 0 4px 0;
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .asesor-email {
+      margin: 0 0 4px 0;
+      font-size: 14px;
+      color: #666;
+    }
+
+    .asesor-rol {
+      font-size: 12px;
+      background-color: #e3f2fd;
+      color: #1976d2;
+      padding: 2px 8px;
+      border-radius: 12px;
+    }
+
+    .asesor-status {
+      margin-left: 16px;
+    }
+
+    .no-results {
+      text-align: center;
+      padding: 40px 20px;
+      color: #666;
+    }
+
+    .w-100 { width: 100%; }
+    .mb-3 { margin-bottom: 16px; }
+
+    mat-dialog-content {
+      max-height: 400px;
+      min-width: 500px;
+    }

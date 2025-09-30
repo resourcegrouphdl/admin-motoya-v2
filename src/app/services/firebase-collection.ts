@@ -22,4 +22,7 @@ export const FIREBASE_COLLECTIONS = {
   //productos
 
   PRODUCTOS_MOTOCICLETAS: 'motocicleta-producto',
+
+  EXPEDIENTES: 'solicitudes',
+
 }

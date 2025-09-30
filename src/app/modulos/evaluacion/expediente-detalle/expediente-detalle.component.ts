@@ -13,7 +13,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { Subject, takeUntil, interval, map, Observable, combineLatest } from 'rxjs';
 import { MatMenuModule } from '@angular/material/menu';
-import { ESTADOS_CONFIG, EstadoSolicitud, ExpedienteCompleto, FASES_PROCESO } from '../../admin-clientes/modelos/modelos-solicitudes';
+import { Cliente, ESTADOS_CONFIG, EstadoSolicitud, ExpedienteCompleto, FASES_PROCESO } from '../../admin-clientes/modelos/modelos-solicitudes';
 import { ExpedienteService } from '../services/expediente.service';
 import { MatDivider } from "@angular/material/divider";
 import { MatMenu } from "@angular/material/menu";
@@ -29,6 +29,9 @@ import { DecisionFinalComponent } from '../decision-final/decision-final.compone
 import { DocumentacionLegalComponent } from '../documentacion-legal/documentacion-legal.component';
 import { ProcesoEntregaComponent } from '../proceso-entrega/proceso-entrega.component';
 import {provideNativeDateAdapter} from '@angular/material/core';
+import { AsesorSeleccionado, SelectorAsesorDialogComponent } from '../selector-asesor-dialog/selector-asesor-dialog.component';
+import { BaseProfile } from '../../adminusuarios/enums/user-type.types';
+import { Usuario } from '../../../services/chat/chat.service';
 
 interface TabInfo {
   id: string;
@@ -135,7 +138,7 @@ export class ExpedienteDetalleComponent  implements OnInit, OnDestroy {
   }
 
   get puedeEditarExpediente(): boolean {
-    if (!this.expediente) return false;
+    if (!this.expediente) return true;
     
     const estadosEditables: EstadoSolicitud[] = [
       'pendiente', 'en_revision_inicial', 'evaluacion_documental', 
@@ -764,13 +767,28 @@ export class ExpedienteDetalleComponent  implements OnInit, OnDestroy {
   }
 
   private async asignarAsesor(): Promise<void> {
-    // TODO: Implementar diálogo de selección de asesor
+  try {
     const asesorSeleccionado = await this.abrirDialogoSeleccionAsesor();
+    
     if (asesorSeleccionado) {
-      await this.cambiarEstado('en_revision_inicial', `Asesor ${asesorSeleccionado.nombre} asignado`);
-      // TODO: Actualizar asesorAsignadoId en la base de datos
+      // Aquí puedes hacer la llamada al servicio para asignar el asesor
+      await this.expedienteService.asignarAsesor(
+        this.expediente!.solicitud.id,
+        asesorSeleccionado
+      );
+
+      await this.cambiarEstado(
+        'en_revision_inicial', 
+        `Asesor ${asesorSeleccionado.nombre} (${asesorSeleccionado.email}) asignado correctamente`
+      );
+
+      this.mostrarExito(`Asesor ${asesorSeleccionado.nombre} asignado exitosamente`);
     }
+  } catch (error) {
+    console.error('Error al asignar asesor:', error);
+    this.mostrarError('Error al asignar el asesor seleccionado');
   }
+}
 
   private async aprobarDocumentos(): Promise<void> {
     if (!this.validarDocumentosCompletos()) {
@@ -1021,13 +1039,28 @@ export class ExpedienteDetalleComponent  implements OnInit, OnDestroy {
   // DIÁLOGOS Y MODALES
   // ======================================
 
-  private async abrirDialogoSeleccionAsesor(): Promise<any> {
-    // TODO: Implementar diálogo de selección de asesor
-    return new Promise((resolve) => {
-      // Simulación - reemplazar con diálogo real
-      resolve({ id: 'asesor1', nombre: 'Juan Pérez' });
+
+  private async abrirDialogoSeleccionAsesor(): Promise<AsesorSeleccionado | null> {
+  return new Promise((resolve) => {
+    const dialogRef = this.dialog.open(SelectorAsesorDialogComponent, {
+      width: '600px',
+      maxWidth: '90vw',
+      maxHeight: '80vh',
+      disableClose: false,
+      autoFocus: true,
+      data: {
+        // Puedes pasar datos adicionales si es necesario
+        expedienteId: this.expediente?.solicitud.id,
+        estadoActual: this.expediente?.solicitud.estado
+      }
     });
-  }
+
+    dialogRef.afterClosed().subscribe(result => {
+      // result será de tipo AsesorSeleccionado | null
+      resolve(result);
+    });
+  });
+}
 
   private async abrirDialogoObservaciones(tipo: string): Promise<string | null> {
     // TODO: Implementar diálogo de observaciones
@@ -1292,5 +1325,48 @@ export class ExpedienteDetalleComponent  implements OnInit, OnDestroy {
 public recargarExpediente(): void { }
 
  
+// Agregar al ExpedienteDetalleComponent
+async onClienteActualizado(clienteActualizado: Cliente): Promise<void> {
+  console.log('🔄 onClienteActualizado - Cliente recibido:', clienteActualizado);
+  
+  if (!this.expediente) {
+    console.error('❌ No hay expediente cargado');
+    this.mostrarError('Error: No hay expediente disponible');
+    return;
+  }
+  
+  try {
+    this.cargando = true;
+    
+    // Actualizar cliente en Firebase usando el servicio
+    await this.expedienteService.actualizarCliente(
+      clienteActualizado.id,
+      clienteActualizado,
+      this.expediente.solicitud.id
+    );
+    
+    this.mostrarExito(`Información de ${clienteActualizado.tipo} actualizada correctamente`);
+    
+    // Re-evaluar completitud después de la actualización
+    this.evaluarCompletitud();
+    
+  } catch (error) {
+    console.error('❌ Error al actualizar cliente:', error);
+    this.mostrarError('Error al guardar los cambios del cliente');
+  } finally {
+    this.cargando = false;
+  }
+}
+
+// Método auxiliar para re-evaluar completitud del expediente
+private evaluarCompletitud(): void {
+  if (!this.expediente) return;
+  
+  // Re-calcular pestañas y progreso
+  this.actualizarTabs();
+  this.actualizarAlertas();
+  
+  console.log('📊 Completitud del expediente re-evaluada');
+}
 }
 

@@ -3,6 +3,7 @@
 // ==================================================
 
 import { Timestamp } from '@angular/fire/firestore';
+import { AsesorSeleccionado } from '../../evaluacion/selector-asesor-dialog/selector-asesor-dialog.component';
 
 // Estados del proceso de evaluación
 export type EstadoSolicitud = 
@@ -336,6 +337,7 @@ id?: string;
   observacionesEvaluador?: string;
   alertasEspeciales?: string[];
   requiereAtencionPersonalizada?: boolean;
+  ultimaModificacionPor: 'usuario_actual' // TODO: obtener del servicio de auth
 }
 
 // Interface parseada
@@ -674,14 +676,9 @@ export interface SolicitudCreditoCompleta extends SolicitudCredito {
     email: string;
     rol: RolUsuario;
   };
-  
-  evaluadorActual?: {
-    id: string;
-    nombre: string;
-    email: string;
-    rol: RolUsuario;
-    especializacion: string;
-  };
+
+  evaluadorActual?: AsesorSeleccionado[];
+
   // === CAMPOS CALCULADOS AVANZADOS (OBLIGATORIOS) ===
   resumenEvaluacion: {
     porcentajeDocumentosValidados: number;
@@ -738,15 +735,9 @@ export interface ExpedienteCompleto {
     email: string;
     rol: RolUsuario;
   };
-  
-  evaluadorActual?: {
-    id: string;
-    nombre: string;
-    email: string;
-    rol: RolUsuario;
-    especializacion: string;
-  };
-  
+
+  evaluadorActual?: AsesorSeleccionado[];
+
   // Resumen de evaluación
   resumenEvaluacion: {
     porcentajeDocumentosValidados: number;
@@ -980,3 +971,4 @@ export const ACCIONES_POR_ESTADO: { [key in EstadoSolicitud]: string[] } = {
   suspendido: ['Reactivar', 'Cancelar'],
   cancelado: []
 };
+
